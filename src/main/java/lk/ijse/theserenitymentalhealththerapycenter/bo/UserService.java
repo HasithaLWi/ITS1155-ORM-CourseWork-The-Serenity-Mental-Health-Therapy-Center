@@ -21,8 +21,6 @@ public class UserService {
         admin.setFullName("Admin User");
         admin.setEmail("hasithawijesinghe@gmail.com");
         admin.setRole(User.Role.ADMIN);
-        admin.setSecurityQuestion("What is your favorite color?");
-        admin.setSecurityAnswer(PasswordUtil.hashPassword("blue"));
 
         userDAO.createAdminUser(admin);
     }
@@ -52,8 +50,7 @@ public class UserService {
      * Register a new user. Password and security answer are hashed with BCrypt before storing.
      */
     public void register(String username, String plainTextPassword, String fullName,
-                          String email, User.Role role,
-                          String securityQuestion, String securityAnswer) {
+                          String email, User.Role role) {
         // Validations
         if (!ValidationUtil.isNotEmpty(username)) {
             throw new RegistrationException("Username is required.");
@@ -66,12 +63,6 @@ public class UserService {
         }
         if (email != null && !email.isEmpty() && !ValidationUtil.isValidEmail(email)) {
             throw new RegistrationException("Invalid email format.");
-        }
-        if (!ValidationUtil.isNotEmpty(securityQuestion)) {
-            throw new RegistrationException("Security question is required.");
-        }
-        if (!ValidationUtil.isNotEmpty(securityAnswer)) {
-            throw new RegistrationException("Security answer is required.");
         }
 
         // Check if username already exists
@@ -91,19 +82,12 @@ public class UserService {
         user.setFullName(fullName);
         user.setEmail(email);
         user.setRole(role);
-        user.setSecurityQuestion(securityQuestion);
-        user.setSecurityAnswer(PasswordUtil.hashPassword(securityAnswer.toLowerCase().trim()));
 
         userDAO.save(user);
     }
 
-    /**
-     * Overloaded register for backward compatibility (without security question).
-     */
-    public void register(String username, String plainTextPassword, String fullName,
-                          String email, User.Role role) {
-        register(username, plainTextPassword, fullName, email, role, null, null);
-    }
+
+
 
     /**
      * Verify a user's identity for password reset using username and email.
@@ -119,22 +103,10 @@ public class UserService {
             throw new PasswordResetException("No account found with that username and email combination.");
         }
 
-        if (user.getSecurityQuestion() == null || user.getSecurityQuestion().isEmpty()) {
-            throw new PasswordResetException("No security question set for this account. Contact an administrator.");
-        }
 
         return user;
     }
 
-    /**
-     * Verify the security answer for a user.
-     */
-    public boolean verifySecurityAnswer(User user, String answer) {
-        if (user == null || !ValidationUtil.isNotEmpty(answer)) {
-            return false;
-        }
-        return PasswordUtil.verifyPassword(answer.toLowerCase().trim(), user.getSecurityAnswer());
-    }
 
     /**
      * Reset a user's password.

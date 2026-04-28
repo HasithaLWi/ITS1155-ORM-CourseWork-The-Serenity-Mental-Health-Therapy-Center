@@ -58,7 +58,7 @@ public class LoginController {
         try {
             User user = userService.login(username, password);
             lblError.setText("");
-            lblError.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 11px;");
+            lblError.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px;");
             lblError.setText("Login successful! Loading dashboard...");
 
             // Route based on role
@@ -88,7 +88,7 @@ public class LoginController {
                     stage.setTitle(finalTitle);
                     stage.centerOnScreen();
                 } catch (IOException ex) {
-                    lblError.setStyle("-fx-text-fill: #E07070; -fx-font-size: 11px;");
+                    lblError.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px;");
                     lblError.setText("Failed to load dashboard.");
                     ex.printStackTrace();
                 }
@@ -96,7 +96,7 @@ public class LoginController {
             fadeOut.play();
 
         } catch (LoginException e) {
-            lblError.setStyle("-fx-text-fill: #E07070; -fx-font-size: 11px;");
+            lblError.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px;");
             lblError.setText(e.getMessage());
 
             // Shake animation for error

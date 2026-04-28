@@ -24,48 +24,34 @@ public class RegistrationController {
     @FXML private PasswordField txtConfirmPassword;
     @FXML private TextField txtFullName;
     @FXML private TextField txtEmail;
-    @FXML private ComboBox<String> cmbSecurityQuestion;
-    @FXML private TextField txtSecurityAnswer;
 
     @FXML private Label lblUsernameError;
     @FXML private Label lblPasswordError;
     @FXML private Label lblConfirmPasswordError;
     @FXML private Label lblFullNameError;
     @FXML private Label lblEmailError;
-    @FXML private Label lblSecurityQuestionError;
-    @FXML private Label lblSecurityAnswerError;
     @FXML private Label lblMessage;
 
     private final UserService userService = new UserService();
 
     private static final String VALID_STYLE =
-            "-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #FFFFFF; -fx-prompt-text-fill: #5A7A9A; "
-            + "-fx-border-color: #4CAF50; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 14; -fx-font-size: 13px;";
+            "-fx-background-color: #FFFFFF; -fx-text-fill: #2D3436; -fx-prompt-text-fill: #95A5A6; "
+            + "-fx-border-color: #7AB88F; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 11 16; -fx-font-size: 13px;";
     private static final String INVALID_STYLE =
-            "-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #FFFFFF; -fx-prompt-text-fill: #5A7A9A; "
-            + "-fx-border-color: #E07070; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 14; -fx-font-size: 13px;";
+            "-fx-background-color: #FFFFFF; -fx-text-fill: #2D3436; -fx-prompt-text-fill: #95A5A6; "
+            + "-fx-border-color: #C47171; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 11 16; -fx-font-size: 13px;";
     private static final String DEFAULT_STYLE =
-            "-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #FFFFFF; -fx-prompt-text-fill: #5A7A9A; "
-            + "-fx-border-color: rgba(255,255,255,0.15); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 14; -fx-font-size: 13px;";
+            "-fx-background-color: #FFFFFF; -fx-text-fill: #2D3436; -fx-prompt-text-fill: #95A5A6; "
+            + "-fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 11 16; -fx-font-size: 13px;";
 
     @FXML
     public void initialize() {
-        cmbSecurityQuestion.setItems(FXCollections.observableArrayList(
-                "What is your pet's name?",
-                "What city were you born in?",
-                "What is your mother's maiden name?",
-                "What was the name of your first school?",
-                "What is your favorite book?"
-        ));
-        cmbSecurityQuestion.setStyle(DEFAULT_STYLE);
 
         txtUsername.textProperty().addListener((o, a, b) -> validateUsername());
         txtPassword.textProperty().addListener((o, a, b) -> { validatePassword(); if (!txtConfirmPassword.getText().isEmpty()) validateConfirmPassword(); });
         txtConfirmPassword.textProperty().addListener((o, a, b) -> validateConfirmPassword());
         txtFullName.textProperty().addListener((o, a, b) -> validateFullName());
         txtEmail.textProperty().addListener((o, a, b) -> validateEmail());
-        txtSecurityAnswer.textProperty().addListener((o, a, b) -> validateSecurityAnswer());
-        cmbSecurityQuestion.valueProperty().addListener((o, a, b) -> validateSecurityQuestion());
     }
 
     private boolean validateUsername() {
@@ -105,35 +91,16 @@ public class RegistrationController {
         setOk(txtEmail, lblEmailError); return true;
     }
 
-    private boolean validateSecurityQuestion() {
-        if (cmbSecurityQuestion.getValue() == null) {
-            lblSecurityQuestionError.setText("Select a security question");
-            lblSecurityQuestionError.setStyle("-fx-text-fill: #E07070; -fx-font-size: 10px;");
-            cmbSecurityQuestion.setStyle(INVALID_STYLE);
-            return false;
-        }
-        lblSecurityQuestionError.setText("");
-        cmbSecurityQuestion.setStyle(VALID_STYLE);
-        return true;
-    }
-
-    private boolean validateSecurityAnswer() {
-        String v = txtSecurityAnswer.getText().trim();
-        if (v.isEmpty()) { setErr(txtSecurityAnswer, lblSecurityAnswerError, "Security answer is required"); return false; }
-        if (v.length() < 2) { setErr(txtSecurityAnswer, lblSecurityAnswerError, "At least 2 characters"); return false; }
-        setOk(txtSecurityAnswer, lblSecurityAnswerError); return true;
-    }
-
-    private void setErr(TextInputControl f, Label l, String m) { f.setStyle(INVALID_STYLE); l.setText(m); l.setStyle("-fx-text-fill: #E07070; -fx-font-size: 10px;"); }
-    private void setOk(TextInputControl f, Label l) { f.setStyle(VALID_STYLE); l.setText("\u2713"); l.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 10px;"); }
+    private void setErr(TextInputControl f, Label l, String m) { f.setStyle(INVALID_STYLE); l.setText(m); l.setStyle("-fx-text-fill: #C47171; -fx-font-size: 10px;"); }
+    private void setOk(TextInputControl f, Label l) { f.setStyle(VALID_STYLE); l.setText("\u2713"); l.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 10px;"); }
 
     @FXML
     void handleRegister(ActionEvent event) {
         boolean valid = validateUsername() & validatePassword() & validateConfirmPassword()
-                & validateFullName() & validateEmail() & validateSecurityQuestion() & validateSecurityAnswer();
+                & validateFullName() & validateEmail();
 
         if (!valid) {
-            lblMessage.setStyle("-fx-text-fill: #E07070; -fx-font-size: 12px; -fx-font-weight: bold;");
+            lblMessage.setStyle("-fx-text-fill: #C47171; -fx-font-size: 12px; -fx-font-weight: bold;");
             lblMessage.setText("Please fix the errors above.");
             return;
         }
@@ -141,15 +108,15 @@ public class RegistrationController {
         try {
             userService.register(txtUsername.getText().trim(), txtPassword.getText(),
                     txtFullName.getText().trim(), txtEmail.getText().trim(),
-                    User.Role.RECEPTIONIST, cmbSecurityQuestion.getValue(), txtSecurityAnswer.getText().trim());
+                    User.Role.RECEPTIONIST);
 
-            lblMessage.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 12px; -fx-font-weight: bold;");
+            lblMessage.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 12px; -fx-font-weight: bold;");
             lblMessage.setText("Account created successfully! Redirecting...");
             javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.seconds(1.5));
             pause.setOnFinished(e -> navigateToLogin());
             pause.play();
         } catch (RegistrationException e) {
-            lblMessage.setStyle("-fx-text-fill: #E07070; -fx-font-size: 12px; -fx-font-weight: bold;");
+            lblMessage.setStyle("-fx-text-fill: #C47171; -fx-font-size: 12px; -fx-font-weight: bold;");
             lblMessage.setText(e.getMessage());
         }
     }

@@ -32,11 +32,6 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    @Column(length = 200)
-    private String securityQuestion;
-
-    @Column
-    private String securityAnswer; // BCrypt hashed
 
     public enum Role {
         ADMIN, RECEPTIONIST

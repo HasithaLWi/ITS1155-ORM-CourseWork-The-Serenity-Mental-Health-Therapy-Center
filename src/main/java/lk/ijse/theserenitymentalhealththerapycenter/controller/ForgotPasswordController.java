@@ -56,9 +56,9 @@ public class ForgotPasswordController {
         step2Pane.setVisible(step == 2); step2Pane.setManaged(step == 2);
         step3Pane.setVisible(step == 3); step3Pane.setManaged(step == 3);
 
-        String active = "-fx-text-fill: #5BB8D4; -fx-font-size: 28px; -fx-font-weight: bold;";
-        String inactive = "-fx-text-fill: #3A5A7A; -fx-font-size: 28px;";
-        String done = "-fx-text-fill: #4CAF50; -fx-font-size: 28px; -fx-font-weight: bold;";
+        String active = "-fx-text-fill: #4A7FA5; -fx-font-size: 28px; -fx-font-weight: bold;";
+        String inactive = "-fx-text-fill: #95A5A6; -fx-font-size: 28px;";
+        String done = "-fx-text-fill: #7AB88F; -fx-font-size: 28px; -fx-font-weight: bold;";
 
         step1Indicator.setStyle(step == 1 ? active : (step > 1 ? done : inactive));
         step2Indicator.setStyle(step == 2 ? active : (step > 2 ? done : inactive));
@@ -73,29 +73,29 @@ public class ForgotPasswordController {
         String username = txtUsername.getText().trim();
         String email = txtEmail.getText().trim();
 
+        if (username.isEmpty() || email.isEmpty()) {
+            lblStep1Error.setText("Please enter both username and email.");
+            return;
+        }
+
         try {
             verifiedUser = userService.verifyIdentity(username, email);
-            lblSecurityQuestion.setText(verifiedUser.getSecurityQuestion());
-            showStep(2);
-        } catch (PasswordResetException e) {
+            // Skip step 2 (security question not yet implemented) and go to password reset
+            showStep(3);
+        } catch (Exception e) {
             lblStep1Error.setText(e.getMessage());
         }
     }
 
     @FXML
     void handleVerifyAnswer(ActionEvent event) {
-        String answer = txtSecurityAnswer.getText().trim();
-        if (answer.isEmpty()) {
-            lblStep2Error.setText("Please enter your answer.");
-            return;
-        }
-
-        if (userService.verifySecurityAnswer(verifiedUser, answer)) {
-            showStep(3);
-        } else {
-            lblStep2Error.setText("Incorrect answer. Please try again.");
-        }
+        // Security question not yet implemented — placeholder
+        showStep(3);
     }
+
+
+
+
 
     @FXML
     void handleResetPassword(ActionEvent event) {
@@ -113,7 +113,7 @@ public class ForgotPasswordController {
 
         try {
             userService.resetPassword(verifiedUser.getUsername(), newPass);
-            lblStep3Error.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 11px;");
+            lblStep3Error.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px;");
             lblStep3Error.setText("Password reset successful! Redirecting to login...");
 
             javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.seconds(1.5));

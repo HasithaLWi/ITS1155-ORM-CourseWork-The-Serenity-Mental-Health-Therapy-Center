@@ -11,6 +11,12 @@ public class UserDAO extends GenericDAO<User> {
         super(User.class);
     }
 
+    public void createAdminUser(User adminUser) {
+        if (findByUsername("admin") == null) {
+            save(adminUser);
+        }
+    }
+
     /**
      * Find a user by their username (HQL query).
      */

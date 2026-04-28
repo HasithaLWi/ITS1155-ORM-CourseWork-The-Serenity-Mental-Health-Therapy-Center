@@ -45,6 +45,9 @@ public class LoginController {
         txtPasswordVisible.textProperty().bindBidirectional(txtPassword.textProperty());
         txtPasswordVisible.setVisible(false);
         txtPasswordVisible.setManaged(false);
+
+
+        userService.createUserForFirstTime();
     }
 
     @FXML

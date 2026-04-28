@@ -13,6 +13,20 @@ import java.util.List;
 public class UserService {
     private final UserDAO userDAO = new UserDAO();
 
+
+    public void createUserForFirstTime(){
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setPassword("$2a$12$N4OtyqkB/wBo36vEuQEVFui1PuLF8k.iEQ.Sv2KE3NPdNuIH1weQi");
+        admin.setFullName("Admin User");
+        admin.setEmail("hasithawijesinghe@gmail.com");
+        admin.setRole(User.Role.ADMIN);
+        admin.setSecurityQuestion("What is your favorite color?");
+        admin.setSecurityAnswer(PasswordUtil.hashPassword("blue"));
+
+        userDAO.createAdminUser(admin);
+    }
+
     /**
      * Authenticate a user with username and plain-text password.
      * Uses BCrypt to verify the password against the stored hash.

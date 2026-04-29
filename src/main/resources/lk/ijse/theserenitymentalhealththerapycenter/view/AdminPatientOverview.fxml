@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fitToWidth="true" style="-fx-background-color: transparent;">
+    <VBox spacing="20" style="-fx-padding: 28;">
+        <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
+                <Label text="🧑‍🤝‍🧑  All Patients" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtSearchPatient" promptText="🔍  Search patient..." prefWidth="220" style="-fx-background-color: #F5F0EB; -fx-border-color: transparent; -fx-background-radius: 10; -fx-padding: 8 12; -fx-font-size: 12px;"/>
+            </HBox>
+            <Separator/>
+            <TableView fx:id="tblPatients" prefHeight="500">
+                <columns>
+                    <TableColumn fx:id="colPatientId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colPatientName" text="Name" prefWidth="180"/>
+                    <TableColumn fx:id="colPatientEmail" text="Email" prefWidth="200"/>
+                    <TableColumn fx:id="colPatientPhone" text="Phone" prefWidth="140"/>
+                    <TableColumn fx:id="colPatientAddress" text="Address" prefWidth="200"/>
+                    <TableColumn fx:id="colPatientDate" text="Registered" prefWidth="120"/>
+                </columns>
+                <placeholder><Label text="No patients registered yet." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+</ScrollPane>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.ProgramManagementController"
+            fitToWidth="true" style="-fx-background-color: transparent;">
+    <VBox spacing="20" style="-fx-padding: 28;">
+        <!-- Form Card -->
+        <VBox spacing="12" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <Label text="📋  Program Details" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <Separator/>
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="PROGRAM NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtProgramName" promptText="Enter program name"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="DURATION" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtProgramDuration" promptText="e.g. 12 weeks, 6 months"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="FEE (LKR)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtProgramFee" promptText="0.00" prefWidth="150"/>
+                </VBox>
+            </HBox>
+            <VBox spacing="4">
+                <Label text="DESCRIPTION" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <TextArea fx:id="txtProgramDescription" promptText="Program description..." prefRowCount="3" wrapText="true"
+                          style="-fx-background-color: #FFFFFF; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px; -fx-padding: 8;"/>
+            </VBox>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button fx:id="btnSaveProgram" text="💾  Save" onAction="#handleSaveProgram" styleClass="btn-primary" style="-fx-padding: 10 24;"/>
+                <Button fx:id="btnUpdateProgram" text="✏️  Update" onAction="#handleUpdateProgram" styleClass="btn-secondary"/>
+                <Button fx:id="btnClearProgram" text="🔄  Clear" onAction="#handleClearProgram" styleClass="btn-secondary"/>
+            </HBox>
+        </VBox>
+
+        <!-- Table Card -->
+        <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
+                <Label text="Program Records" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtSearchProgram" promptText="🔍  Search..." prefWidth="220" style="-fx-background-color: #F5F0EB; -fx-border-color: transparent; -fx-background-radius: 10; -fx-padding: 8 12; -fx-font-size: 12px;"/>
+                <Button text="🗑  Delete" onAction="#handleDeleteProgram" style="-fx-background-color: #C47171; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;"/>
+            </HBox>
+            <Separator/>
+            <TableView fx:id="tblPrograms" prefHeight="320">
+                <columns>
+                    <TableColumn fx:id="colProgramId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colProgramName" text="Program Name" prefWidth="220"/>
+                    <TableColumn fx:id="colProgramDuration" text="Duration" prefWidth="120"/>
+                    <TableColumn fx:id="colProgramFee" text="Fee (LKR)" prefWidth="130"/>
+                    <TableColumn fx:id="colProgramDescription" text="Description" prefWidth="280"/>
+                </columns>
+                <placeholder><Label text="No programs found." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+</ScrollPane>

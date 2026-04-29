@@ -18,11 +18,11 @@
             <VBox alignment="CENTER" spacing="6" style="-fx-padding: 28 20 24 20; -fx-background-color: #243F46;">
                 <Label text="🌿" style="-fx-font-size: 32px;"/>
                 <Label text="Serenity" style="-fx-text-fill: #FFFFFF; -fx-font-size: 18px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI';"/>
-                <Label text="Mental Health Therapy Center" style="-fx-text-fill: #C8DDD2; -fx-font-size: 10px; -fx-wrap-text: true; -fx-text-alignment: center; -fx-font-family: 'Segoe UI';"/>
-                <Separator style="-fx-background-color: rgba(200,221,210,0.2);" prefWidth="180" prefHeight="1"/>
-                <Label text="RECEPTIONIST PORTAL" style="-fx-text-fill: #6B9DC2; -fx-font-size: 10px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI';"/>
+                <Label text="Mental Health Therapy Center" style="-fx-text-fill: #C8DDD2; -fx-font-size: 10px; -fx-wrap-text: true; -fx-text-alignment: center;"/>
+                <Separator style="-fx-background-color: rgba(200,221,210,0.2);" prefWidth="180"/>
+                <Label text="RECEPTIONIST PORTAL" style="-fx-text-fill: #6B9DC2; -fx-font-size: 10px; -fx-font-weight: bold;"/>
             </VBox>
-            <VBox spacing="2" style="-fx-padding: 16 12 16 12;" VBox.vgrow="ALWAYS">
+            <VBox spacing="2" style="-fx-padding: 16 12;" VBox.vgrow="ALWAYS">
                 <Button fx:id="btnDashboard" text="  📊   Dashboard" maxWidth="Infinity" onAction="#showDashboard" styleClass="nav-btn-active"/>
                 <Label text="PATIENT MANAGEMENT" style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;"/>
                 <Button fx:id="btnRegisterPatient" text="  ➕   Register Patient" maxWidth="Infinity" onAction="#showRegisterPatient" styleClass="nav-btn"/>
@@ -58,52 +58,8 @@
                 <Label fx:id="lblCurrentDate" text="" style="-fx-text-fill: #95A5A6; -fx-font-size: 12px;"/>
             </HBox>
 
-            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-                <VBox spacing="24" style="-fx-padding: 28;">
-                    <!-- Stats Row -->
-                    <HBox spacing="16">
-                        <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
-                            <HBox alignment="CENTER_LEFT" spacing="12">
-                                <Label text="🧑‍🤝‍🧑" style="-fx-font-size: 22px; -fx-background-color: #E8F1F8; -fx-padding: 10; -fx-background-radius: 12;"/>
-                                <VBox>
-                                    <Label text="Total Patients" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                                    <Label fx:id="lblTotalPatients" text="0" style="-fx-text-fill: #2D3436; -fx-font-size: 26px; -fx-font-weight: bold;"/>
-                                </VBox>
-                            </HBox>
-                        </VBox>
-                        <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
-                            <HBox alignment="CENTER_LEFT" spacing="12">
-                                <Label text="📅" style="-fx-font-size: 22px; -fx-background-color: #E8F2ED; -fx-padding: 10; -fx-background-radius: 12;"/>
-                                <VBox>
-                                    <Label text="Today's Sessions" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                                    <Label fx:id="lblTodaySessions" text="0" style="-fx-text-fill: #2D3436; -fx-font-size: 26px; -fx-font-weight: bold;"/>
-                                </VBox>
-                            </HBox>
-                        </VBox>
-                    </HBox>
-
-                    <!-- Patient Table -->
-                    <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
-                        <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
-                            <Label text="🧑‍🤝‍🧑  Patient Records" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI';"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <TextField fx:id="txtSearchPatient" promptText="🔍  Search patient..." prefWidth="200" style="-fx-background-color: #F5F0EB; -fx-border-color: transparent; -fx-background-radius: 10; -fx-padding: 8 12; -fx-font-size: 12px;"/>
-                            <Button text="+ Register Patient" onAction="#handleAddPatient" styleClass="btn-dark"/>
-                        </HBox>
-                        <Separator/>
-                        <TableView fx:id="patientTable" prefHeight="350">
-                            <columns>
-                                <TableColumn fx:id="colPatientId" text="ID" prefWidth="80"/>
-                                <TableColumn fx:id="colPatientName" text="Name" prefWidth="200"/>
-                                <TableColumn fx:id="colPatientEmail" text="Email" prefWidth="200"/>
-                                <TableColumn fx:id="colPatientPhone" text="Phone" prefWidth="150"/>
-                                <TableColumn fx:id="colPatientDate" text="Registered" prefWidth="120"/>
-                            </columns>
-                            <placeholder><Label text="No patients registered yet." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
-                        </TableView>
-                    </VBox>
-                </VBox>
-            </ScrollPane>
+            <!-- Dynamic Content Area -->
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS"/>
         </VBox>
     </center>
 </BorderPane>

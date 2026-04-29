@@ -1,25 +1,22 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.PatientService;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class ReceptionistDashboardController implements Initializable {
@@ -37,78 +34,42 @@ public class ReceptionistDashboardController implements Initializable {
     @FXML private Label lblCurrentDate;
     @FXML private Label lblReceptionistName;
 
-    // ===== Stats =====
-    @FXML private Label lblTotalPatients;
-    @FXML private Label lblTodaySessions;
+    // ===== Dynamic Content Area =====
+    @FXML private StackPane contentArea;
 
-    // ===== Patient Table =====
-    @FXML private TextField txtSearchPatient;
-    @FXML private TableView<Patient> patientTable;
-    @FXML private TableColumn<Patient, Long> colPatientId;
-    @FXML private TableColumn<Patient, String> colPatientName;
-    @FXML private TableColumn<Patient, String> colPatientEmail;
-    @FXML private TableColumn<Patient, String> colPatientPhone;
-    @FXML private TableColumn<Patient, String> colPatientDate;
-
-    private final PatientService patientService = new PatientService();
+    private Button activeNavButton;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         lblCurrentDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy")));
-
-        setupPatientTable();
-        loadPatientData();
-    }
-
-    private void setupPatientTable() {
-        colPatientId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
-        colPatientName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
-        colPatientEmail.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmail()));
-        colPatientPhone.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPhone()));
-        colPatientDate.setCellValueFactory(data -> new SimpleStringProperty(
-                data.getValue().getRegisteredDate() != null
-                        ? data.getValue().getRegisteredDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        : ""));
-    }
-
-    private void loadPatientData() {
-        try {
-            List<Patient> patients = patientService.getAllPatients();
-            patientTable.setItems(FXCollections.observableArrayList(patients));
-            lblTotalPatients.setText(String.valueOf(patients.size()));
-        } catch (Exception e) {
-            System.err.println("Error loading patients: " + e.getMessage());
-        }
+        activeNavButton = btnDashboard;
+        loadSubPage("ReceptionistOverview.fxml");
     }
 
     // ===== Navigation =====
-    @FXML void showDashboard(ActionEvent event) {
-        lblPageTitle.setText("Dashboard");
-        lblPageSubtitle.setText("Welcome back");
+    @FXML
+    void showDashboard(ActionEvent event) {
+        setActivePage("Dashboard", "Welcome back", btnDashboard, "ReceptionistOverview.fxml");
     }
 
-    @FXML void showRegisterPatient(ActionEvent event) {
-        lblPageTitle.setText("Register Patient");
-        lblPageSubtitle.setText("Add a new patient record");
+    @FXML
+    void showRegisterPatient(ActionEvent event) {
+        setActivePage("Register Patient", "Add a new patient record", btnRegisterPatient, "PatientRegistration.fxml");
     }
 
-    @FXML void showPatientList(ActionEvent event) {
-        lblPageTitle.setText("Patient List");
-        lblPageSubtitle.setText("View all patients");
+    @FXML
+    void showPatientList(ActionEvent event) {
+        setActivePage("Patient List", "View all patients", btnPatientList, "PatientList.fxml");
     }
 
-    @FXML void showScheduleSession(ActionEvent event) {
-        lblPageTitle.setText("Schedule Session");
-        lblPageSubtitle.setText("Book a therapy session");
+    @FXML
+    void showScheduleSession(ActionEvent event) {
+        setActivePage("Schedule Session", "Book a therapy session", btnScheduleSession, "SessionManagement.fxml");
     }
 
-    @FXML void showPayments(ActionEvent event) {
-        lblPageTitle.setText("Payments");
-        lblPageSubtitle.setText("Process payments");
-    }
-
-    @FXML void handleAddPatient(ActionEvent event) {
-        AlertUtil.showInfo("Register Patient", "Patient registration form will be implemented here.");
+    @FXML
+    void showPayments(ActionEvent event) {
+        setActivePage("Payments", "Process payments", btnPayments, "PaymentManagement.fxml");
     }
 
     @FXML
@@ -124,6 +85,44 @@ public class ReceptionistDashboardController implements Initializable {
             stage.centerOnScreen();
         } catch (IOException e) {
             AlertUtil.showError("Error", "Failed to load login page.");
+            e.printStackTrace();
+        }
+    }
+
+    // ===== Helper Methods =====
+    private void setActivePage(String title, String subtitle, Button navButton, String fxmlFile) {
+        lblPageTitle.setText(title);
+        lblPageSubtitle.setText(subtitle);
+        setActiveNavButton(navButton);
+        loadSubPage(fxmlFile);
+    }
+
+    private void setActiveNavButton(Button button) {
+        if (activeNavButton != null) {
+            activeNavButton.getStyleClass().remove("nav-btn-active");
+            if (!activeNavButton.getStyleClass().contains("nav-btn")) {
+                activeNavButton.getStyleClass().add("nav-btn");
+            }
+        }
+        activeNavButton = button;
+        button.getStyleClass().remove("nav-btn");
+        if (!button.getStyleClass().contains("nav-btn-active")) {
+            button.getStyleClass().add("nav-btn-active");
+        }
+    }
+
+    private void loadSubPage(String fxmlFileName) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/lk/ijse/theserenitymentalhealththerapycenter/view/" + fxmlFileName));
+            Node page = loader.load();
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(page);
+        } catch (IOException e) {
+            contentArea.getChildren().clear();
+            Label errorLabel = new Label("Failed to load: " + fxmlFileName);
+            errorLabel.setStyle("-fx-text-fill: #C47171; -fx-font-size: 14px;");
+            contentArea.getChildren().add(errorLabel);
             e.printStackTrace();
         }
     }

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.TherapistManagementController"
+            fitToWidth="true" style="-fx-background-color: transparent;">
+    <VBox spacing="20" style="-fx-padding: 28;">
+        <!-- Form Card -->
+        <VBox spacing="12" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <Label text="👨‍⚕️  Therapist Details" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <Separator/>
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="FULL NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtTherapistName" promptText="Enter therapist name"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="SPECIALTY" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtTherapistSpecialty" promptText="e.g. CBT, Family Therapy"/>
+                </VBox>
+            </HBox>
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="PHONE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtTherapistPhone" promptText="Phone number"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="EMAIL" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtTherapistEmail" promptText="Email address"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="STATUS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cmbTherapistStatus" promptText="Select status" prefWidth="160"/>
+                </VBox>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button fx:id="btnSaveTherapist" text="💾  Save" onAction="#handleSaveTherapist" styleClass="btn-primary" style="-fx-padding: 10 24;"/>
+                <Button fx:id="btnUpdateTherapist" text="✏️  Update" onAction="#handleUpdateTherapist" styleClass="btn-secondary"/>
+                <Button fx:id="btnClearTherapist" text="🔄  Clear" onAction="#handleClearTherapist" styleClass="btn-secondary"/>
+            </HBox>
+        </VBox>
+
+        <!-- Table Card -->
+        <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
+                <Label text="Therapist Records" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtSearchTherapist" promptText="🔍  Search..." prefWidth="220" style="-fx-background-color: #F5F0EB; -fx-border-color: transparent; -fx-background-radius: 10; -fx-padding: 8 12; -fx-font-size: 12px;"/>
+                <Button text="🗑  Delete" onAction="#handleDeleteTherapist" style="-fx-background-color: #C47171; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;"/>
+            </HBox>
+            <Separator/>
+            <TableView fx:id="tblTherapists" prefHeight="320">
+                <columns>
+                    <TableColumn fx:id="colTherapistId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colTherapistName" text="Full Name" prefWidth="180"/>
+                    <TableColumn fx:id="colTherapistSpecialty" text="Specialty" prefWidth="160"/>
+                    <TableColumn fx:id="colTherapistPhone" text="Phone" prefWidth="130"/>
+                    <TableColumn fx:id="colTherapistEmail" text="Email" prefWidth="180"/>
+                    <TableColumn fx:id="colTherapistStatus" text="Status" prefWidth="100"/>
+                </columns>
+                <placeholder><Label text="No therapists found." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+</ScrollPane>

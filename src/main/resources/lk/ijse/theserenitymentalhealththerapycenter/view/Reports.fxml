@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fitToWidth="true" style="-fx-background-color: transparent;">
+    <VBox spacing="20" style="-fx-padding: 28;">
+        <!-- Summary Stats -->
+        <HBox spacing="16">
+            <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="💰" style="-fx-font-size: 22px; -fx-background-color: #E8F2ED; -fx-padding: 10; -fx-background-radius: 12;"/>
+                    <VBox>
+                        <Label text="Total Revenue" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblReportRevenue" text="LKR 0" style="-fx-text-fill: #2D3436; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="🧑‍🤝‍🧑" style="-fx-font-size: 22px; -fx-background-color: #E8F1F8; -fx-padding: 10; -fx-background-radius: 12;"/>
+                    <VBox>
+                        <Label text="Total Patients" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblReportPatients" text="0" style="-fx-text-fill: #2D3436; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="📅" style="-fx-font-size: 22px; -fx-background-color: #F5F0EB; -fx-padding: 10; -fx-background-radius: 12;"/>
+                    <VBox>
+                        <Label text="Total Sessions" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblReportSessions" text="0" style="-fx-text-fill: #2D3436; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="👨‍⚕️" style="-fx-font-size: 22px; -fx-background-color: #F8F2EC; -fx-padding: 10; -fx-background-radius: 12;"/>
+                    <VBox>
+                        <Label text="Active Therapists" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblReportTherapists" text="0" style="-fx-text-fill: #2D3436; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <!-- Program Enrollment Summary -->
+        <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
+                <Label text="📊  Therapy Program Summary" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            </HBox>
+            <Separator/>
+            <TableView fx:id="tblProgramSummary" prefHeight="250">
+                <columns>
+                    <TableColumn fx:id="colRptProgramName" text="Program" prefWidth="250"/>
+                    <TableColumn fx:id="colRptProgramDuration" text="Duration" prefWidth="120"/>
+                    <TableColumn fx:id="colRptProgramFee" text="Fee (LKR)" prefWidth="130"/>
+                    <TableColumn fx:id="colRptProgramPatients" text="Enrolled Patients" prefWidth="140"/>
+                </columns>
+                <placeholder><Label text="No program data available." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+</ScrollPane>

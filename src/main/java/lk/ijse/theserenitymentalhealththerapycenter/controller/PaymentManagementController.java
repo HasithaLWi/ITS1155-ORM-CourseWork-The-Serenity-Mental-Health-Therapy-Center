@@ -42,7 +42,6 @@ public class PaymentManagementController implements Initializable {
         setupTable();
         loadData();
     }
-
     private void loadComboBoxes() {
         try {
             cmbPaymentSession.setItems(FXCollections.observableArrayList(sessionService.getAllSessions()));

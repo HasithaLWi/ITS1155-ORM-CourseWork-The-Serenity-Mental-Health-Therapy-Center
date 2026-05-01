@@ -23,11 +23,12 @@
 
 /* ─── TEXT FIELDS & PASSWORD FIELDS ─── */
 .text-field,
-.password-field {
+.password-field,
+.text-area{
     -fx-background-color: #FFFFFF;
     -fx-text-fill: #2D3436;
     -fx-prompt-text-fill: #95A5A6;
-    -fx-border-color: #E5DFD8;
+    -fx-border-color: #c6c9cc;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 11 16;
@@ -35,7 +36,8 @@
     -fx-font-family: "Segoe UI", sans-serif;
 }
 .text-field:focused,
-.password-field:focused {
+.password-field:focused,
+.text-area:focused{
     -fx-border-color: #6B9DC2;
     -fx-effect: dropshadow(gaussian, rgba(107,157,194,0.2), 8, 0, 0, 0);
 }

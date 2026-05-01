@@ -18,7 +18,7 @@ public class AppInitializer extends Application {
 
         // Load Login screen
         FXMLLoader loader = new FXMLLoader(getClass().getResource(
-                "/lk/ijse/theserenitymentalhealththerapycenter/view/Login.fxml"));
+                "/lk/ijse/theserenitymentalhealththerapycenter/view/ReceptionistDashboard.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root, 1280, 800);
         scene.getStylesheets().add(getClass().getResource(

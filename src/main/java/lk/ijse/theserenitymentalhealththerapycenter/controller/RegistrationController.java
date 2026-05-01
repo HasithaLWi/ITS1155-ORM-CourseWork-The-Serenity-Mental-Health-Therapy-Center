@@ -24,6 +24,7 @@ public class RegistrationController {
     @FXML private PasswordField txtConfirmPassword;
     @FXML private TextField txtFullName;
     @FXML private TextField txtEmail;
+    @FXML private TextField textAuthentication;
 
     @FXML private Label lblUsernameError;
     @FXML private Label lblPasswordError;
@@ -31,6 +32,8 @@ public class RegistrationController {
     @FXML private Label lblFullNameError;
     @FXML private Label lblEmailError;
     @FXML private Label lblMessage;
+    @FXML private Label lblAuthenticationInfo;
+    @FXML private Label lblAuthenticationError;
 
     private final UserService userService = new UserService();
 
@@ -52,6 +55,7 @@ public class RegistrationController {
         txtConfirmPassword.textProperty().addListener((o, a, b) -> validateConfirmPassword());
         txtFullName.textProperty().addListener((o, a, b) -> validateFullName());
         txtEmail.textProperty().addListener((o, a, b) -> validateEmail());
+        textAuthentication.textProperty().addListener((o, a, b) -> validateAuthentication());
     }
 
     private boolean validateUsername() {
@@ -91,13 +95,20 @@ public class RegistrationController {
         setOk(txtEmail, lblEmailError); return true;
     }
 
+    private boolean validateAuthentication() {
+        String v = textAuthentication.getText().trim();
+        if (v.isEmpty()) { setErr(textAuthentication, lblAuthenticationError, "Authentication code is required"); return false; }
+        if (!v.equals("SERENITY2024")) { setErr(textAuthentication, lblAuthenticationError, "Invalid authentication code"); return false; }
+        setOk(textAuthentication, lblAuthenticationError); return true;
+    }
+
     private void setErr(TextInputControl f, Label l, String m) { f.setStyle(INVALID_STYLE); l.setText(m); l.setStyle("-fx-text-fill: #C47171; -fx-font-size: 10px;"); }
     private void setOk(TextInputControl f, Label l) { f.setStyle(VALID_STYLE); l.setText("\u2713"); l.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 10px;"); }
 
     @FXML
     void handleRegister(ActionEvent event) {
         boolean valid = validateUsername() & validatePassword() & validateConfirmPassword()
-                & validateFullName() & validateEmail();
+                & validateFullName() & validateEmail() & validateAuthentication();
 
         if (!valid) {
             lblMessage.setStyle("-fx-text-fill: #C47171; -fx-font-size: 12px; -fx-font-weight: bold;");

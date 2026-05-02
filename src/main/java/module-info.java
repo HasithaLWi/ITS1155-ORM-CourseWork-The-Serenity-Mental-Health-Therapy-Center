@@ -11,6 +11,7 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires mysql.connector.j;
     requires org.hibernate.orm.jcache;
     requires cache.api;
+    requires java.xml.bind;
 
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml;

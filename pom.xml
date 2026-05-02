@@ -54,6 +54,12 @@
 <!--        </dependency>-->
 
         <!-- Ehcache 3 - the actual JCache provider implementation -->
+<!--        <dependency>-->
+<!--            <groupId>org.ehcache</groupId>-->
+<!--            <artifactId>ehcache</artifactId>-->
+<!--            <version>3.10.8</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
@@ -66,11 +72,18 @@
             </exclusions>
         </dependency>
 
-        <!-- JAXB Runtime (modern version, resolves from Maven Central) -->
+        <!-- JAXB API (javax.xml.bind) — required by Ehcache 3.x on Java 11+ -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <!-- JAXB Runtime implementation -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>4.0.5</version>
+            <version>2.3.9</version>
         </dependency>
 
 

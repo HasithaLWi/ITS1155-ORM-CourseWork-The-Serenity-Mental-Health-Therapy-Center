@@ -1,0 +1,110 @@
+<config
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd">
+
+    <!--
+        =====================================================================
+        DEFAULT CACHE TEMPLATE
+        =====================================================================
+        Applied to all cache regions that don't have a specific <cache> block.
+        Customize the TTL (time-to-live) and TTI (time-to-idle) values below.
+
+        - TTL (expiry > tti):  Max time an entry stays in cache after CREATION.
+        - TTI (expiry > ttl):  Max time an entry stays in cache after last ACCESS.
+        - Heap entries:        Max number of objects held in on-heap memory.
+        =====================================================================
+    -->
+    <cache-template name="defaultTemplate">
+        <expiry>
+            <!-- Time-to-live: entries expire 30 minutes after creation -->
+            <ttl unit="minutes">30</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache-template>
+
+    <!--
+        =====================================================================
+        PER-ENTITY CACHE REGIONS
+        =====================================================================
+        The cache alias MUST match the fully qualified entity class name.
+        Override TTL/heap per entity as needed.
+        =====================================================================
+    -->
+
+    <!-- Patient — frequently accessed, keep longer (1 hour), more entries -->
+    <cache alias="lk.ijse.theserenitymentalhealththerapycenter.entity.Patient"
+           uses-template="defaultTemplate">
+        <expiry>
+            <ttl unit="minutes">60</ttl>
+        </expiry>
+        <heap unit="entries">2000</heap>
+    </cache>
+
+    <!-- Therapist — relatively static data, keep longer (2 hours) -->
+    <cache alias="lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist"
+           uses-template="defaultTemplate">
+        <expiry>
+            <ttl unit="minutes">120</ttl>
+        </expiry>
+        <heap unit="entries">500</heap>
+    </cache>
+
+    <!-- TherapyProgram — rarely changes, long TTL (4 hours) -->
+    <cache alias="lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram"
+           uses-template="defaultTemplate">
+        <expiry>
+            <ttl unit="minutes">240</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+    </cache>
+
+    <!-- TherapySession — changes more often, shorter TTL (15 minutes) -->
+    <cache alias="lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession"
+           uses-template="defaultTemplate">
+        <expiry>
+            <ttl unit="minutes">15</ttl>
+        </expiry>
+        <heap unit="entries">3000</heap>
+    </cache>
+
+    <!-- Payment — moderate, use default (30 minutes) -->
+    <cache alias="lk.ijse.theserenitymentalhealththerapycenter.entity.Payment"
+           uses-template="defaultTemplate">
+        <heap unit="entries">5000</heap>
+    </cache>
+
+    <!-- User — authentication lookups, moderate TTL (20 minutes) -->
+    <cache alias="lk.ijse.theserenitymentalhealththerapycenter.entity.User"
+           uses-template="defaultTemplate">
+        <expiry>
+            <ttl unit="minutes">20</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+    </cache>
+
+    <!--
+        =====================================================================
+        QUERY CACHE REGION
+        =====================================================================
+        Hibernate stores query results here when query caching is enabled.
+        Keep a short TTL since query results can become stale quickly.
+        =====================================================================
+    -->
+    <cache alias="default-query-results-region"
+           uses-template="defaultTemplate">
+        <expiry>
+            <ttl unit="millis">5000</ttl>
+        </expiry>
+        <heap unit="entries">500</heap>
+    </cache>
+
+    <!-- Hibernate's internal timestamp cache — must never expire -->
+    <cache alias="default-update-timestamps-region">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap unit="entries">5000</heap>
+    </cache>
+
+</config>

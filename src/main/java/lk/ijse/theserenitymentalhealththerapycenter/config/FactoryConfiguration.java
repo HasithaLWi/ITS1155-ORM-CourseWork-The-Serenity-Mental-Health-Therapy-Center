@@ -5,7 +5,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-//import java.net.URL;
+import java.net.URL;
 
 public class FactoryConfiguration {
 
@@ -14,13 +14,15 @@ public class FactoryConfiguration {
 
     private FactoryConfiguration() {
         Configuration configuration = new Configuration();
-//        configuration.configure("hibernate.cfg.xml");
 
-//        // Resolve ehcache.xml from classpath and set as a proper URI
-//        URL ehcacheUrl = getClass().getClassLoader().getResource("/ehcache.xml");
-//        if (ehcacheUrl != null) {
-//            configuration.setProperty("hibernate.javax.cache.uri", ehcacheUrl.toExternalForm());
-//        }
+        // Resolve ehcache.xml from classpath and set as a proper URI
+        URL ehcacheUrl = getClass().getClassLoader().getResource("ehcache.xml");
+        if (ehcacheUrl != null) {
+            configuration.setProperty("hibernate.javax.cache.uri", ehcacheUrl.toExternalForm());
+        } else {
+            System.err.println("WARNING: ehcache.xml not found on classpath! " +
+                    "Cache will use default settings — custom TTL/TTI values will NOT be applied.");
+        }
 
         configuration.addAnnotatedClass(User.class);
         configuration.addAnnotatedClass(Patient.class);

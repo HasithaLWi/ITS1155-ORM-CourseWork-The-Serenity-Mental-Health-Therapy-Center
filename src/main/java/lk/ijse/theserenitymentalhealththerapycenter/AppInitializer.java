@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import lk.ijse.theserenitymentalhealththerapycenter.util.HibernateUtil;
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 
 public class AppInitializer extends Application {
 
@@ -13,7 +13,7 @@ public class AppInitializer extends Application {
     public void start(Stage stage) throws Exception {
         // Initialize Hibernate on startup
         System.out.println("Initializing Hibernate SessionFactory...");
-        HibernateUtil.getSessionFactory();
+        FactoryConfiguration.getInstance();
         System.out.println("Hibernate initialized successfully!");
 
         // Load Login screen
@@ -32,8 +32,7 @@ public class AppInitializer extends Application {
 
     @Override
     public void stop() throws Exception {
-        // Shutdown Hibernate when app closes
-        HibernateUtil.shutdown();
+        // Hibernate SessionFactory cleanup handled by JVM shutdown
         super.stop();
     }
 

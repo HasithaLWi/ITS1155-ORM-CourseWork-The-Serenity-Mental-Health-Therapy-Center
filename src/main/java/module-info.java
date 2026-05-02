@@ -9,10 +9,13 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires static lombok;
     requires jbcrypt;
     requires mysql.connector.j;
+    requires org.hibernate.orm.jcache;
+    requires cache.api;
 
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.entity to org.hibernate.orm.core, javafx.base;
+
 
     exports lk.ijse.theserenitymentalhealththerapycenter;
     exports lk.ijse.theserenitymentalhealththerapycenter.controller;

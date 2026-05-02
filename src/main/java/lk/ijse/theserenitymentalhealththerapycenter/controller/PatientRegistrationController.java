@@ -9,10 +9,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.PatientService;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.TherapyProgramService;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -152,16 +154,26 @@ public class PatientRegistrationController implements Initializable {
     @FXML
     void handleRegisterPatient(ActionEvent event) {
         try {
-            Patient p = new Patient();
+//            Patient p = new Patient();
+//            p.setName(txtPatientName.getText());
+//            p.setEmail(txtPatientEmail.getText());
+//            p.setPhone(txtPatientPhone.getText());
+//            p.setAddress(txtPatientAddress.getText());
+//
+//            TherapyProgram program = cmbPatientProgram.getValue();
+//            if (program != null) {
+//                p.getPrograms().add(program);
+//            }
+
+            PatientDTO p = new PatientDTO();
             p.setName(txtPatientName.getText());
             p.setEmail(txtPatientEmail.getText());
             p.setPhone(txtPatientPhone.getText());
             p.setAddress(txtPatientAddress.getText());
+            p.setPrograms(new ArrayList<>(selectedPrograms));
 
-            TherapyProgram program = cmbPatientProgram.getValue();
-            if (program != null) {
-                p.getPrograms().add(program);
-            }
+
+
 
             patientService.registerPatient(p);
             lblRegMessage.setText("Patient registered successfully!");

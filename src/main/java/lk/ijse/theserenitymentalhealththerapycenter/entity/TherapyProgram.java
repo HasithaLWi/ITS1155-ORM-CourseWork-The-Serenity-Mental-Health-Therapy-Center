@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -33,11 +35,15 @@ public class TherapyProgram {
     @Column(length = 500)
     private String description;
 
-    @ManyToMany(mappedBy = "programs")
-    @ToString.Exclude
-    private Set<Therapist> therapists = new HashSet<>();
+//    @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @ToString.Exclude
+//    private List<PatientTherapyProgram> patientTherapyPrograms = new ArrayList<>();
 
     @ManyToMany(mappedBy = "programs")
     @ToString.Exclude
-    private Set<Patient> patients = new HashSet<>();
+    private List<Patient> patients = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "programs")
+    @ToString.Exclude
+    private Set<Therapist> therapists = new HashSet<>();
 }

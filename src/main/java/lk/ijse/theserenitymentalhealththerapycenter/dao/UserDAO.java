@@ -1,7 +1,7 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao;
 
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
-import lk.ijse.theserenitymentalhealththerapycenter.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -21,7 +21,7 @@ public class UserDAO extends GenericDAO<User> {
      * Find a user by their username (HQL query).
      */
     public User findByUsername(String username) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<User> query = session.createQuery(
                     "FROM User u WHERE u.username = :username", User.class);
             query.setParameter("username", username);
@@ -33,7 +33,7 @@ public class UserDAO extends GenericDAO<User> {
      * Find a user by their email (HQL query).
      */
     public User findByEmail(String email) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<User> query = session.createQuery(
                     "FROM User u WHERE u.email = :email", User.class);
             query.setParameter("email", email);
@@ -59,7 +59,7 @@ public class UserDAO extends GenericDAO<User> {
      * Find a user by both username and email (for forgot-password identity verification).
      */
     public User findByUsernameAndEmail(String username, String email) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<User> query = session.createQuery(
                     "FROM User u WHERE u.username = :username AND u.email = :email", User.class);
             query.setParameter("username", username);

@@ -1,7 +1,7 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao;
 
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
-import lk.ijse.theserenitymentalhealththerapycenter.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -18,7 +18,7 @@ public class TherapySessionDAO extends GenericDAO<TherapySession> {
      * Find all sessions for a given date.
      */
     public List<TherapySession> findByDate(LocalDate date) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
                     "FROM TherapySession s WHERE s.sessionDate = :date ORDER BY s.sessionTime", TherapySession.class);
             query.setParameter("date", date);
@@ -30,7 +30,7 @@ public class TherapySessionDAO extends GenericDAO<TherapySession> {
      * Find all sessions for a specific patient.
      */
     public List<TherapySession> findByPatient(Long patientId) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
                     "FROM TherapySession s WHERE s.patient.id = :patientId ORDER BY s.sessionDate DESC", TherapySession.class);
             query.setParameter("patientId", patientId);
@@ -42,7 +42,7 @@ public class TherapySessionDAO extends GenericDAO<TherapySession> {
      * Find all sessions for a specific therapist.
      */
     public List<TherapySession> findByTherapist(Long therapistId) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
                     "FROM TherapySession s WHERE s.therapist.id = :therapistId ORDER BY s.sessionDate DESC", TherapySession.class);
             query.setParameter("therapistId", therapistId);
@@ -54,7 +54,7 @@ public class TherapySessionDAO extends GenericDAO<TherapySession> {
      * Find sessions within a date range.
      */
     public List<TherapySession> findByDateRange(LocalDate startDate, LocalDate endDate) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
                     "FROM TherapySession s WHERE s.sessionDate BETWEEN :startDate AND :endDate ORDER BY s.sessionDate, s.sessionTime",
                     TherapySession.class);
@@ -68,7 +68,7 @@ public class TherapySessionDAO extends GenericDAO<TherapySession> {
      * Count sessions on a specific date.
      */
     public long countByDate(LocalDate date) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
                     "SELECT COUNT(s) FROM TherapySession s WHERE s.sessionDate = :date", Long.class)
                     .setParameter("date", date)
@@ -80,7 +80,7 @@ public class TherapySessionDAO extends GenericDAO<TherapySession> {
      * Get all sessions with eagerly fetched patient, therapist, and program.
      */
     public List<TherapySession> getAllWithDetails() {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
                     "SELECT DISTINCT s FROM TherapySession s " +
                             "LEFT JOIN FETCH s.patient " +

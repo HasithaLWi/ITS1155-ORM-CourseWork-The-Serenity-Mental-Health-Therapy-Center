@@ -38,6 +38,44 @@
             <version>${hibernate.version}</version>
         </dependency>
 
+        <!-- ===== Ehcache ===== -->
+        <!-- Hibernate's JCache integration module -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-jcache</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+<!--        &lt;!&ndash; Standard JCache API &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>javax.cache</groupId>-->
+<!--            <artifactId>cache-api</artifactId>-->
+<!--            <version>1.1.1</version>-->
+<!--        </dependency>-->
+
+        <!-- Ehcache 3 - the actual JCache provider implementation -->
+        <dependency>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>3.10.8</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- JAXB Runtime (modern version, resolves from Maven Central) -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.5</version>
+        </dependency>
+
+
+
+
         <!-- ===== MySQL Connector ===== -->
         <dependency>
             <groupId>com.mysql</groupId>
@@ -66,6 +104,7 @@
             <artifactId>bootstrapfx-core</artifactId>
             <version>0.4.0</version>
         </dependency>
+
 
         <!-- ===== Testing ===== -->
         <dependency>

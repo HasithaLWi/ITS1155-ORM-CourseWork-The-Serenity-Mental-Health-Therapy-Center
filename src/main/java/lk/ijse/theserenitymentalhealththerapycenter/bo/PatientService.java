@@ -1,11 +1,17 @@
 package lk.ijse.theserenitymentalhealththerapycenter.bo;
 
 import lk.ijse.theserenitymentalhealththerapycenter.dao.PatientDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PatientService {
     private final PatientDAO patientDAO = new PatientDAO();
@@ -13,7 +19,7 @@ public class PatientService {
     /**
      * Register a new patient with validation.
      */
-    public void registerPatient(Patient patient) {
+    public void registerPatient(PatientDTO patient) {
         if (!ValidationUtil.isValidName(patient.getName())) {
             throw new RegistrationException("Valid patient name is required.");
         }
@@ -26,7 +32,18 @@ public class PatientService {
             throw new RegistrationException("Invalid phone number format.");
         }
 
-        patientDAO.save(patient);
+        Patient p = new Patient();
+        p.setName(patient.getName());
+        p.setEmail(patient.getEmail());
+        p.setAddress(patient.getAddress());
+        p.setPhone(patient.getPhone());
+        for (TherapyProgram program : patient.getPrograms()) {
+            PatientTherapyProgram therapyProgram = new PatientTherapyProgram();
+            therapyProgram.setPatient(p);
+            therapyProgram.setProgram(program);
+            p.getPrograms().add(program);
+        }
+        patientDAO.save(p);
     }
 
     public void updatePatient(Patient patient) {

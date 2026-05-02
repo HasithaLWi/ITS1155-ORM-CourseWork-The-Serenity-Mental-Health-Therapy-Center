@@ -1,6 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao;
 
-import lk.ijse.theserenitymentalhealththerapycenter.util.HibernateUtil;
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -15,7 +15,7 @@ public class GenericDAO<T> {
 
     public void save(T entity) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             transaction = session.beginTransaction();
             session.persist(entity);
             transaction.commit();
@@ -27,7 +27,7 @@ public class GenericDAO<T> {
 
     public void update(T entity) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             transaction = session.beginTransaction();
             session.merge(entity);
             transaction.commit();
@@ -39,7 +39,7 @@ public class GenericDAO<T> {
 
     public void delete(T entity) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             transaction = session.beginTransaction();
             T merged = session.merge(entity);
             session.remove(merged);
@@ -51,19 +51,28 @@ public class GenericDAO<T> {
     }
 
     public T getById(Object id) {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.get(type, id);
         }
     }
 
     public List<T> getAll() {
-        try (Session session = HibernateUtil.getSession()) {
-            return session.createQuery("FROM " + type.getSimpleName(), type).list();
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+
+          return session.createQuery("FROM " + type.getSimpleName(), type).list();
+
+//            // Dynamically generate the region name (e.g., "PatientListCache", "TherapistListCache")
+//            String regionName = type.getSimpleName() + "ListCache";
+//
+//            return session.createQuery("FROM " + type.getSimpleName(), type)
+//                    .setCacheable(true)
+//                    .setCacheRegion(regionName) // <-- Pass the dynamic variable here
+//                    .list();
         }
     }
 
     public long count() {
-        try (Session session = HibernateUtil.getSession()) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery("SELECT COUNT(e) FROM " + type.getSimpleName() + " e", Long.class)
                     .uniqueResult();
         }

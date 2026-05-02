@@ -8,6 +8,7 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires java.naming;
     requires static lombok;
     requires jbcrypt;
+    requires mysql.connector.j;
 
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml;

@@ -7,15 +7,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.PatientService;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.TherapyProgramService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 import static java.util.Locale.filter;
@@ -54,8 +52,8 @@ public class PatientRegistrationController implements Initializable {
     private TextArea txtInterviewNote;
 
 
-    private final PatientService patientService = new PatientService();
-    private final TherapyProgramService programService = new TherapyProgramService();
+    private final PatientBOImpl patientService = new PatientBOImpl();
+    private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
 
     ObservableList<TherapyProgram> selectedPrograms = FXCollections.observableArrayList();
 

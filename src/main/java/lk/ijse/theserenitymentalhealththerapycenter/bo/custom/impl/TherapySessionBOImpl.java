@@ -1,14 +1,15 @@
-package lk.ijse.theserenitymentalhealththerapycenter.bo;
+package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dao.TherapySessionDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SchedulingException;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public class TherapySessionService {
-    private final TherapySessionDAO sessionDAO = new TherapySessionDAO();
+public class TherapySessionBOImpl implements TherapySessionBO {
+    private final TherapySessionDAOImpl sessionDAO = new TherapySessionDAOImpl();
 
     public void scheduleSession(TherapySession session) {
         if (session.getPatient() == null) {

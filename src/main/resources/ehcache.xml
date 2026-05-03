@@ -94,7 +94,7 @@
     <cache alias="default-query-results-region"
            uses-template="defaultTemplate">
         <expiry>
-            <ttl unit="millis">5000</ttl>
+            <ttl unit="millis">20000</ttl>
         </expiry>
         <heap unit="entries">500</heap>
     </cache>

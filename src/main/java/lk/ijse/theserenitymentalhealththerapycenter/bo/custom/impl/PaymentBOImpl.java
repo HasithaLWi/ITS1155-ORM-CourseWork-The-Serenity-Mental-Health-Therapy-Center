@@ -1,6 +1,7 @@
-package lk.ijse.theserenitymentalhealththerapycenter.bo;
+package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dao.PaymentDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PaymentException;
 
@@ -9,8 +10,8 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
-public class PaymentService {
-    private final PaymentDAO paymentDAO = new PaymentDAO();
+public class PaymentBOImpl implements PaymentBO {
+    private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
 
     public void processPayment(Payment payment) {
         if (payment.getSession() == null) {

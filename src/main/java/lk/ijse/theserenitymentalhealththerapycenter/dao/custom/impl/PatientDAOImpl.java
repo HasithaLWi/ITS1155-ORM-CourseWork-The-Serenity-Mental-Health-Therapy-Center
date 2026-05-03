@@ -1,13 +1,15 @@
-package lk.ijse.theserenitymentalhealththerapycenter.dao;
+package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 import java.util.List;
 
-public class PatientDAO extends GenericDAO<Patient> {
+public class PatientDAOImpl extends GenericDAO<Patient> implements PatientDAO {
 
     @Override
     public List<Patient> getAll() {
@@ -20,13 +22,14 @@ public class PatientDAO extends GenericDAO<Patient> {
         }
     }
 
-    public PatientDAO() {
+    public PatientDAOImpl() {
         super(Patient.class);
     }
 
     /**
      * Search patients by name (HQL LIKE query).
      */
+    @Override
     public List<Patient> searchByName(String name) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<Patient> query = session.createQuery(

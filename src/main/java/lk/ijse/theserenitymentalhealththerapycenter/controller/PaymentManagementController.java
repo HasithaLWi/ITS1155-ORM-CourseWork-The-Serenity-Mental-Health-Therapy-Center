@@ -7,8 +7,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.PaymentService;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.TherapySessionService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
@@ -33,8 +33,8 @@ public class PaymentManagementController implements Initializable {
     @FXML private TableColumn<Payment, String> colPaymentDate;
     @FXML private TableColumn<Payment, String> colPaymentStatus;
 
-    private final PaymentService paymentService = new PaymentService();
-    private final TherapySessionService sessionService = new TherapySessionService();
+    private final PaymentBOImpl paymentService = new PaymentBOImpl();
+    private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {

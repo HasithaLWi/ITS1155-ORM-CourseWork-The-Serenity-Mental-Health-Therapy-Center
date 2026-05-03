@@ -20,7 +20,7 @@ import java.util.Set;
 @Entity
 @Table(name = "patients")
 @Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // Enable second-level caching for this entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

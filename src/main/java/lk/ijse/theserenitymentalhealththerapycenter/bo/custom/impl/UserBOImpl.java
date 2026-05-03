@@ -1,6 +1,7 @@
-package lk.ijse.theserenitymentalhealththerapycenter.bo;
+package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dao.UserDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.UserDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PasswordResetException;
@@ -10,8 +11,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 
 import java.util.List;
 
-public class UserService {
-    private final UserDAO userDAO = new UserDAO();
+public class UserBOImpl implements UserBO {
+    private final UserDAOImpl userDAO = new UserDAOImpl();
 
 
     public void createUserForFirstTime(){

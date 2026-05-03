@@ -1,14 +1,15 @@
-package lk.ijse.theserenitymentalhealththerapycenter.bo;
+package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dao.TherapyProgramDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapyProgramDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SerenityException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 
 import java.util.List;
 
-public class TherapyProgramService {
-    private final TherapyProgramDAO programDAO = new TherapyProgramDAO();
+public class TherapyProgramBOImpl implements TherapyProgramBO {
+    private final TherapyProgramDAOImpl programDAO = new TherapyProgramDAOImpl();
 
     public void saveProgram(TherapyProgram program) {
         validateProgram(program);

@@ -8,7 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.PatientService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
@@ -32,7 +32,7 @@ public class PatientListController implements Initializable {
     @FXML private TableColumn<Patient, String> colPatientAddress;
     @FXML private TableColumn<Patient, String> colPatientDate;
 
-    private final PatientService patientService = new PatientService();
+    private final PatientBOImpl patientService = new PatientBOImpl();
     private FilteredList<Patient> filteredPatients;
     private Patient selectedPatient;
 

@@ -12,7 +12,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.UserService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
 
 import java.io.IOException;
 
@@ -36,7 +36,7 @@ public class LoginController {
     @FXML
     private HBox passwordContainer;
 
-    private final UserService userService = new UserService();
+    private final UserBOImpl userService = new UserBOImpl();
     private boolean passwordVisible = false;
 
     @FXML

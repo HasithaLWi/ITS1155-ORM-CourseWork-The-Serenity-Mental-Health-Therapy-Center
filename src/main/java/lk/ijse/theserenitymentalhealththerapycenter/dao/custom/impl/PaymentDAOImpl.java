@@ -1,6 +1,8 @@
-package lk.ijse.theserenitymentalhealththerapycenter.dao;
+package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PaymentDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -9,9 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class PaymentDAO extends GenericDAO<Payment> {
+public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
 
-    public PaymentDAO() {
+    public PaymentDAOImpl() {
         super(Payment.class);
     }
 

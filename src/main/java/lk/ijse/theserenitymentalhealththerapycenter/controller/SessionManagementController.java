@@ -7,7 +7,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.*;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapistBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.*;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
@@ -35,10 +38,10 @@ public class SessionManagementController implements Initializable {
     @FXML private TableColumn<TherapySession, String> colSessionProgram;
     @FXML private TableColumn<TherapySession, String> colSessionStatus;
 
-    private final TherapySessionService sessionService = new TherapySessionService();
-    private final PatientService patientService = new PatientService();
-    private final TherapistService therapistService = new TherapistService();
-    private final TherapyProgramService programService = new TherapyProgramService();
+    private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
+    private final PatientBOImpl patientService = new PatientBOImpl();
+    private final TherapistBOImpl therapistService = new TherapistBOImpl();
+    private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
     private TherapySession selectedSession;
 
     @Override

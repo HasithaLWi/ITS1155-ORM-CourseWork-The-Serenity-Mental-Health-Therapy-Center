@@ -8,7 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.TherapistService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapistBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
@@ -33,7 +33,7 @@ public class TherapistManagementController implements Initializable {
     @FXML private TableColumn<Therapist, String> colTherapistEmail;
     @FXML private TableColumn<Therapist, String> colTherapistStatus;
 
-    private final TherapistService therapistService = new TherapistService();
+    private final TherapistBOImpl therapistService = new TherapistBOImpl();
     private FilteredList<Therapist> filteredTherapists;
     private Therapist selectedTherapist;
 

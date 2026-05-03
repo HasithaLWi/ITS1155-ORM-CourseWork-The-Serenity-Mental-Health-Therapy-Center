@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
 import javafx.animation.FadeTransition;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.UserService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
@@ -35,7 +34,7 @@ public class RegistrationController {
     @FXML private Label lblAuthenticationInfo;
     @FXML private Label lblAuthenticationError;
 
-    private final UserService userService = new UserService();
+    private final UserBOImpl userService = new UserBOImpl();
 
     private static final String VALID_STYLE =
             "-fx-background-color: #FFFFFF; -fx-text-fill: #2D3436; -fx-prompt-text-fill: #95A5A6; "

@@ -1,15 +1,17 @@
-package lk.ijse.theserenitymentalhealththerapycenter.dao;
+package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 import java.util.List;
 
-public class TherapistDAO extends GenericDAO<Therapist> {
+public class TherapistDAOImpl extends GenericDAO<Therapist> implements TherapistDAO {
 
-    public TherapistDAO() {
+    public TherapistDAOImpl() {
         super(Therapist.class);
     }
 

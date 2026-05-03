@@ -10,7 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.UserService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PasswordResetException;
 
@@ -41,7 +41,7 @@ public class ForgotPasswordController {
     @FXML private Label step2Indicator;
     @FXML private Label step3Indicator;
 
-    private final UserService userService = new UserService();
+    private final UserBOImpl userService = new UserBOImpl();
     private User verifiedUser;
     private int currentStep = 1;
 

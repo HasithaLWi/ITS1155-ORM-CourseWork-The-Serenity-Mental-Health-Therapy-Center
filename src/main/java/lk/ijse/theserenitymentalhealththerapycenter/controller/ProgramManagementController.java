@@ -8,7 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.TherapyProgramService;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
@@ -32,7 +32,7 @@ public class ProgramManagementController implements Initializable {
     @FXML private TableColumn<TherapyProgram, BigDecimal> colProgramFee;
     @FXML private TableColumn<TherapyProgram, String> colProgramDescription;
 
-    private final TherapyProgramService programService = new TherapyProgramService();
+    private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
     private FilteredList<TherapyProgram> filteredPrograms;
     private TherapyProgram selectedProgram;
 

@@ -14,10 +14,13 @@ import java.util.List;
 public class PatientBOImpl implements PatientBO {
     private final PatientDAOImpl patientDAO = new PatientDAOImpl();
 
+    private final lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl therapySessionDAO = new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl();
+
     /**
-     * Register a new patient with validation.
+     * Register a new patient with validation and generate sessions for their programs.
+     * Returns the generated patient ID.
      */
-    public void registerPatient(PatientDTO patient) {
+    public Long registerPatient(PatientDTO patient) {
         if (!ValidationUtil.isValidName(patient.getName())) {
             throw new RegistrationException("Valid patient name is required.");
         }
@@ -35,13 +38,37 @@ public class PatientBOImpl implements PatientBO {
         p.setEmail(patient.getEmail());
         p.setAddress(patient.getAddress());
         p.setPhone(patient.getPhone());
+        
+        // Use a transaction since we are saving a patient and their programs
+        // We'll just save the patient first to get the generated ID
         for (TherapyProgram program : patient.getPrograms()) {
-            PatientTherapyProgram therapyProgram = new PatientTherapyProgram();
-            therapyProgram.setPatient(p);
-            therapyProgram.setProgram(program);
             p.getPrograms().add(program);
         }
+        
         patientDAO.save(p);
+
+        // Generate sessions for each enrolled program
+        List<lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession> generatedSessions = new java.util.ArrayList<>();
+        for (TherapyProgram program : patient.getPrograms()) {
+            int numSessions = (program.getTotalSessions() != null) ? program.getTotalSessions() : 1;
+            
+            for (int i = 1; i <= numSessions; i++) {
+                lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession session = new lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession();
+                session.setPatient(p);
+                session.setProgram(program);
+                session.setSequenceNumber(i);
+                session.setStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.SessionStatus.UNSCHEDULED);
+                session.setPaymentStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PENDING);
+                
+                generatedSessions.add(session);
+            }
+        }
+        
+        if (!generatedSessions.isEmpty()) {
+            therapySessionDAO.saveAll(generatedSessions);
+        }
+        
+        return p.getId();
     }
 
     public void updatePatient(Patient patient) {

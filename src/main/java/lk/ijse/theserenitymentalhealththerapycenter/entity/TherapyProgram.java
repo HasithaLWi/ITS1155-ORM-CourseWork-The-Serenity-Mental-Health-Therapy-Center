@@ -32,6 +32,12 @@ public class TherapyProgram {
     @Column(precision = 10, scale = 2)
     private BigDecimal fee;
 
+    @Column(name = "total_sessions")
+    private Integer totalSessions;
+
+    @Column(name = "session_fee", precision = 10, scale = 2)
+    private BigDecimal sessionFee;
+
     @Column(length = 500)
     private String description;
 

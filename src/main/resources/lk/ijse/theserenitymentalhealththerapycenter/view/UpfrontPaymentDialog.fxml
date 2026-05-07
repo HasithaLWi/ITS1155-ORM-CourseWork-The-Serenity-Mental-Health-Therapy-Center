@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" style="-fx-padding: 24; -fx-background-color: #FFFFFF; -fx-border-radius: 12; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.15), 15, 0, 0, 5);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.UpfrontPaymentDialogController">
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label style="-fx-text-fill: #2D3436; -fx-font-size: 18px; -fx-font-weight: bold;" text="💳 Upfront Payment Processing" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button text="✕" onAction="#handleClose" style="-fx-background-color: transparent; -fx-text-fill: #95A5A6; -fx-font-size: 16px; -fx-cursor: hand;" />
+    </HBox>
+    <Separator />
+    
+    <VBox spacing="10">
+        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 12px; -fx-font-weight: bold;" text="ENROLLED PROGRAMS &amp; SESSIONS TO PAY" />
+        <TableView fx:id="tblPaymentPrograms" prefHeight="180">
+            <columns>
+                <TableColumn fx:id="colProgramName" prefWidth="200" text="Program" />
+                <TableColumn fx:id="colTotalSessions" prefWidth="90" text="Total Sessions" />
+                <TableColumn fx:id="colSessionsToPay" prefWidth="120" text="Sessions to Pay" />
+                <TableColumn fx:id="colSubtotal" prefWidth="120" text="Subtotal (LKR)" />
+            </columns>
+            <placeholder><Label text="No programs selected." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+        </TableView>
+    </VBox>
+    
+    <HBox spacing="20">
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 12px; -fx-font-weight: bold;" text="PAYMENT METHOD" />
+            <ComboBox fx:id="cmbPaymentMethod" promptText="Select Method" maxWidth="Infinity" />
+        </VBox>
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 12px; -fx-font-weight: bold;" text="DISCOUNT (LKR)" />
+            <TextField fx:id="txtDiscount" promptText="0.00" />
+        </VBox>
+    </HBox>
+    
+    <VBox spacing="10" style="-fx-background-color: #F8FAF9; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #E2ECE7; -fx-border-radius: 8;">
+        <HBox alignment="CENTER_LEFT">
+            <Label style="-fx-text-fill: #636E72; -fx-font-size: 14px;" text="Subtotal:" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblSubtotal" style="-fx-text-fill: #2D3436; -fx-font-size: 14px; -fx-font-weight: bold;" text="0.00 LKR" />
+        </HBox>
+        <HBox alignment="CENTER_LEFT">
+            <Label style="-fx-text-fill: #636E72; -fx-font-size: 14px;" text="Discount:" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblDiscount" style="-fx-text-fill: #C47171; -fx-font-size: 14px;" text="- 0.00 LKR" />
+        </HBox>
+        <Separator />
+        <HBox alignment="CENTER_LEFT">
+            <Label style="-fx-text-fill: #2D3436; -fx-font-size: 16px; -fx-font-weight: bold;" text="Total Due:" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblTotalDue" style="-fx-text-fill: #4A7FA5; -fx-font-size: 20px; -fx-font-weight: bold;" text="0.00 LKR" />
+        </HBox>
+    </VBox>
+    
+    <HBox spacing="12" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+        <Button text="Cancel" onAction="#handleClose" styleClass="btn-secondary" />
+        <Button text="✅  Process Payment" onAction="#handleProcessPayment" styleClass="btn-primary" style="-fx-padding: 10 24;" />
+    </HBox>
+</VBox>

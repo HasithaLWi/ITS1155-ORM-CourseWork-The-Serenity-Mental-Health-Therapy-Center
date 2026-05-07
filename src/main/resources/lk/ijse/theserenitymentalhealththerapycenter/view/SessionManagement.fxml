@@ -56,18 +56,21 @@
             <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
                 <Label text="All Sessions" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="🗑  Delete" onAction="#handleDeleteSession" style="-fx-background-color: #C47171; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;"/>
+                <Button text="✅  Complete Session" onAction="#handleCompleteSession" style="-fx-background-color: #7AB88F; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;"/>
+                <Button text="↩  Cancel/Reschedule" onAction="#handleCancelSession" style="-fx-background-color: #C47171; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;"/>
             </HBox>
             <Separator/>
             <TableView fx:id="tblSessions" prefHeight="300">
                 <columns>
                     <TableColumn fx:id="colSessionId" text="ID" prefWidth="50"/>
-                    <TableColumn fx:id="colSessionDate" text="Date" prefWidth="110"/>
-                    <TableColumn fx:id="colSessionTime" text="Time" prefWidth="80"/>
-                    <TableColumn fx:id="colSessionPatient" text="Patient" prefWidth="150"/>
-                    <TableColumn fx:id="colSessionTherapist" text="Therapist" prefWidth="150"/>
-                    <TableColumn fx:id="colSessionProgram" text="Program" prefWidth="160"/>
-                    <TableColumn fx:id="colSessionStatus" text="Status" prefWidth="110"/>
+                    <TableColumn fx:id="colSequenceNumber" text="Seq" prefWidth="40"/>
+                    <TableColumn fx:id="colSessionDate" text="Date" prefWidth="100"/>
+                    <TableColumn fx:id="colSessionTime" text="Time" prefWidth="70"/>
+                    <TableColumn fx:id="colSessionPatient" text="Patient" prefWidth="130"/>
+                    <TableColumn fx:id="colSessionTherapist" text="Therapist" prefWidth="130"/>
+                    <TableColumn fx:id="colSessionProgram" text="Program" prefWidth="140"/>
+                    <TableColumn fx:id="colSessionStatus" text="Status" prefWidth="100"/>
+                    <TableColumn fx:id="colPaymentStatus" text="Payment" prefWidth="80"/>
                 </columns>
                 <placeholder><Label text="No sessions found." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
             </TableView>

@@ -61,4 +61,8 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @ToString.Exclude
     private Set<TherapySession> sessions = new HashSet<>();
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<Payment> payments = new ArrayList<>();
 }

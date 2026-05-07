@@ -22,6 +22,7 @@ public class ProgramManagementController implements Initializable {
     @FXML private TextField txtProgramName;
     @FXML private TextField txtProgramDuration;
     @FXML private TextField txtProgramFee;
+    @FXML private TextField txtTotalSessions;
     @FXML private TextArea txtProgramDescription;
     @FXML private TextField txtSearchProgram;
 
@@ -30,6 +31,7 @@ public class ProgramManagementController implements Initializable {
     @FXML private TableColumn<TherapyProgram, String> colProgramName;
     @FXML private TableColumn<TherapyProgram, String> colProgramDuration;
     @FXML private TableColumn<TherapyProgram, BigDecimal> colProgramFee;
+    @FXML private TableColumn<TherapyProgram, Integer> colTotalSessions;
     @FXML private TableColumn<TherapyProgram, String> colProgramDescription;
 
     private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
@@ -55,6 +57,7 @@ public class ProgramManagementController implements Initializable {
         colProgramName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getName()));
         colProgramDuration.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDuration()));
         colProgramFee.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getFee()));
+        colTotalSessions.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getTotalSessions()));
         colProgramDescription.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescription()));
     }
 
@@ -82,6 +85,7 @@ public class ProgramManagementController implements Initializable {
     private void populateForm(TherapyProgram p) {
         txtProgramName.setText(p.getName());
         txtProgramDuration.setText(p.getDuration());
+        txtTotalSessions.setText(p.getTotalSessions() != null ? String.valueOf(p.getTotalSessions()) : "");
         txtProgramFee.setText(p.getFee() != null ? p.getFee().toPlainString() : "");
         txtProgramDescription.setText(p.getDescription());
     }
@@ -92,6 +96,7 @@ public class ProgramManagementController implements Initializable {
             TherapyProgram p = new TherapyProgram();
             p.setName(txtProgramName.getText());
             p.setDuration(txtProgramDuration.getText());
+            p.setTotalSessions(parseSessions());
             p.setFee(parseFee());
             p.setDescription(txtProgramDescription.getText());
             programService.saveProgram(p);
@@ -112,6 +117,7 @@ public class ProgramManagementController implements Initializable {
         try {
             selectedProgram.setName(txtProgramName.getText());
             selectedProgram.setDuration(txtProgramDuration.getText());
+            selectedProgram.setTotalSessions(parseSessions());
             selectedProgram.setFee(parseFee());
             selectedProgram.setDescription(txtProgramDescription.getText());
             programService.updateProgram(selectedProgram);
@@ -146,6 +152,7 @@ public class ProgramManagementController implements Initializable {
     void handleClearProgram(ActionEvent event) {
         txtProgramName.clear();
         txtProgramDuration.clear();
+        txtTotalSessions.clear();
         txtProgramFee.clear();
         txtProgramDescription.clear();
         selectedProgram = null;
@@ -156,5 +163,15 @@ public class ProgramManagementController implements Initializable {
         String text = txtProgramFee.getText();
         if (text == null || text.trim().isEmpty()) return null;
         return new BigDecimal(text.trim());
+    }
+
+    private Integer parseSessions() {
+        String text = txtTotalSessions.getText();
+        if (text == null || text.trim().isEmpty()) return null;
+        try {
+            return Integer.parseInt(text.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Total Sessions must be a valid integer.");
+        }
     }
 }

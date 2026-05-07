@@ -22,6 +22,10 @@
                     <TextField fx:id="txtProgramDuration" promptText="e.g. 12 weeks, 6 months"/>
                 </VBox>
                 <VBox spacing="4">
+                    <Label text="TOTAL SESSIONS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtTotalSessions" promptText="e.g. 12" prefWidth="100"/>
+                </VBox>
+                <VBox spacing="4">
                     <Label text="FEE (LKR)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
                     <TextField fx:id="txtProgramFee" promptText="0.00" prefWidth="150"/>
                 </VBox>
@@ -50,9 +54,10 @@
             <TableView fx:id="tblPrograms" prefHeight="320">
                 <columns>
                     <TableColumn fx:id="colProgramId" text="ID" prefWidth="60"/>
-                    <TableColumn fx:id="colProgramName" text="Program Name" prefWidth="220"/>
-                    <TableColumn fx:id="colProgramDuration" text="Duration" prefWidth="120"/>
-                    <TableColumn fx:id="colProgramFee" text="Fee (LKR)" prefWidth="130"/>
+                    <TableColumn fx:id="colProgramName" text="Program Name" prefWidth="180"/>
+                    <TableColumn fx:id="colProgramDuration" text="Duration" prefWidth="100"/>
+                    <TableColumn fx:id="colTotalSessions" text="Sessions" prefWidth="80"/>
+                    <TableColumn fx:id="colProgramFee" text="Fee (LKR)" prefWidth="100"/>
                     <TableColumn fx:id="colProgramDescription" text="Description" prefWidth="280"/>
                 </columns>
                 <placeholder><Label text="No programs found." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>

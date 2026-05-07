@@ -318,3 +318,20 @@
     -fx-font-size: 12px;
     -fx-font-family: "Segoe UI", sans-serif;
 }
+
+/* ─── STATUS BADGES ─── */
+.badge-paid {
+    -fx-background-color: #E8F5E9;
+    -fx-text-fill: #2E7D32;
+    -fx-font-weight: bold;
+    -fx-padding: 4 8;
+    -fx-background-radius: 4;
+}
+
+.badge-pending {
+    -fx-background-color: #FFF3E0;
+    -fx-text-fill: #E65100;
+    -fx-font-weight: bold;
+    -fx-padding: 4 8;
+    -fx-background-radius: 4;
+}

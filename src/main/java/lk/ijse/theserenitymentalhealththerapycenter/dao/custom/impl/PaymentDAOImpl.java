@@ -69,8 +69,22 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
                     "SELECT DISTINCT p FROM Payment p " +
                             "LEFT JOIN FETCH p.session s " +
                             "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH p.patient " +
                             "ORDER BY p.paymentDate DESC",
                     Payment.class).list();
+        }
+    }
+
+    /**
+     * Find all payments for a specific patient.
+     */
+    public List<Payment> findByPatient(Long patientId) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return session.createQuery(
+                    "FROM Payment p WHERE p.patient.id = :patientId ORDER BY p.paymentDate DESC",
+                    Payment.class)
+                    .setParameter("patientId", patientId)
+                    .list();
         }
     }
 }

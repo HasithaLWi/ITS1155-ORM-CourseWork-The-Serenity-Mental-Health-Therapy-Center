@@ -19,7 +19,10 @@ public class TherapySession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "session_date", nullable = false)
+    @Column(name = "sequence_number")
+    private Integer sequenceNumber;
+
+    @Column(name = "session_date")
     private LocalDate sessionDate;
 
     @Column(name = "session_time")
@@ -27,7 +30,11 @@ public class TherapySession {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private SessionStatus status = SessionStatus.SCHEDULED;
+    private SessionStatus status = SessionStatus.UNSCHEDULED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false, length = 20)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @Column(length = 500)
     private String notes;
@@ -37,7 +44,7 @@ public class TherapySession {
     private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "therapist_id", nullable = false)
+    @JoinColumn(name = "therapist_id")
     private Therapist therapist;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,7 +54,15 @@ public class TherapySession {
     @OneToOne(mappedBy = "session", cascade = CascadeType.ALL)
     private Payment payment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "upfront_payment_id")
+    private Payment upfrontPayment;
+
     public enum SessionStatus {
-        SCHEDULED, COMPLETED, CANCELLED, NO_SHOW
+        UNSCHEDULED, SCHEDULED, COMPLETED, CANCELLED, NO_SHOW
+    }
+
+    public enum PaymentStatus {
+        PENDING, PAID
     }
 }

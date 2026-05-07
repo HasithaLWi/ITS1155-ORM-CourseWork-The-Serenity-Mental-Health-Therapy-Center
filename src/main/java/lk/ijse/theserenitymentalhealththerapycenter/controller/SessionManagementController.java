@@ -37,6 +37,8 @@ public class SessionManagementController implements Initializable {
     @FXML private TableColumn<TherapySession, String> colSessionTherapist;
     @FXML private TableColumn<TherapySession, String> colSessionProgram;
     @FXML private TableColumn<TherapySession, String> colSessionStatus;
+    @FXML private TableColumn<TherapySession, Integer> colSequenceNumber;
+    @FXML private TableColumn<TherapySession, String> colPaymentStatus;
 
     private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
     private final PatientBOImpl patientService = new PatientBOImpl();
@@ -89,6 +91,8 @@ public class SessionManagementController implements Initializable {
 
     private void setupTable() {
         colSessionId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
+        colSequenceNumber.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSequenceNumber()));
+        
         colSessionDate.setCellValueFactory(d -> new SimpleStringProperty(
             d.getValue().getSessionDate() != null ? d.getValue().getSessionDate().toString() : ""));
         colSessionTime.setCellValueFactory(d -> new SimpleStringProperty(
@@ -101,6 +105,30 @@ public class SessionManagementController implements Initializable {
             d.getValue().getProgram() != null ? d.getValue().getProgram().getName() : ""));
         colSessionStatus.setCellValueFactory(d -> new SimpleStringProperty(
             d.getValue().getStatus() != null ? d.getValue().getStatus().name() : ""));
+            
+        colPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(
+            d.getValue().getPaymentStatus() != null ? d.getValue().getPaymentStatus().name() : ""));
+            
+        // Status Badges
+        colPaymentStatus.setCellFactory(column -> new TableCell<TherapySession, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    getStyleClass().removeAll("badge-paid", "badge-pending");
+                } else {
+                    setText(item);
+                    if ("PAID".equals(item)) {
+                        getStyleClass().add("badge-paid");
+                        getStyleClass().remove("badge-pending");
+                    } else if ("PENDING".equals(item)) {
+                        getStyleClass().add("badge-pending");
+                        getStyleClass().remove("badge-paid");
+                    }
+                }
+            }
+        });
     }
 
     private void loadData() {
@@ -114,21 +142,32 @@ public class SessionManagementController implements Initializable {
         cmbSessionProgram.setValue(s.getProgram());
         dpSessionDate.setValue(s.getSessionDate());
         if (s.getSessionTime() != null) cmbSessionTime.setValue(s.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-        cmbSessionStatus.setValue(s.getStatus());
+        cmbSessionStatus.setValue(s.getStatus() != null ? s.getStatus() : TherapySession.SessionStatus.SCHEDULED);
         txtSessionNotes.setText(s.getNotes());
     }
 
     @FXML void handleScheduleSession(ActionEvent event) {
+        if (selectedSession == null) {
+            AlertUtil.showWarning("Warning", "Select a pre-generated UNSCHEDULED session to schedule.");
+            return;
+        }
+        
+        if (selectedSession.getPaymentStatus() == TherapySession.PaymentStatus.PENDING) {
+            // Ideally we'd pop up a pay-as-you-go dialog here, but for now we warn them.
+            // AlertUtil.showWarning("Payment Required", "This session is PENDING. Please collect payment before scheduling.");
+            // Or we allow it but they have to collect later. We will allow it with a warning.
+            AlertUtil.showWarning("Warning", "Session scheduled, but payment is still PENDING.");
+        }
+        
         try {
-            TherapySession s = new TherapySession();
-            s.setPatient(cmbSessionPatient.getValue());
-            s.setTherapist(cmbSessionTherapist.getValue());
-            s.setProgram(cmbSessionProgram.getValue());
-            s.setSessionDate(dpSessionDate.getValue());
-            s.setSessionTime(parseTime());
-            s.setStatus(cmbSessionStatus.getValue());
-            s.setNotes(txtSessionNotes.getText());
-            sessionService.scheduleSession(s);
+            selectedSession.setPatient(cmbSessionPatient.getValue());
+            selectedSession.setTherapist(cmbSessionTherapist.getValue());
+            selectedSession.setProgram(cmbSessionProgram.getValue());
+            selectedSession.setSessionDate(dpSessionDate.getValue());
+            selectedSession.setSessionTime(parseTime());
+            selectedSession.setStatus(cmbSessionStatus.getValue());
+            selectedSession.setNotes(txtSessionNotes.getText());
+            sessionService.scheduleSession(selectedSession);
             AlertUtil.showInfo("Success", "Session scheduled.");
             handleClearSession(event);
             loadData();
@@ -151,11 +190,48 @@ public class SessionManagementController implements Initializable {
             loadData();
         } catch (Exception e) { AlertUtil.showError("Error", e.getMessage()); }
     }
+    
+    @FXML void handleCompleteSession(ActionEvent event) {
+        TherapySession s = tblSessions.getSelectionModel().getSelectedItem();
+        if (s == null) { AlertUtil.showWarning("Warning", "Select a session to complete."); return; }
+        if (s.getStatus() == TherapySession.SessionStatus.COMPLETED) {
+            AlertUtil.showWarning("Info", "Session is already completed."); return;
+        }
+        if (AlertUtil.showConfirmation("Confirm", "Mark session as COMPLETED?")) {
+            try { 
+                TherapySession nextSession = sessionService.completeSession(s); 
+                AlertUtil.showInfo("Success", "Session completed.");
+                if (nextSession != null) {
+                    if (AlertUtil.showConfirmation("Next Session", "Would you like to schedule the next session (" + nextSession.getSequenceNumber() + ") now?")) {
+                        selectedSession = nextSession;
+                        populateForm(nextSession);
+                    }
+                }
+                loadData(); 
+            }
+            catch (Exception e) { AlertUtil.showError("Error", e.getMessage()); }
+        }
+    }
+    
+    @FXML void handleCancelSession(ActionEvent event) {
+        TherapySession s = tblSessions.getSelectionModel().getSelectedItem();
+        if (s == null) { AlertUtil.showWarning("Warning", "Select a session to cancel/reschedule."); return; }
+        if (AlertUtil.showConfirmation("Confirm", "Cancel and return session to UNSCHEDULED status?")) {
+            try { 
+                sessionService.cancelAndReschedule(s); 
+                AlertUtil.showInfo("Success", "Session cancelled and returned to unscheduled pool.");
+                handleClearSession(event); 
+                loadData(); 
+            }
+            catch (Exception e) { AlertUtil.showError("Error", e.getMessage()); }
+        }
+    }
 
     @FXML void handleDeleteSession(ActionEvent event) {
+        // We probably shouldn't allow raw deletion since they are pre-generated, but keeping for admin
         TherapySession s = tblSessions.getSelectionModel().getSelectedItem();
         if (s == null) { AlertUtil.showWarning("Warning", "Select a session to delete."); return; }
-        if (AlertUtil.showConfirmation("Confirm", "Delete this session?")) {
+        if (AlertUtil.showConfirmation("Confirm", "Delete this session completely?")) {
             try { sessionService.deleteSession(s); handleClearSession(event); loadData(); }
             catch (Exception e) { AlertUtil.showError("Error", e.getMessage()); }
         }

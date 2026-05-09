@@ -23,6 +23,8 @@
 }
 
 
+
+
 /* ─── TEXT FIELDS & PASSWORD FIELDS ─── */
 .text-field,
 .password-field,
@@ -214,6 +216,8 @@
 .combo-box.combo-autocomplete:editable .arrow {
     -fx-background-color: #6B9DC2;
 }
+
+
 
 .combo-box .list-cell {
     -fx-text-fill: #2D3436;

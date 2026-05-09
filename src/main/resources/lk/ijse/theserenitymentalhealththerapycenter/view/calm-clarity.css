@@ -14,6 +14,8 @@
    ═══════════════════════════════════════════════════════════════ */
 
 
+
+
 /* ─── GLOBAL TEXT ─── */
 .label {
     -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", sans-serif;
@@ -51,6 +53,7 @@
     -fx-border-radius: 12;
     -fx-cursor: hand;
 }
+
 
 
 /* ─── PRIMARY BUTTON ─── */
@@ -180,6 +183,36 @@
 
 .combo-box:focused {
     -fx-border-color: #6B9DC2;
+    -fx-effect: dropshadow(gaussian, rgba(107, 157, 194, 0.2), 8, 0, 0, 0);
+}
+
+.combo-box.combo-autocomplete {
+    -fx-border-color: #c6c9cc;
+    -fx-padding: 0;
+}
+
+.combo-box.combo-autocomplete:editable .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 11 16;
+    -fx-text-fill: #2D3436;
+    -fx-prompt-text-fill: #95A5A6;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.combo-box.combo-autocomplete:editable .text-field:focused {
+    -fx-effect: none;
+}
+
+.combo-box.combo-autocomplete:editable .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12 0 8;
+}
+
+.combo-box.combo-autocomplete:editable .arrow {
+    -fx-background-color: #6B9DC2;
 }
 
 .combo-box .list-cell {
@@ -272,7 +305,7 @@
     -fx-background: transparent;
 }
 
-.scroll-pane > .viewport {
+.scroll-pane>.viewport {
     -fx-background-color: transparent;
 }
 
@@ -303,7 +336,7 @@
 
 
 /* ─── SEPARATOR ─── */
-.separator > .line {
+.separator>.line {
     -fx-border-color: #E5DFD8;
     -fx-border-width: 0.5 0 0 0;
 }

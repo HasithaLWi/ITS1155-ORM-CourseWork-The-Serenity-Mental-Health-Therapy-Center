@@ -16,6 +16,7 @@ public class AppInitializer extends Application {
         FactoryConfiguration.getInstance();
         System.out.println("Hibernate initialized successfully!");
 
+
         // Load Login screen
         FXMLLoader loader = new FXMLLoader(getClass().getResource(
                 "/lk/ijse/theserenitymentalhealththerapycenter/view/ReceptionistDashboard.fxml"));

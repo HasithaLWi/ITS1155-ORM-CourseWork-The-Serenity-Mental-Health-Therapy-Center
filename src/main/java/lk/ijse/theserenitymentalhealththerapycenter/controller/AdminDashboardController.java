@@ -23,22 +23,34 @@ import java.util.ResourceBundle;
 public class AdminDashboardController implements Initializable {
 
     // ===== Sidebar Buttons =====
-    @FXML private Button btnDashboard;
-    @FXML private Button btnTherapists;
-    @FXML private Button btnPrograms;
-    @FXML private Button btnPatients;
-    @FXML private Button btnScheduling;
-    @FXML private Button btnPayments;
-    @FXML private Button btnReports;
+    @FXML
+    private Button btnDashboard;
+    @FXML
+    private Button btnTherapists;
+    @FXML
+    private Button btnPrograms;
+    @FXML
+    private Button btnPatients;
+    @FXML
+    private Button btnScheduling;
+    @FXML
+    private Button btnPayments;
+    @FXML
+    private Button btnReports;
 
     // ===== Header =====
-    @FXML private Label lblPageTitle;
-    @FXML private Label lblPageSubtitle;
-    @FXML private Label lblCurrentDate;
-    @FXML private Label lblAdminName;
+    @FXML
+    private Label lblPageTitle;
+    @FXML
+    private Label lblPageSubtitle;
+    @FXML
+    private Label lblCurrentDate;
+    @FXML
+    private Label lblAdminName;
 
     // ===== Dynamic Content Area =====
-    @FXML private StackPane contentArea;
+    @FXML
+    private StackPane contentArea;
 
     private Button activeNavButton;
 

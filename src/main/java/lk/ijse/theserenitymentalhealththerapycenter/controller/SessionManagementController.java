@@ -1,5 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -64,6 +65,8 @@ public class SessionManagementController implements Initializable {
     @FXML
     private HBox hboxSessionActions;
 
+    @FXML
+    private VBox vBoxAllSession;
     @FXML
     private VBox vboxPatientSessions;
     @FXML
@@ -133,6 +136,9 @@ public class SessionManagementController implements Initializable {
         loadAllData();
         loadComboBoxes();
         setupTable();
+
+        setupSelectFromSessionId();
+
         loadData();
         updateActionButtonsVisibility(false);
         vboxPatientSessions.setVisible(false);
@@ -145,10 +151,26 @@ public class SessionManagementController implements Initializable {
             if (newVal != null) {
                 vboxPatientSessions.setVisible(true);
                 vboxPatientSessions.setManaged(true);
+                vBoxAllSession.setVisible(false);
+                vBoxAllSession.setManaged(false);
+
+
+                cmbSessionTherapist.setValue(null);
+                cmbSessionProgram.setValue(null);
+                dpSessionDate.setValue(null);
+                cmbSessionTime.setValue(null);
+                cmbSessionStatus.setValue(TherapySession.SessionStatus.SCHEDULED);
+                txtSessionNotes.clear();
+                selectedSession = null;
+
+
+
                 loadPatientSessions(newVal);
             } else {
                 vboxPatientSessions.setVisible(false);
                 vboxPatientSessions.setManaged(false);
+                vBoxAllSession.setVisible(true);
+                vBoxAllSession.setManaged(true);
                 tblPatientSessions.setItems(FXCollections.observableArrayList());
             }
         });
@@ -161,18 +183,54 @@ public class SessionManagementController implements Initializable {
 
     }
 
-    private void setupTblSelection(TableView<TherapySession> tblPatientSessions) {
-        tblPatientSessions.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+    private void setupTblSelection(TableView<TherapySession> tbl) {
+        tbl.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
             if (n != null) {
-                selectedSession = n;
+
+                if(n.getPayment() != null && n.getPayment().getStatus() != Payment.PaymentStatus.COMPLETED){
+                    btnSessionPay.setManaged(true);
+                    btnSessionPay.setVisible(true);
+                } else {
+                    btnSessionPay.setVisible(false);
+                    btnSessionPay.setManaged(false);
+                }
                 populateForm(n);
                 updateActionButtonsVisibility(true);
 
                 cmbSessionId.setMouseTransparent(true);
                 cmbSessionPatient.setMouseTransparent(true);
                 cmbSessionProgram.setMouseTransparent(true);
-                setDbFilteredData(n);
 
+                selectedSession = n;
+
+                Platform.runLater(() -> {
+                    setDbFilteredData(n);
+                });
+
+
+            }
+        });
+    }
+
+    private void setupSelectFromSessionId(){
+        cmbSessionId.valueProperty().addListener((obs, o, n) -> {
+            if (n != null) {
+                if(n.getPayment() != null && n.getPayment().getStatus() != Payment.PaymentStatus.COMPLETED){
+                    btnSessionPay.setManaged(true);
+                    btnSessionPay.setVisible(true);
+                } else {
+                    btnSessionPay.setVisible(false);
+                    btnSessionPay.setManaged(false);
+                }
+                populateForm(n);
+                updateActionButtonsVisibility(true);
+
+                Platform.runLater(() -> {
+                    cmbSessionId.setMouseTransparent(true);
+                    setDbFilteredData(n);
+                });
+                cmbSessionPatient.setMouseTransparent(true);
+                cmbSessionProgram.setMouseTransparent(true);
             }
         });
     }
@@ -435,7 +493,7 @@ public class SessionManagementController implements Initializable {
             selectedSession.setNotes(txtSessionNotes.getText());
             sessionService.updateSession(selectedSession);
             AlertUtil.showInfo("Success", "Session updated.");
-            handleClearSession(event);
+//            handleClearSession(event);
             loadData();
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
@@ -516,6 +574,7 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleClearSession(ActionEvent event) {
+        cmbSessionId.setValue(null);
         cmbSessionPatient.setValue(null);
         cmbSessionTherapist.setValue(null);
         cmbSessionProgram.setValue(null);

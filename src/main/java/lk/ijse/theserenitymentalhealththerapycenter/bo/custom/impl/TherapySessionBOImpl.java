@@ -34,6 +34,20 @@ public class TherapySessionBOImpl implements TherapySessionBO {
     }
 
     public void updateSession(TherapySession session) {
+        if (session != null) {
+
+            long therapist = session.getTherapist().getId();
+            getAllSessions().stream()
+                .filter(s -> s.getTherapist() != null && s.getTherapist().getId().equals(therapist))
+                .filter(s -> s.getSessionDate() != null && s.getSessionDate().equals(session.getSessionDate()))
+                    .filter(s -> s.getSessionTime() != null && s.getSessionTime().equals(session.getSessionTime()))
+                .filter(s -> !s.getId().equals(session.getId())) // Exclude current session
+                .findAny()
+                .ifPresent(s -> {
+                    throw new SchedulingException("Therapist is already booked for this date.");
+                });
+
+        }
         sessionDAO.update(session);
     }
 

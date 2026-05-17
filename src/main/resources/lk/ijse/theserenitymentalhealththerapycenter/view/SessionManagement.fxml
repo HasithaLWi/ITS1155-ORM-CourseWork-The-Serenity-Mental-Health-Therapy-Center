@@ -103,7 +103,7 @@
       </VBox>
 
         <!-- Sessions Table -->
-        <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+        <VBox fx:id="vBoxAllSession" spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
             <HBox alignment="CENTER" spacing="20.0" style="-fx-padding: 20 20 16 20;">
                 <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="All Sessions" />
             <Region HBox.hgrow="ALWAYS" />

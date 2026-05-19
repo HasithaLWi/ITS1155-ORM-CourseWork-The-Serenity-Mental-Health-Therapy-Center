@@ -8,22 +8,20 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.skin.ComboBoxListViewSkin;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapistBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.*;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.*;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapySessionTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ComboBoxAutoCompleteUtil;
 
@@ -32,105 +30,61 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SessionManagementController implements Initializable {
 
-    @FXML
-    private ComboBox<TherapySession> cmbSessionId;
-    @FXML
-    private TextField txtAllSessionSearch;
-    @FXML
-    private Button btnSessionPay;
+    @FXML private ComboBox<TherapySessionDTO> cmbSessionId;
+    @FXML private TextField txtAllSessionSearch;
+    @FXML private Button btnSessionPay;
 
-    @FXML
-    private ComboBox<Patient> cmbSessionPatient;
-    @FXML
-    private ComboBox<Therapist> cmbSessionTherapist;
-    @FXML
-    private ComboBox<TherapyProgram> cmbSessionProgram;
-    @FXML
-    private DatePicker dpSessionDate;
-    @FXML
-    private ComboBox<String> cmbSessionTime;
-    @FXML
-    private ComboBox<TherapySession.SessionStatus> cmbSessionStatus;
-    @FXML
-    private TextArea txtSessionNotes;
-    @FXML
-    private Label lblCreditInfo;
-    @FXML
-    private HBox hboxInlinePayment;
-    @FXML
-    private Label lblInlinePaymentPrice;
-    @FXML
-    private ComboBox<Payment.PaymentMethod> cmbInlinePaymentMethod;
-    @FXML
-    private Button btnCreateSession;
-    @FXML
-    private Button btnCompleteSession;
-    @FXML
-    private Button btnCancelSession;
-    @FXML
-    private Button btnUpdateSession;
+    @FXML private ComboBox<PatientDTO> cmbSessionPatient;
+    @FXML private ComboBox<TherapistDTO> cmbSessionTherapist;
+    @FXML private ComboBox<TherapyProgramDTO> cmbSessionProgram;
+    @FXML private DatePicker dpSessionDate;
+    @FXML private ComboBox<String> cmbSessionTime;
+    @FXML private ComboBox<SessionStatus> cmbSessionStatus;
+    @FXML private TextArea txtSessionNotes;
+    @FXML private Label lblCreditInfo;
+    @FXML private HBox hboxInlinePayment;
+    @FXML private Label lblInlinePaymentPrice;
+    @FXML private ComboBox<PaymentMethod> cmbInlinePaymentMethod;
+    @FXML private Button btnCreateSession;
+    @FXML private Button btnCompleteSession;
+    @FXML private Button btnCancelSession;
+    @FXML private Button btnUpdateSession;
+    @FXML private HBox hboxSessionActions;
+    @FXML private VBox vBoxAllSession;
+    @FXML private VBox vboxPatientSessions;
 
-    @FXML
-    private HBox hboxSessionActions;
+    @FXML private TableView<TherapySessionTM> tblPatientSessions;
+    @FXML private TableColumn<TherapySessionTM, String> colPatSessionId;
+    @FXML private TableColumn<TherapySessionTM, Integer> colPatSequenceNumber;
+    @FXML private TableColumn<TherapySessionTM, String> colPatSessionDate;
+    @FXML private TableColumn<TherapySessionTM, String> colPatSessionTime;
+    @FXML private TableColumn<TherapySessionTM, String> colPatSessionTherapist;
+    @FXML private TableColumn<TherapySessionTM, String> colPatSessionProgram;
+    @FXML private TableColumn<TherapySessionTM, String> colPatSessionStatus;
+    @FXML private TableColumn<TherapySessionTM, String> colPatPaymentStatus;
 
-    @FXML
-    private VBox vBoxAllSession;
-    @FXML
-    private VBox vboxPatientSessions;
-    @FXML
-    private TableView<TherapySession> tblPatientSessions;
-    @FXML
-    private TableColumn<TherapySession, Long> colPatSessionId;
-    @FXML
-    private TableColumn<TherapySession, Integer> colPatSequenceNumber;
-    @FXML
-    private TableColumn<TherapySession, String> colPatSessionDate;
-    @FXML
-    private TableColumn<TherapySession, String> colPatSessionTime;
-    @FXML
-    private TableColumn<TherapySession, String> colPatSessionTherapist;
-    @FXML
-    private TableColumn<TherapySession, String> colPatSessionProgram;
-    @FXML
-    private TableColumn<TherapySession, String> colPatSessionStatus;
-    @FXML
-    private TableColumn<TherapySession, String> colPatPaymentStatus;
+    @FXML private DatePicker dpFilterDate;
+    @FXML private ComboBox<String> cmbFilterTime;
+    @FXML private ComboBox<TherapistDTO> cmbFilterTherapist;
+    @FXML private ComboBox<TherapyProgramDTO> cmbFilterProgram;
 
-    @FXML
-    private DatePicker dpFilterDate;
-    @FXML
-    private ComboBox<String> cmbFilterTime;
-    @FXML
-    private ComboBox<Therapist> cmbFilterTherapist;
-    @FXML
-    private ComboBox<TherapyProgram> cmbFilterProgram;
-
-    @FXML
-    private TableView<TherapySession> tblSessions;
-    @FXML
-    private TableColumn<TherapySession, Long> colSessionId;
-    @FXML
-    private TableColumn<TherapySession, String> colSessionDate;
-    @FXML
-    private TableColumn<TherapySession, String> colSessionTime;
-    @FXML
-    private TableColumn<TherapySession, String> colSessionPatient;
-    @FXML
-    private TableColumn<TherapySession, String> colSessionTherapist;
-    @FXML
-    private TableColumn<TherapySession, String> colSessionProgram;
-    @FXML
-    private TableColumn<TherapySession, String> colSessionStatus;
-    @FXML
-    private TableColumn<TherapySession, Integer> colSequenceNumber;
-    @FXML
-    private TableColumn<TherapySession, String> colPaymentStatus;
+    @FXML private TableView<TherapySessionTM> tblSessions;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionId;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionDate;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionTime;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionPatient;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionTherapist;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionProgram;
+    @FXML private TableColumn<TherapySessionTM, String> colSessionStatus;
+    @FXML private TableColumn<TherapySessionTM, Integer> colSequenceNumber;
+    @FXML private TableColumn<TherapySessionTM, String> colPaymentStatus;
 
     private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
     private final PatientBOImpl patientService = new PatientBOImpl();
@@ -138,23 +92,22 @@ public class SessionManagementController implements Initializable {
     private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
     private final PaymentBOImpl paymentService = new PaymentBOImpl();
 
-    private TherapySession selectedSession;
+    private TherapySessionDTO selectedSession;
     private int currentCredit = 0;
 
-    private List<TherapySession> allSessionsCache; // Cache to hold all sessions for filtering
-    private List<Patient> allPatientsCache;
-    private List<Therapist> allTherapistsCache;
-    private List<TherapyProgram> allProgramsCache;
+    private List<TherapySessionDTO> allSessionsCache;
+    private List<PatientDTO> allPatientsCache;
+    private List<TherapistDTO> allTherapistsCache;
+    private List<TherapyProgramDTO> allProgramsCache;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         loadAllData();
         loadComboBoxes();
         setupTable();
-
         setupSelectFromSessionId();
-
         loadData();
+        
         updateActionButtonsVisibility(false, false);
         vboxPatientSessions.setVisible(false);
         vboxPatientSessions.setManaged(false);
@@ -165,7 +118,7 @@ public class SessionManagementController implements Initializable {
         cmbSessionTherapist.setVisible(false);
         dpSessionDate.setVisible(false);
 
-        cmbInlinePaymentMethod.setItems(FXCollections.observableArrayList(Payment.PaymentMethod.values()));
+        cmbInlinePaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
 
         setupTblSelection(tblSessions);
         setupTblSelection(tblPatientSessions);
@@ -177,31 +130,19 @@ public class SessionManagementController implements Initializable {
                 vBoxAllSession.setVisible(false);
                 vBoxAllSession.setManaged(false);
 
-                // Populate programs only for enrolled programs
                 try {
-                    List<PatientTherapyProgram> enrollments = patientService.getPatientPrograms(newVal.getId());
-                    List<TherapyProgram> enrolledPrograms = enrollments.stream().map(PatientTherapyProgram::getProgram)
-                            .collect(Collectors.toList());
-                    ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionProgram, enrolledPrograms,
-                            TherapyProgram::getName, p -> p.getId() + " " + p.getName());
+                    List<PatientTherapyProgramDTO> enrollments = patientService.getPatientPrograms(newVal.getId());
+                    List<TherapyProgramDTO> enrolledPrograms = enrollments.stream()
+                            .map(PatientTherapyProgramDTO::getProgram).collect(Collectors.toList());
 
+                    ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionProgram, enrolledPrograms,
+                            TherapyProgramDTO::getName, p -> p.getId() + " " + p.getName());
                     cmbSessionProgram.setVisible(true);
                 } catch (Exception e) {
                     System.err.println("Error loading patient programs: " + e.getMessage());
                 }
 
-                cmbSessionTherapist.setValue(null);
-                cmbSessionProgram.setValue(null);
-                dpSessionDate.setValue(null);
-                cmbSessionTime.setValue(null);
-                cmbSessionStatus.setValue(TherapySession.SessionStatus.SCHEDULED);
-                txtSessionNotes.clear();
-                selectedSession = null;
-                lblCreditInfo.setText("");
-                currentCredit = 0;
-
-                updateActionButtonsVisibility(false, false);
-
+                resetForm();
                 loadPatientSessions(newVal);
             } else {
                 vboxPatientSessions.setVisible(false);
@@ -211,35 +152,27 @@ public class SessionManagementController implements Initializable {
                 tblPatientSessions.setItems(FXCollections.observableArrayList());
 
                 try {
-                    // Reset to all programs
                     ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionProgram, allProgramsCache,
-                            TherapyProgram::getName, p -> p.getId() + " " + p.getName());
+                            TherapyProgramDTO::getName, p -> p.getId() + " " + p.getName());
                 } catch (Exception e) {
                     System.out.println("Error resetting program combo: " + e.getMessage());
                 }
-
                 cmbSessionProgram.setVisible(true);
-
             }
         });
 
         cmbSessionProgram.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
+            if (newVal != null && cmbSessionPatient.getValue() != null) {
                 try {
-                    PatientTherapyProgram ptp = patientService.getPatientProgram(cmbSessionPatient.getValue().getId(),
-                            newVal.getId());
+                    PatientTherapyProgramDTO ptp = patientService.getPatientProgram(cmbSessionPatient.getValue().getId(), newVal.getId());
                     if (ptp != null) {
                         currentCredit = ptp.getRemainingCredit();
                         if (currentCredit > 0) {
                             lblCreditInfo.setText("Credit available: " + currentCredit + " sessions");
-                            lblCreditInfo
-                                    .setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px; -fx-font-weight: bold;");
+                            lblCreditInfo.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px; -fx-font-weight: bold;");
                         } else {
-
                             lblCreditInfo.setText("No upfront credit. Payment required.");
-                            lblCreditInfo
-                                    .setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px; -fx-font-weight: bold;");
-
+                            lblCreditInfo.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px; -fx-font-weight: bold;");
                         }
 
                         cmbSessionStatus.setVisible(true);
@@ -247,34 +180,24 @@ public class SessionManagementController implements Initializable {
                         cmbSessionTherapist.setVisible(true);
                         dpSessionDate.setVisible(true);
 
-                        // Keep therapist filter logic
-                        List<Therapist> therapists = newVal.getTherapists();
-                        if (therapists != null) {
-                            ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, therapists,
-                                    Therapist::getName, t -> t.getId() + " " + t.getName());
-                        } else {
-                            ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, allTherapistsCache,
-                                    Therapist::getName, t -> t.getId() + " " + t.getName());
-                        }
-
+                        TherapyProgramDTO program = programService.getProgramById(newVal.getId());
+                        List<TherapistDTO> therapistsForProgram = program.getTherapists();
+                        ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, therapistsForProgram,
+                                TherapistDTO::getName, t -> t.getId() + " " + t.getName());
                     } else {
                         currentCredit = 0;
                         lblCreditInfo.setText("");
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             } else {
-
                 try {
                     ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, allTherapistsCache,
-                            Therapist::getName, t -> t.getId() + " " + t.getName());
+                            TherapistDTO::getName, t -> t.getId() + " " + t.getName());
                 } catch (Exception e) {
                     System.out.println("Error resetting therapist combo: " + e.getMessage());
                 }
-
                 cmbSessionStatus.setVisible(false);
                 cmbSessionTime.setVisible(false);
                 cmbSessionTherapist.setVisible(false);
@@ -287,27 +210,37 @@ public class SessionManagementController implements Initializable {
         cmbFilterTime.valueProperty().addListener((obs, o, n) -> filterAllSessions());
         cmbFilterTherapist.valueProperty().addListener((obs, o, n) -> filterAllSessions());
         cmbFilterProgram.valueProperty().addListener((obs, o, n) -> filterAllSessions());
-
     }
 
-    private void setupTblSelection(TableView<TherapySession> tbl) {
+    private void resetForm() {
+        cmbSessionTherapist.setValue(null);
+        cmbSessionProgram.setValue(null);
+        dpSessionDate.setValue(null);
+        cmbSessionTime.setValue(null);
+        cmbSessionStatus.setValue(SessionStatus.SCHEDULED);
+        txtSessionNotes.clear();
+        selectedSession = null;
+        lblCreditInfo.setText("");
+        currentCredit = 0;
+        updateActionButtonsVisibility(false, false);
+    }
+
+    private void setupTblSelection(TableView<TherapySessionTM> tbl) {
         tbl.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
             if (n != null) {
-                boolean needsPay = (n.getPaymentStatus() == TherapySession.PaymentStatus.PENDING);
+                TherapySessionDTO fullDTO = sessionService.getSessionById(Long.parseLong(n.getId().replace("S", "")));
+                if (fullDTO != null) {
+                    boolean needsPay = (fullDTO.getPaymentStatus() == SessionPaymentStatus.PENDING);
+                    populateForm(fullDTO);
+                    updateActionButtonsVisibility(true, needsPay);
 
-                populateForm(n);
-                updateActionButtonsVisibility(true, needsPay);
+                    cmbSessionId.setMouseTransparent(true);
+                    cmbSessionPatient.setMouseTransparent(true);
+                    cmbSessionProgram.setMouseTransparent(true);
 
-                cmbSessionId.setMouseTransparent(true);
-                cmbSessionPatient.setMouseTransparent(true);
-                cmbSessionProgram.setMouseTransparent(true);
-
-                selectedSession = n;
-                lblCreditInfo.setText("");
-
-                // Platform.runLater(() -> {
-                // setDbFilteredData(n);
-                // });
+                    selectedSession = fullDTO;
+                    lblCreditInfo.setText("");
+                }
             }
         });
     }
@@ -315,9 +248,7 @@ public class SessionManagementController implements Initializable {
     private void setupSelectFromSessionId() {
         cmbSessionId.valueProperty().addListener((obs, o, n) -> {
             if (n != null) {
-                boolean needsPay = (n.getPaymentStatus() == TherapySession.PaymentStatus.PENDING);
-
-
+                boolean needsPay = (n.getPaymentStatus() == SessionPaymentStatus.PENDING);
                 populateForm(n);
                 updateActionButtonsVisibility(true, needsPay);
                 selectedSession = n;
@@ -325,7 +256,6 @@ public class SessionManagementController implements Initializable {
 
                 Platform.runLater(() -> {
                     cmbSessionId.setMouseTransparent(true);
-                    // setDbFilteredData(n);
                 });
                 cmbSessionPatient.setMouseTransparent(true);
                 cmbSessionProgram.setMouseTransparent(true);
@@ -334,44 +264,23 @@ public class SessionManagementController implements Initializable {
     }
 
     private void loadAllData() {
-        allSessionsCache = sessionService.getAllSessions();
+        allSessionsCache = sessionService.getAllSessionDTOs();
         allPatientsCache = patientService.getAllPatients();
         allTherapistsCache = therapistService.getAllTherapists();
         allProgramsCache = programService.getAllPrograms();
     }
 
-    private void setDbFilteredData(TherapySession session) {
-        TherapyProgram program = session.getProgram();
-        try {
-            if (program != null) {
-                List<Therapist> assignedTherapists = program.getTherapists();
-                if (assignedTherapists != null) {
-                    ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, assignedTherapists,
-                            Therapist::getName, t -> t.getId() + " " + t.getName());
-                }
-            } else {
-                ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, allTherapistsCache,
-                        Therapist::getName, t -> t.getId() + " " + t.getName());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     private void loadComboBoxes() {
         try {
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionPatient, allPatientsCache,
-                    Patient::getName, p -> p.getId() + " " + p.getName());
+                    PatientDTO::getName, p -> p.getId() + " " + p.getName());
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, allTherapistsCache,
-                    Therapist::getName, t -> t.getId() + " " + t.getName());
+                    TherapistDTO::getName, t -> t.getId() + " " + t.getName());
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionProgram, allProgramsCache,
-                    TherapyProgram::getName, p -> p.getId() + " " + p.getName());
+                    TherapyProgramDTO::getName, p -> p.getId() + " " + p.getName());
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionId, allSessionsCache,
-                    s -> s.getId() == null ? "" : String.valueOf(s.getId()),
-                    s -> s.getId() != null ? String.valueOf(s.getId()) : ""); // why error - because getId() can be null
-                                                                              // for new sessions, so we return empty
-                                                                              // string in that case
+                    s -> s.getId() == 0 ? "" : s.getStringId(),
+                    s -> s.getId() == 0 ? "" : s.getStringId());
         } catch (Exception e) {
             System.err.println("Error loading combos: " + e.getMessage());
         }
@@ -381,16 +290,16 @@ public class SessionManagementController implements Initializable {
                 "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"));
         cmbFilterTime.setItems(FXCollections.observableArrayList(cmbSessionTime.getItems()));
 
-        cmbSessionStatus.setItems(FXCollections.observableArrayList(TherapySession.SessionStatus.values()));
-        cmbSessionStatus.setValue(TherapySession.SessionStatus.SCHEDULED);
+        cmbSessionStatus.setItems(FXCollections.observableArrayList(SessionStatus.values()));
+        cmbSessionStatus.setValue(SessionStatus.SCHEDULED);
 
         try {
-            cmbFilterTherapist.setItems(FXCollections.observableArrayList(therapistService.getActiveTherapists()));
-            cmbFilterProgram.setItems(FXCollections.observableArrayList(programService.getAllPrograms()));
-        } catch (Exception e) {
-        }
-        setComboCellFactory(cmbFilterTherapist, Therapist::getName);
-        setComboCellFactory(cmbFilterProgram, TherapyProgram::getName);
+            cmbFilterTherapist.setItems(FXCollections.observableArrayList(allTherapistsCache));
+            cmbFilterProgram.setItems(FXCollections.observableArrayList(allProgramsCache));
+        } catch (Exception e) {}
+        
+        setComboCellFactory(cmbFilterTherapist, TherapistDTO::getName);
+        setComboCellFactory(cmbFilterProgram, TherapyProgramDTO::getName);
     }
 
     private <T> void setComboCellFactory(ComboBox<T> combo, Function<T, String> nameFunc) {
@@ -410,49 +319,43 @@ public class SessionManagementController implements Initializable {
         });
     }
 
+    private TherapySessionTM toTM(TherapySessionDTO d) {
+        return new TherapySessionTM(
+                d.getId() == 0 ? "" : "S" + String.format("%03d", d.getId()),
+                d.getSequenceNumber(),
+                d.getSessionDate(),
+                d.getSessionTime(),
+                d.getStatus() != null ? d.getStatus().name() : "",
+                d.getPaymentStatus() != null ? d.getPaymentStatus().name() : "",
+                d.getPatientName(),
+                d.getTherapistName(),
+                d.getProgramName()
+        );
+    }
+
     private void setupTable() {
-
-        colSessionId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
+        colSessionId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
         colSequenceNumber.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSequenceNumber()));
-
-        colSessionDate.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getSessionDate() != null ? d.getValue().getSessionDate().toString() : ""));
-        colSessionTime.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getSessionTime() != null
-                        ? d.getValue().getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm"))
-                        : ""));
-        colSessionPatient.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getPatient() != null ? d.getValue().getPatient().getName() : ""));
-        colSessionTherapist.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getTherapist() != null ? d.getValue().getTherapist().getName() : ""));
-        colSessionProgram.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getProgram() != null ? d.getValue().getProgram().getName() : ""));
-        colSessionStatus.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getStatus() != null ? d.getValue().getStatus().name() : ""));
-
-        colPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getPaymentStatus() != null ? d.getValue().getPaymentStatus().name() : ""));
+        colSessionDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSessionDate() != null ? d.getValue().getSessionDate().toString() : ""));
+        colSessionTime.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSessionTime() != null ? d.getValue().getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")) : ""));
+        colSessionPatient.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPatientName()));
+        colSessionTherapist.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTherapistName()));
+        colSessionProgram.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProgramName()));
+        colSessionStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus()));
+        colPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPaymentStatus()));
 
         // Setup Patient Sessions Table
-        colPatSessionId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
+        colPatSessionId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
         colPatSequenceNumber.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSequenceNumber()));
-        colPatSessionDate.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getSessionDate() != null ? d.getValue().getSessionDate().toString() : ""));
-        colPatSessionTime.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getSessionTime() != null
-                        ? d.getValue().getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm"))
-                        : ""));
-        colPatSessionTherapist.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getTherapist() != null ? d.getValue().getTherapist().getName() : ""));
-        colPatSessionProgram.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getProgram() != null ? d.getValue().getProgram().getName() : ""));
-        colPatSessionStatus.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getStatus() != null ? d.getValue().getStatus().name() : ""));
-        colPatPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getPaymentStatus() != null ? d.getValue().getPaymentStatus().name() : ""));
+        colPatSessionDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSessionDate() != null ? d.getValue().getSessionDate().toString() : ""));
+        colPatSessionTime.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSessionTime() != null ? d.getValue().getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")) : ""));
+        colPatSessionTherapist.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTherapistName()));
+        colPatSessionProgram.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProgramName()));
+        colPatSessionStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus()));
+        colPatPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPaymentStatus()));
 
         // Status Badges
-        Callback<TableColumn<TherapySession, String>, TableCell<TherapySession, String>> cellFactory = column -> new TableCell<TherapySession, String>() {
+        Callback<TableColumn<TherapySessionTM, String>, TableCell<TherapySessionTM, String>> cellFactory = column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -478,19 +381,18 @@ public class SessionManagementController implements Initializable {
 
     private void loadData() {
         try {
-            tblSessions.setItems(FXCollections.observableArrayList(sessionService.getAllSessions()));
+            List<TherapySessionTM> list = sessionService.getAllSessionDTOs().stream().map(this::toTM).toList();
+            tblSessions.setItems(FXCollections.observableArrayList(list));
         } catch (Exception e) {
             AlertUtil.showError("Error", "Failed to load sessions: " + e.getMessage());
         }
     }
 
-    private void loadPatientSessions(Patient patient) {
+    private void loadPatientSessions(PatientDTO patient) {
         try {
-            List<TherapySession> all = sessionService.getAllSessions();
-            List<TherapySession> filtered = all.stream()
-                    .filter(s -> s.getPatient() != null && s.getPatient().getId().equals(patient.getId()))
-                    .collect(Collectors.toList());
-            tblPatientSessions.setItems(FXCollections.observableArrayList(filtered));
+            List<TherapySessionTM> list = sessionService.getSessionsByPatient(patient.getId())
+                    .stream().map(this::toTM).toList();
+            tblPatientSessions.setItems(FXCollections.observableArrayList(list));
         } catch (Exception e) {
             System.err.println("Error loading patient sessions: " + e.getMessage());
         }
@@ -498,35 +400,24 @@ public class SessionManagementController implements Initializable {
 
     private void filterAllSessions() {
         try {
-            List<TherapySession> all = sessionService.getAllSessions();
-
             LocalDate fDate = dpFilterDate.getValue();
             String fTime = cmbFilterTime.getValue();
-            Therapist fTherapist = cmbFilterTherapist.getValue();
-            TherapyProgram fProgram = cmbFilterProgram.getValue();
-            String searchBar = txtAllSessionSearch.getText().trim();
+            TherapistDTO fTherapist = cmbFilterTherapist.getValue();
+            TherapyProgramDTO fProgram = cmbFilterProgram.getValue();
+            String searchBar = txtAllSessionSearch.getText().trim().toLowerCase();
 
-            List<TherapySession> filtered = all.stream()
+            List<TherapySessionTM> filtered = allSessionsCache.stream()
                     .filter(s -> fDate == null || fDate.equals(s.getSessionDate()))
-                    .filter(s -> fTime == null || fTime.equals(
-                            s.getSessionTime() != null ? s.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm"))
-                                    : null))
-                    .filter(s -> fTherapist == null
-                            || (s.getTherapist() != null && fTherapist.getId().equals(s.getTherapist().getId())))
-                    .filter(s -> fProgram == null
-                            || (s.getProgram() != null && fProgram.getId().equals(s.getProgram().getId())))
+                    .filter(s -> fTime == null || fTime.equals(s.getSessionTime() != null ? s.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")) : null))
+                    .filter(s -> fTherapist == null || (s.getTherapistId() != null && fTherapist.getId() == s.getTherapistId()))
+                    .filter(s -> fProgram == null || (s.getProgramId() != null && fProgram.getId() == s.getProgramId()))
                     .filter(s -> searchBar.isEmpty() ||
-                            (s.getPatient() != null
-                                    && s.getPatient().getName().toLowerCase().contains(searchBar.toLowerCase()))
-                            ||
-                            (s.getTherapist() != null
-                                    && s.getTherapist().getName().toLowerCase().contains(searchBar.toLowerCase()))
-                            ||
-                            (s.getProgram() != null
-                                    && s.getProgram().getName().toLowerCase().contains(searchBar.toLowerCase()))
-                            ||
-                            (s.getId() != null && String.valueOf(s.getId()).contains(searchBar.toLowerCase())))
-                    .collect(Collectors.toList());
+                            (s.getPatientName() != null && s.getPatientName().toLowerCase().contains(searchBar)) ||
+                            (s.getTherapistName() != null && s.getTherapistName().toLowerCase().contains(searchBar)) ||
+                            (s.getProgramName() != null && s.getProgramName().toLowerCase().contains(searchBar)) ||
+                            ("S" + String.format("%03d", s.getId())).toLowerCase().contains(searchBar))
+                    .map(this::toTM)
+                    .toList();
 
             tblSessions.setItems(FXCollections.observableArrayList(filtered));
         } catch (Exception e) {
@@ -540,6 +431,7 @@ public class SessionManagementController implements Initializable {
         cmbFilterTime.setValue(null);
         cmbFilterTherapist.setValue(null);
         cmbFilterProgram.setValue(null);
+        txtAllSessionSearch.clear();
         loadData();
     }
 
@@ -570,15 +462,20 @@ public class SessionManagementController implements Initializable {
         }
     }
 
-    private void populateForm(TherapySession s) {
+    private void populateForm(TherapySessionDTO s) {
         cmbSessionId.setValue(s);
-        cmbSessionPatient.setValue(s.getPatient());
-        cmbSessionTherapist.setValue(s.getTherapist());
-        cmbSessionProgram.setValue(s.getProgram());
+        
+        cmbSessionPatient.setValue(s.getPatientId() != null ? allPatientsCache.stream().filter(p -> p.getId() == s.getPatientId()).findFirst().orElse(null) : null);
+        cmbSessionTherapist.setValue(s.getTherapistId() != null ? allTherapistsCache.stream().filter(t -> t.getId() == s.getTherapistId()).findFirst().orElse(null) : null);
+        cmbSessionProgram.setValue(s.getProgramId() != null ? allProgramsCache.stream().filter(p -> p.getId() == s.getProgramId()).findFirst().orElse(null) : null);
+        
         dpSessionDate.setValue(s.getSessionDate());
         if (s.getSessionTime() != null)
             cmbSessionTime.setValue(s.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-        cmbSessionStatus.setValue(s.getStatus() != null ? s.getStatus() : TherapySession.SessionStatus.SCHEDULED);
+        else 
+            cmbSessionTime.setValue(null);
+            
+        cmbSessionStatus.setValue(s.getStatus() != null ? s.getStatus() : SessionStatus.SCHEDULED);
         txtSessionNotes.setText(s.getNotes());
     }
 
@@ -590,18 +487,20 @@ public class SessionManagementController implements Initializable {
         }
 
         try {
-            TherapySession newSession = new TherapySession();
-            newSession.setPatient(cmbSessionPatient.getValue());
-            newSession.setProgram(cmbSessionProgram.getValue());
-            newSession.setTherapist(cmbSessionTherapist.getValue());
+            TherapySessionDTO newSession = new TherapySessionDTO();
+            newSession.setPatientId(cmbSessionPatient.getValue().getId());
+            newSession.setProgramId(cmbSessionProgram.getValue().getId());
+            if (cmbSessionTherapist.getValue() != null) {
+                newSession.setTherapistId(cmbSessionTherapist.getValue().getId());
+            }
             newSession.setSessionDate(dpSessionDate.getValue());
             newSession.setSessionTime(parseTime());
             newSession.setStatus(cmbSessionStatus.getValue());
             newSession.setNotes(txtSessionNotes.getText());
 
-            TherapySession created = sessionService.createAndScheduleSession(newSession);
+            TherapySessionDTO created = sessionService.createAndScheduleSession(newSession);
 
-            if (created.getPaymentStatus() == TherapySession.PaymentStatus.PENDING) {
+            if (created.getPaymentStatus() == SessionPaymentStatus.PENDING) {
                 AlertUtil.showWarning("Payment Required",
                         "Session created but upfront credit was 0.\nPlease pay to schedule this session.");
                 selectedSession = created;
@@ -610,27 +509,11 @@ public class SessionManagementController implements Initializable {
                 btnUpdateSession.setManaged(false);
             } else {
                 AlertUtil.showInfo("Success", "Session created and scheduled using upfront credit!");
-
             }
-             loadData();
-             loadPatientSessions(cmbSessionPatient.getValue());
-
-            // // Refresh credit label
-            // PatientTherapyProgram ptp =
-            // patientService.getPatientProgram(cmbSessionPatient.getValue().getId(),
-            // cmbSessionProgram.getValue().getId());
-            // if (ptp != null) {
-            // currentCredit = ptp.getRemainingCredit();
-            // if (currentCredit > 0) {
-            // lblCreditInfo.setText("Credit available: " + currentCredit + " sessions");
-            // lblCreditInfo.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px;
-            // -fx-font-weight: bold;");
-            // } else {
-            // lblCreditInfo.setText("No upfront credit. Payment required.");
-            // lblCreditInfo.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px;
-            // -fx-font-weight: bold;");
-            // }
-            // }
+            
+            loadAllData();
+            loadData();
+            loadPatientSessions(cmbSessionPatient.getValue());
 
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
@@ -639,13 +522,12 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleInlinePay(ActionEvent event) {
-        if (selectedSession == null || selectedSession.getPaymentStatus() == TherapySession.PaymentStatus.PAID) {
+        if (selectedSession == null || selectedSession.getPaymentStatus() == SessionPaymentStatus.PAID) {
             return;
         }
 
-        // Calculate and show price
         BigDecimal price = BigDecimal.ZERO;
-        TherapyProgram prog = selectedSession.getProgram();
+        TherapyProgramDTO prog = allProgramsCache.stream().filter(p -> p.getId() == selectedSession.getProgramId()).findFirst().orElse(null);
         if (prog != null) {
             if (prog.getSessionFee() != null) {
                 price = prog.getSessionFee();
@@ -673,36 +555,33 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleProcessInlinePayment(ActionEvent event) {
-        if (selectedSession == null)
-            return;
+        if (selectedSession == null) return;
 
-        Payment.PaymentMethod method = cmbInlinePaymentMethod.getValue();
+        PaymentMethod method = cmbInlinePaymentMethod.getValue();
         if (method == null) {
             AlertUtil.showWarning("Warning", "Please select a payment method.");
             return;
         }
 
         try {
-            Payment p = new Payment();
+            PaymentDTO p = new PaymentDTO();
             p.setMethod(method);
 
-            // Calculate amount (using session fee if exists, else program fee / total)
-            java.math.BigDecimal amount = java.math.BigDecimal.ZERO;
-            TherapyProgram prog = selectedSession.getProgram();
+            BigDecimal amount = BigDecimal.ZERO;
+            TherapyProgramDTO prog = allProgramsCache.stream().filter(pr -> pr.getId() == selectedSession.getProgramId()).findFirst().orElse(null);
             if (prog != null) {
                 if (prog.getSessionFee() != null) {
                     amount = prog.getSessionFee();
                 } else if (prog.getFee() != null) {
                     int total = prog.getTotalSessions() != null ? prog.getTotalSessions() : 1;
-                    amount = prog.getFee().divide(new java.math.BigDecimal(total), 2, java.math.RoundingMode.HALF_UP);
+                    amount = prog.getFee().divide(new BigDecimal(total), 2, java.math.RoundingMode.HALF_UP);
                 }
             }
             p.setAmount(amount);
 
-            paymentService.processSessionPayment(p, selectedSession);
+            paymentService.processSessionPayment(p, selectedSession.getId());
 
-            // Automatically update status to SCHEDULED
-            selectedSession.setStatus(TherapySession.SessionStatus.SCHEDULED);
+            selectedSession.setStatus(SessionStatus.SCHEDULED);
             sessionService.updateSession(selectedSession);
 
             AlertUtil.showInfo("Success", "Payment processed. Session is now SCHEDULED.");
@@ -710,11 +589,13 @@ public class SessionManagementController implements Initializable {
             hboxInlinePayment.setVisible(false);
             hboxInlinePayment.setManaged(false);
 
+            loadAllData();
             loadData();
-            if (cmbSessionPatient.getValue() != null)
+            if (cmbSessionPatient.getValue() != null) {
                 loadPatientSessions(cmbSessionPatient.getValue());
+            }
 
-            handleUpdateSession(event); // to refresh the form and buttons based on new payment status
+            handleUpdateSession(event); 
 
         } catch (Exception e) {
             AlertUtil.showError("Error", "Payment failed: " + e.getMessage());
@@ -728,23 +609,18 @@ public class SessionManagementController implements Initializable {
             return;
         }
         try {
-            selectedSession.setPatient(cmbSessionPatient.getValue());
-            selectedSession.setTherapist(cmbSessionTherapist.getValue());
-            selectedSession.setProgram(cmbSessionProgram.getValue());
+            selectedSession.setPatientId(cmbSessionPatient.getValue().getId());
+            selectedSession.setTherapistId(cmbSessionTherapist.getValue() != null ? cmbSessionTherapist.getValue().getId() : null);
+            selectedSession.setProgramId(cmbSessionProgram.getValue() != null ? cmbSessionProgram.getValue().getId() : null);
             selectedSession.setSessionDate(dpSessionDate.getValue());
             selectedSession.setSessionTime(parseTime());
             selectedSession.setStatus(cmbSessionStatus.getValue());
             selectedSession.setNotes(txtSessionNotes.getText());
+            
             sessionService.updateSession(selectedSession);
             AlertUtil.showInfo("Success", "Session updated.");
 
-            Long currentPatientId = cmbSessionPatient.getValue().getId();
-
             handleClearSession(event);
-
-
-            System.out.println("Session updated-: " + currentPatientId);
-            // loadData();
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
         }
@@ -752,21 +628,25 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleCompleteSession(ActionEvent event) {
-        TherapySession s = tblSessions.getSelectionModel().getSelectedItem();
-        if (s == null)
-            s = tblPatientSessions.getSelectionModel().getSelectedItem();
+        TherapySessionTM s = tblSessions.getSelectionModel().getSelectedItem();
+        if (s == null) s = tblPatientSessions.getSelectionModel().getSelectedItem();
         if (s == null) {
             AlertUtil.showWarning("Warning", "Select a session to complete.");
             return;
         }
-        if (s.getStatus() == TherapySession.SessionStatus.COMPLETED) {
+        if ("COMPLETED".equals(s.getStatus())) {
             AlertUtil.showWarning("Info", "Session is already completed.");
             return;
         }
         if (AlertUtil.showConfirmation("Confirm", "Mark session as COMPLETED?")) {
             try {
-                TherapySession nextSession = sessionService.completeSession(s);
+                long sid = Long.parseLong(s.getId().replace("S", ""));
+                TherapySessionDTO nextSession = sessionService.completeSession(sid);
                 AlertUtil.showInfo("Success", "Session completed.");
+                
+                loadAllData();
+                loadData();
+                
                 if (nextSession != null) {
                     if (AlertUtil.showConfirmation("Next Session", "Would you like to schedule the next session ("
                             + nextSession.getSequenceNumber() + ") now?")) {
@@ -774,9 +654,10 @@ public class SessionManagementController implements Initializable {
                         populateForm(nextSession);
                     }
                 }
-                loadData();
-                if (cmbSessionPatient.getValue() != null)
+                
+                if (cmbSessionPatient.getValue() != null) {
                     loadPatientSessions(cmbSessionPatient.getValue());
+                }
             } catch (Exception e) {
                 AlertUtil.showError("Error", e.getMessage());
             }
@@ -785,21 +666,24 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleCancelSession(ActionEvent event) {
-        TherapySession s = tblSessions.getSelectionModel().getSelectedItem();
-        if (s == null)
-            s = tblPatientSessions.getSelectionModel().getSelectedItem();
+        TherapySessionTM s = tblSessions.getSelectionModel().getSelectedItem();
+        if (s == null) s = tblPatientSessions.getSelectionModel().getSelectedItem();
         if (s == null) {
             AlertUtil.showWarning("Warning", "Select a session to cancel/reschedule.");
             return;
         }
         if (AlertUtil.showConfirmation("Confirm", "Cancel and return session to UNSCHEDULED status?")) {
             try {
-                sessionService.cancelAndReschedule(s);
+                long sid = Long.parseLong(s.getId().replace("S", ""));
+                sessionService.cancelAndReschedule(sid);
                 AlertUtil.showInfo("Success", "Session cancelled and returned to unscheduled pool.");
                 handleClearSession(event);
+                
+                loadAllData();
                 loadData();
-                if (cmbSessionPatient.getValue() != null)
+                if (cmbSessionPatient.getValue() != null) {
                     loadPatientSessions(cmbSessionPatient.getValue());
+                }
             } catch (Exception e) {
                 AlertUtil.showError("Error", e.getMessage());
             }
@@ -808,22 +692,23 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleDeleteSession(ActionEvent event) {
-        // We probably shouldn't allow raw deletion since they are pre-generated, but
-        // keeping for admin
-        TherapySession s = tblSessions.getSelectionModel().getSelectedItem();
-        if (s == null)
-            s = tblPatientSessions.getSelectionModel().getSelectedItem();
+        TherapySessionTM s = tblSessions.getSelectionModel().getSelectedItem();
+        if (s == null) s = tblPatientSessions.getSelectionModel().getSelectedItem();
         if (s == null) {
             AlertUtil.showWarning("Warning", "Select a session to delete.");
             return;
         }
         if (AlertUtil.showConfirmation("Confirm", "Delete this session completely?")) {
             try {
-                sessionService.deleteSession(s);
+                long sid = Long.parseLong(s.getId().replace("S", ""));
+                sessionService.deleteSession(sid);
                 handleClearSession(event);
+                
+                loadAllData();
                 loadData();
-                if (cmbSessionPatient.getValue() != null)
+                if (cmbSessionPatient.getValue() != null) {
                     loadPatientSessions(cmbSessionPatient.getValue());
+                }
             } catch (Exception e) {
                 AlertUtil.showError("Error", e.getMessage());
             }
@@ -838,7 +723,7 @@ public class SessionManagementController implements Initializable {
         cmbSessionProgram.setValue(null);
         dpSessionDate.setValue(null);
         cmbSessionTime.setValue(null);
-        cmbSessionStatus.setValue(TherapySession.SessionStatus.SCHEDULED);
+        cmbSessionStatus.setValue(SessionStatus.SCHEDULED);
         txtSessionNotes.clear();
         selectedSession = null;
         lblCreditInfo.setText("");

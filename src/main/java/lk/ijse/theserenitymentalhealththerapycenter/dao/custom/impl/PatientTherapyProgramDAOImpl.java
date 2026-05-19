@@ -22,7 +22,8 @@ public class PatientTherapyProgramDAOImpl extends GenericDAO<PatientTherapyProgr
     public List<PatientTherapyProgram> findByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
-                    "FROM PatientTherapyProgram ptp " +
+                    "SELECT DISTINCT ptp FROM PatientTherapyProgram ptp " +
+                            "LEFT JOIN FETCH ptp.patient " +
                             "LEFT JOIN FETCH ptp.program " +
                             "WHERE ptp.patient.id = :patientId",
                     PatientTherapyProgram.class)
@@ -37,7 +38,9 @@ public class PatientTherapyProgramDAOImpl extends GenericDAO<PatientTherapyProgr
     public PatientTherapyProgram findByPatientAndProgram(Long patientId, Long programId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
-                    "FROM PatientTherapyProgram ptp " +
+                    "SELECT DISTINCT ptp FROM PatientTherapyProgram ptp " +
+                            "LEFT JOIN FETCH ptp.patient " +
+                            "LEFT JOIN FETCH ptp.program " +
                             "WHERE ptp.patient.id = :patientId AND ptp.program.id = :programId",
                     PatientTherapyProgram.class)
                     .setParameter("patientId", patientId)

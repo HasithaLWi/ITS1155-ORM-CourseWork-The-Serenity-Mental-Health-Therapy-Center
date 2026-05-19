@@ -1,6 +1,8 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -9,18 +11,22 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.ProgramPaymentTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-
-import static java.util.Locale.filter;
 
 public class PatientRegistrationController implements Initializable {
 
@@ -33,7 +39,7 @@ public class PatientRegistrationController implements Initializable {
     @FXML
     private TextField txtPatientAddress;
     @FXML
-    private ComboBox<TherapyProgram> cmbPatientProgram;
+    private ComboBox<TherapyProgramDTO> cmbPatientProgram;
     @FXML
     private Label lblRegMessage;
     @FXML
@@ -42,20 +48,20 @@ public class PatientRegistrationController implements Initializable {
     private TextArea txtInterviewNote;
 
     @FXML
-    private TableView<ProgramPaymentModel> tblSelectedPgm;
+    private TableView<ProgramPaymentTM> tblSelectedPgm;
     @FXML
-    private TableColumn<ProgramPaymentModel, String> colProgramName;
+    private TableColumn<ProgramPaymentTM, String> colProgramName;
     @FXML
-    private TableColumn<ProgramPaymentModel, Integer> colTotalSessions;
+    private TableColumn<ProgramPaymentTM, Integer> colTotalSessions;
     @FXML
-    private TableColumn<ProgramPaymentModel, ComboBox<Integer>> colSessionsToPay;
+    private TableColumn<ProgramPaymentTM, Integer> colSessionsToPay;
     @FXML
-    private TableColumn<ProgramPaymentModel, java.math.BigDecimal> colSubtotal;
+    private TableColumn<ProgramPaymentTM, BigDecimal> colSubtotal;
     @FXML
-    private TableColumn<ProgramPaymentModel, Void> colAction;
+    private TableColumn<ProgramPaymentTM, Void> colAction;
 
     @FXML
-    private ComboBox<lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentMethod> cmbPaymentMethod;
+    private ComboBox<PaymentMethod> cmbPaymentMethod;
     @FXML
     private TextField txtDiscount;
     @FXML
@@ -67,9 +73,9 @@ public class PatientRegistrationController implements Initializable {
 
     private final PatientBOImpl patientService = new PatientBOImpl();
     private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
-    private final lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl paymentService = new lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl();
+    private final PaymentBOImpl paymentService = new PaymentBOImpl();
 
-    private final ObservableList<ProgramPaymentModel> paymentModels = FXCollections.observableArrayList();
+    private final ObservableList<ProgramPaymentTM> paymentModels = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -81,34 +87,30 @@ public class PatientRegistrationController implements Initializable {
 
         cmbPatientProgram.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(TherapyProgram item, boolean empty) {
+            protected void updateItem(TherapyProgramDTO item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? "Select Therapy Program" : item.getName());
             }
         });
         cmbPatientProgram.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(TherapyProgram item, boolean empty) {
+            protected void updateItem(TherapyProgramDTO item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? "Select Therapy Program" : item.getName());
             }
         });
 
-        cmbPaymentMethod.setItems(FXCollections.observableArrayList(
-                lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentMethod.values()));
+        cmbPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
         txtDiscount.textProperty().addListener((obs, oldVal, newVal) -> calculateTotals());
 
         cmbPatientProgram.valueProperty().addListener((obs, oldPgm, newPgm) -> {
             if (newPgm != null) {
                 boolean alreadyAdded = paymentModels.stream()
-                        .anyMatch(m -> m.getProgram().getId().equals(newPgm.getId()));
+                        .anyMatch(m -> m.getProgram().getId() == newPgm.getId());
                 if (!alreadyAdded) {
-                    ProgramPaymentModel model = new ProgramPaymentModel(newPgm);
-                    model.getSessionSelector().valueProperty().addListener((o, oldV, newV) -> {
-                        model.updateSubtotal();
-                        calculateTotals();
-                        tblSelectedPgm.refresh();
-                    });
+                    int total = newPgm.getTotalSessions() != null ? newPgm.getTotalSessions() : 1;
+                    BigDecimal subtotal = calculateLineTotal(newPgm, total);
+                    ProgramPaymentTM model = new ProgramPaymentTM(newPgm, newPgm.getName(), total, total, subtotal);
                     paymentModels.add(model);
                     calculateTotals();
                 }
@@ -123,14 +125,40 @@ public class PatientRegistrationController implements Initializable {
         tblSelectedPgm.setItems(paymentModels);
         tblSelectedPgm.setPlaceholder(new Label("No programs added yet"));
 
-        colProgramName.setCellValueFactory(
-                d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getProgram().getName()));
-        colTotalSessions.setCellValueFactory(d -> new javafx.beans.property.SimpleObjectProperty<>(
-                d.getValue().getProgram().getTotalSessions() != null ? d.getValue().getProgram().getTotalSessions()
-                        : 1));
-        colSessionsToPay.setCellValueFactory(
-                d -> new javafx.beans.property.SimpleObjectProperty<>(d.getValue().getSessionSelector()));
-        colSubtotal.setCellValueFactory(d -> d.getValue().subtotalProperty());
+        colProgramName.setCellValueFactory(new PropertyValueFactory<>("programName"));
+        colTotalSessions.setCellValueFactory(new PropertyValueFactory<>("totalSessions"));
+        colSessionsToPay.setCellValueFactory(new PropertyValueFactory<>("sessionsToPay"));
+        colSessionsToPay.setCellFactory(column -> new TableCell<>() {
+            private final ComboBox<Integer> comboBox = new ComboBox<>();
+            
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    ProgramPaymentTM model = getTableView().getItems().get(getIndex());
+                    int total = model.getProgram().getTotalSessions() != null ? model.getProgram().getTotalSessions() : 1;
+                    ObservableList<Integer> options = FXCollections.observableArrayList();
+                    for (int i = 0; i <= total; i++) {
+                        options.add(i);
+                    }
+                    comboBox.setItems(options);
+                    comboBox.setOnAction(null);
+                    comboBox.setValue(model.getSessionsToPay());
+                    comboBox.setOnAction(e -> {
+                        if (comboBox.getValue() != null) {
+                            model.setSessionsToPay(comboBox.getValue());
+                            model.setSubtotal(calculateLineTotal(model.getProgram(), comboBox.getValue()));
+                            calculateTotals();
+                            getTableView().refresh();
+                        }
+                    });
+                    setGraphic(comboBox);
+                }
+            }
+        });
+        colSubtotal.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSubtotal()));
 
         colAction.setCellFactory(param -> new TableCell<>() {
             private final Button btnRemove = new Button("Remove");
@@ -139,7 +167,7 @@ public class PatientRegistrationController implements Initializable {
                 btnRemove.setOnAction(event -> {
                     if (isEmpty() || getIndex() < 0 || getIndex() >= getTableView().getItems().size())
                         return;
-                    ProgramPaymentModel model = getTableView().getItems().get(getIndex());
+                    ProgramPaymentTM model = getTableView().getItems().get(getIndex());
                     paymentModels.remove(model);
                     calculateTotals();
                 });
@@ -155,30 +183,30 @@ public class PatientRegistrationController implements Initializable {
     }
 
     private void calculateTotals() {
-        java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
-        for (ProgramPaymentModel model : paymentModels) {
+        BigDecimal subtotal = BigDecimal.ZERO;
+        for (ProgramPaymentTM model : paymentModels) {
             subtotal = subtotal.add(model.getSubtotal());
         }
 
-        java.math.BigDecimal discount = parseDiscount();
-        java.math.BigDecimal totalDue = subtotal.subtract(discount);
+        BigDecimal discount = parseDiscount();
+        BigDecimal totalDue = subtotal.subtract(discount);
 
         if (totalDue.signum() < 0)
-            totalDue = java.math.BigDecimal.ZERO;
+            totalDue = BigDecimal.ZERO;
 
         lblSubtotal.setText(subtotal.toPlainString() + " LKR");
         lblDiscount.setText("- " + discount.toPlainString() + " LKR");
         lblTotalDue.setText(totalDue.toPlainString() + " LKR");
     }
 
-    private java.math.BigDecimal parseDiscount() {
+    private BigDecimal parseDiscount() {
         String text = txtDiscount.getText();
         if (text == null || text.trim().isEmpty())
-            return java.math.BigDecimal.ZERO;
+            return BigDecimal.ZERO;
         try {
-            return new java.math.BigDecimal(text.trim());
+            return new BigDecimal(text.trim());
         } catch (NumberFormatException e) {
-            return java.math.BigDecimal.ZERO;
+            return BigDecimal.ZERO;
         }
     }
 
@@ -190,20 +218,19 @@ public class PatientRegistrationController implements Initializable {
                 return;
             }
 
-            java.math.BigDecimal discount = parseDiscount();
-            java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+            BigDecimal discount = parseDiscount();
+            BigDecimal subtotal = BigDecimal.ZERO;
 
-            for (ProgramPaymentModel model : paymentModels) {
+            for (ProgramPaymentTM model : paymentModels) {
                 subtotal = subtotal.add(model.getSubtotal());
             }
 
-            java.math.BigDecimal totalDue = subtotal.subtract(discount);
+            BigDecimal totalDue = subtotal.subtract(discount);
             if (totalDue.signum() < 0)
-                totalDue = java.math.BigDecimal.ZERO;
+                totalDue = BigDecimal.ZERO;
 
-            lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentMethod method = cmbPaymentMethod
-                    .getValue();
-            if (totalDue.compareTo(java.math.BigDecimal.ZERO) > 0 && method == null) {
+            PaymentMethod method = cmbPaymentMethod.getValue();
+            if (totalDue.compareTo(BigDecimal.ZERO) > 0 && method == null) {
                 AlertUtil.showWarning("Warning", "Please select a payment method for the upfront payment.");
                 return;
             }
@@ -216,45 +243,38 @@ public class PatientRegistrationController implements Initializable {
             p.setAddress(txtPatientAddress.getText());
             p.setInterviewNote(txtInterviewNote.getText());
 
-            ArrayList<TherapyProgram> programs = new ArrayList<>();
+            ArrayList<TherapyProgramDTO> programs = new ArrayList<>();
             Map<Long, Integer> upfrontMap = new HashMap<>();
 
-            for (ProgramPaymentModel model : paymentModels) {
+            for (ProgramPaymentTM model : paymentModels) {
                 programs.add(model.getProgram());
-                int sessionsToPay = model.getSessionSelector().getValue() != null ? model.getSessionSelector().getValue() : 0;
+                int sessionsToPay = model.getSessionsToPay();
                 upfrontMap.put(model.getProgram().getId(), sessionsToPay);
             }
             p.setPrograms(programs);
             p.setUpfrontSessionsPerProgram(upfrontMap);
 
-            // 2. Register patient — saves PatientTherapyProgram records with upfront credit (NO sessions created)
+            // 2. Register patient — saves PatientTherapyProgram records with upfront credit
             Long patientId = patientService.registerPatient(p);
 
-            // 3. If there's an upfront payment, record the payment
-            if (totalDue.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl pDao = new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl();
-                lk.ijse.theserenitymentalhealththerapycenter.entity.Patient registeredPatient = pDao.getById(patientId);
-
-                lk.ijse.theserenitymentalhealththerapycenter.entity.Payment payment = new lk.ijse.theserenitymentalhealththerapycenter.entity.Payment();
-                payment.setPatient(registeredPatient);
-                payment.setAmount(totalDue);
-                payment.setMethod(method);
-                payment.setDiscount(discount);
-                payment.setPaymentType(
-                        lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentType.UPFRONT);
-
+            // 3. If there's an upfront payment, record it via PaymentBO
+            if (totalDue.compareTo(BigDecimal.ZERO) > 0) {
                 int totalSessionsPaid = upfrontMap.values().stream().mapToInt(Integer::intValue).sum();
-                payment.setDescription("Upfront payment at registration for " + totalSessionsPaid + " sessions.");
-                payment.setStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentStatus.COMPLETED);
-                payment.setPaymentDate(java.time.LocalDateTime.now());
 
-                // Save the payment record (no session linking needed — credit is tracked in PatientTherapyProgram)
-                new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl().save(payment);
+                PaymentDTO paymentDTO = new PaymentDTO();
+                paymentDTO.setPatientId(patientId);
+                paymentDTO.setAmount(totalDue);
+                paymentDTO.setMethod(method);
+                paymentDTO.setDiscount(discount);
+                paymentDTO.setDescription("Upfront payment at registration for " + totalSessionsPaid + " sessions.");
+
+                paymentService.saveRegistrationPayment(paymentDTO);
             }
 
             lblRegMessage.setText("Patient registered & upfront credit saved successfully!");
             lblRegMessage.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 12px;");
-            AlertUtil.showInfo("Success", "Patient registered successfully. Sessions will be created on-demand in Session Management.");
+            AlertUtil.showInfo("Success",
+                    "Patient registered successfully. Sessions will be created on-demand in Session Management.");
             handleClearPatientForm(event);
 
         } catch (Exception e) {
@@ -279,64 +299,18 @@ public class PatientRegistrationController implements Initializable {
         calculateTotals();
     }
 
-    /**
-     * Inner class for table row model
-     */
-    public class ProgramPaymentModel {
-        private final TherapyProgram program;
-        private final ComboBox<Integer> sessionSelector;
-        private final javafx.beans.property.SimpleObjectProperty<java.math.BigDecimal> subtotalProp;
+    private BigDecimal calculateLineTotal(TherapyProgramDTO program, int sessions) {
+        if (sessions == 0)
+            return BigDecimal.ZERO;
 
-        public ProgramPaymentModel(TherapyProgram program) {
-            this.program = program;
-
+        if (program.getSessionFee() != null) {
+            return program.getSessionFee().multiply(new BigDecimal(sessions));
+        } else if (program.getFee() != null) {
             int total = program.getTotalSessions() != null ? program.getTotalSessions() : 1;
-            ObservableList<Integer> options = FXCollections.observableArrayList();
-            for (int i = 0; i <= total; i++) {
-                options.add(i);
-            }
-
-            this.sessionSelector = new ComboBox<>(options);
-            // Default to full package
-            this.sessionSelector.getSelectionModel().select(Integer.valueOf(total));
-
-            this.subtotalProp = new javafx.beans.property.SimpleObjectProperty<>(calculateLineTotal(total));
+            BigDecimal perSession = program.getFee().divide(new BigDecimal(total), 2,
+                    RoundingMode.HALF_UP);
+            return perSession.multiply(new BigDecimal(sessions));
         }
-
-        public void updateSubtotal() {
-            int selected = sessionSelector.getValue() != null ? sessionSelector.getValue() : 0;
-            this.subtotalProp.set(calculateLineTotal(selected));
-        }
-
-        private java.math.BigDecimal calculateLineTotal(int sessions) {
-            if (sessions == 0)
-                return java.math.BigDecimal.ZERO;
-
-            if (program.getSessionFee() != null) {
-                return program.getSessionFee().multiply(new java.math.BigDecimal(sessions));
-            } else if (program.getFee() != null) {
-                int total = program.getTotalSessions() != null ? program.getTotalSessions() : 1;
-                java.math.BigDecimal perSession = program.getFee().divide(new java.math.BigDecimal(total), 2,
-                        java.math.RoundingMode.HALF_UP);
-                return perSession.multiply(new java.math.BigDecimal(sessions));
-            }
-            return java.math.BigDecimal.ZERO;
-        }
-
-        public TherapyProgram getProgram() {
-            return program;
-        }
-
-        public ComboBox<Integer> getSessionSelector() {
-            return sessionSelector;
-        }
-
-        public java.math.BigDecimal getSubtotal() {
-            return subtotalProp.get();
-        }
-
-        public javafx.beans.property.SimpleObjectProperty<java.math.BigDecimal> subtotalProperty() {
-            return subtotalProp;
-        }
+        return BigDecimal.ZERO;
     }
 }

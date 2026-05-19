@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PasswordResetException;
 
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class ForgotPasswordController {
     @FXML private Label step3Indicator;
 
     private final UserBOImpl userService = new UserBOImpl();
-    private User verifiedUser;
+    private UserDTO verifiedUser;
     private int currentStep = 1;
 
     @FXML
@@ -92,10 +92,6 @@ public class ForgotPasswordController {
         // Security question not yet implemented — placeholder
         showStep(3);
     }
-
-
-
-
 
     @FXML
     void handleResetPassword(ActionEvent event) {

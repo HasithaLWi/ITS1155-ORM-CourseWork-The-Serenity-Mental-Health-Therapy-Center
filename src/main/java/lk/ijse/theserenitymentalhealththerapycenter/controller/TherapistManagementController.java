@@ -9,7 +9,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapistBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapistTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.net.URL;
@@ -22,25 +24,25 @@ public class TherapistManagementController implements Initializable {
     @FXML private TextField txtTherapistSpecialty;
     @FXML private TextField txtTherapistPhone;
     @FXML private TextField txtTherapistEmail;
-    @FXML private ComboBox<Therapist.Status> cmbTherapistStatus;
+    @FXML private ComboBox<TherapistStatus> cmbTherapistStatus;
     @FXML private TextField txtSearchTherapist;
 
-    @FXML private TableView<Therapist> tblTherapists;
-    @FXML private TableColumn<Therapist, Long> colTherapistId;
-    @FXML private TableColumn<Therapist, String> colTherapistName;
-    @FXML private TableColumn<Therapist, String> colTherapistSpecialty;
-    @FXML private TableColumn<Therapist, String> colTherapistPhone;
-    @FXML private TableColumn<Therapist, String> colTherapistEmail;
-    @FXML private TableColumn<Therapist, String> colTherapistStatus;
+    @FXML private TableView<TherapistTM> tblTherapists;
+    @FXML private TableColumn<TherapistTM, String> colTherapistId;
+    @FXML private TableColumn<TherapistTM, String> colTherapistName;
+    @FXML private TableColumn<TherapistTM, String> colTherapistSpecialty;
+    @FXML private TableColumn<TherapistTM, String> colTherapistPhone;
+    @FXML private TableColumn<TherapistTM, String> colTherapistEmail;
+    @FXML private TableColumn<TherapistTM, String> colTherapistStatus;
 
     private final TherapistBOImpl therapistService = new TherapistBOImpl();
-    private FilteredList<Therapist> filteredTherapists;
-    private Therapist selectedTherapist;
+    private FilteredList<TherapistTM> filteredTherapists;
+    private TherapistTM selectedTherapist;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        cmbTherapistStatus.setItems(FXCollections.observableArrayList(Therapist.Status.values()));
-        cmbTherapistStatus.setValue(Therapist.Status.ACTIVE);
+        cmbTherapistStatus.setItems(FXCollections.observableArrayList(TherapistStatus.values()));
+        cmbTherapistStatus.setValue(TherapistStatus.ACTIVE);
 
         setupTable();
         loadData();
@@ -55,7 +57,7 @@ public class TherapistManagementController implements Initializable {
     }
 
     private void setupTable() {
-        colTherapistId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
+        colTherapistId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
         colTherapistName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getName()));
         colTherapistSpecialty.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSpecialty()));
         colTherapistPhone.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPhone()));
@@ -66,8 +68,16 @@ public class TherapistManagementController implements Initializable {
 
     private void loadData() {
         try {
-            List<Therapist> list = therapistService.getAllTherapists();
-            filteredTherapists = new FilteredList<>(FXCollections.observableArrayList(list), p -> true);
+            List<TherapistDTO> dtos = therapistService.getAllTherapists();
+            List<TherapistTM> tms = dtos.stream().map(dto -> new TherapistTM(
+                    dto.getStringId(),
+                    dto.getName(),
+                    dto.getSpecialty(),
+                    dto.getPhone(),
+                    dto.getEmail(),
+                    dto.getStatus()
+            )).toList();
+            filteredTherapists = new FilteredList<>(FXCollections.observableArrayList(tms), p -> true);
             tblTherapists.setItems(filteredTherapists);
         } catch (Exception e) {
             AlertUtil.showError("Error", "Failed to load therapists: " + e.getMessage());
@@ -87,7 +97,7 @@ public class TherapistManagementController implements Initializable {
         });
     }
 
-    private void populateForm(Therapist t) {
+    private void populateForm(TherapistTM t) {
         txtTherapistName.setText(t.getName());
         txtTherapistSpecialty.setText(t.getSpecialty());
         txtTherapistPhone.setText(t.getPhone());
@@ -98,13 +108,13 @@ public class TherapistManagementController implements Initializable {
     @FXML
     void handleSaveTherapist(ActionEvent event) {
         try {
-            Therapist t = new Therapist();
-            t.setName(txtTherapistName.getText());
-            t.setSpecialty(txtTherapistSpecialty.getText());
-            t.setPhone(txtTherapistPhone.getText());
-            t.setEmail(txtTherapistEmail.getText());
-            t.setStatus(cmbTherapistStatus.getValue());
-            therapistService.saveTherapist(t);
+            TherapistDTO dto = new TherapistDTO();
+            dto.setName(txtTherapistName.getText());
+            dto.setSpecialty(txtTherapistSpecialty.getText());
+            dto.setPhone(txtTherapistPhone.getText());
+            dto.setEmail(txtTherapistEmail.getText());
+            dto.setStatus(cmbTherapistStatus.getValue());
+            therapistService.saveTherapist(dto);
             AlertUtil.showInfo("Success", "Therapist saved successfully.");
             handleClearTherapist(event);
             loadData();
@@ -120,12 +130,18 @@ public class TherapistManagementController implements Initializable {
             return;
         }
         try {
-            selectedTherapist.setName(txtTherapistName.getText());
-            selectedTherapist.setSpecialty(txtTherapistSpecialty.getText());
-            selectedTherapist.setPhone(txtTherapistPhone.getText());
-            selectedTherapist.setEmail(txtTherapistEmail.getText());
-            selectedTherapist.setStatus(cmbTherapistStatus.getValue());
-            therapistService.updateTherapist(selectedTherapist);
+            TherapistDTO dto = new TherapistDTO();
+            // Parse the Long ID from the formatted String ID (e.g., "T001" -> 1)
+            String rawId = selectedTherapist.getId();
+            if (rawId != null && rawId.startsWith("T")) {
+                dto.setId(Long.parseLong(rawId.substring(1)));
+            }
+            dto.setName(txtTherapistName.getText());
+            dto.setSpecialty(txtTherapistSpecialty.getText());
+            dto.setPhone(txtTherapistPhone.getText());
+            dto.setEmail(txtTherapistEmail.getText());
+            dto.setStatus(cmbTherapistStatus.getValue());
+            therapistService.updateTherapist(dto);
             AlertUtil.showInfo("Success", "Therapist updated successfully.");
             handleClearTherapist(event);
             loadData();
@@ -136,14 +152,20 @@ public class TherapistManagementController implements Initializable {
 
     @FXML
     void handleDeleteTherapist(ActionEvent event) {
-        Therapist t = tblTherapists.getSelectionModel().getSelectedItem();
+        TherapistTM t = tblTherapists.getSelectionModel().getSelectedItem();
         if (t == null) {
             AlertUtil.showWarning("Warning", "Please select a therapist to delete.");
             return;
         }
         if (AlertUtil.showConfirmation("Confirm", "Delete therapist \"" + t.getName() + "\"?")) {
             try {
-                therapistService.deleteTherapist(t);
+                // Parse the Long ID from the formatted String ID
+                String rawId = t.getId();
+                long id = 0;
+                if (rawId != null && rawId.startsWith("T")) {
+                    id = Long.parseLong(rawId.substring(1));
+                }
+                therapistService.deleteTherapist(id);
                 AlertUtil.showInfo("Deleted", "Therapist deleted.");
                 handleClearTherapist(event);
                 loadData();
@@ -159,7 +181,7 @@ public class TherapistManagementController implements Initializable {
         txtTherapistSpecialty.clear();
         txtTherapistPhone.clear();
         txtTherapistEmail.clear();
-        cmbTherapistStatus.setValue(Therapist.Status.ACTIVE);
+        cmbTherapistStatus.setValue(TherapistStatus.ACTIVE);
         selectedTherapist = null;
         tblTherapists.getSelectionModel().clearSelection();
     }

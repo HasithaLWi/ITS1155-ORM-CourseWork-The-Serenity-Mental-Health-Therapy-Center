@@ -1,8 +1,16 @@
 package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentType;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PaymentException;
 
 import java.math.BigDecimal;
@@ -12,110 +20,162 @@ import java.util.List;
 
 public class PaymentBOImpl implements PaymentBO {
     private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
+    private final TherapySessionDAOImpl sessionDAO = new TherapySessionDAOImpl();
+    private final PatientDAOImpl patientDAO = new PatientDAOImpl();
 
-    private final lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl sessionDAO = new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl();
-
-    public void processPayment(Payment payment) {
-        if (payment.getSession() == null) {
+    public void processPayment(PaymentDTO dto) {
+        if (dto.getSessionId() == null) {
             throw new PaymentException("Session is required for payment.");
         }
-        if (payment.getAmount() == null || payment.getAmount().signum() <= 0) {
+        if (dto.getAmount() == null || dto.getAmount().signum() <= 0) {
             throw new PaymentException("Payment amount must be greater than zero.");
         }
-        if (payment.getMethod() == null) {
+        if (dto.getMethod() == null) {
             throw new PaymentException("Payment method is required.");
         }
+
+        TherapySession session = sessionDAO.getById(dto.getSessionId());
+        if (session == null) throw new PaymentException("Session not found.");
+
+        Payment payment = new Payment();
+        payment.setSession(session);
+        payment.setPatient(session.getPatient());
+        payment.setAmount(dto.getAmount());
+        payment.setMethod(Payment.PaymentMethod.valueOf(dto.getMethod().name()));
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
         payment.setPaymentType(Payment.PaymentType.SINGLE);
         payment.setPaymentDate(LocalDateTime.now());
-        
-        // Single payment update the session
-        lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession session = payment.getSession();
-        session.setPaymentStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PAID);
-        
+
+        // Update session payment status
+        session.setPaymentStatus(TherapySession.PaymentStatus.PAID);
+
         paymentDAO.save(payment);
         sessionDAO.update(session);
     }
-    
-    public void processUpfrontPayment(Payment payment, List<lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession> sessionsToPayFor) {
-        if (payment.getPatient() == null) {
+
+    /**
+     * Process upfront payment for multiple sessions (by session IDs).
+     */
+    public void processUpfrontPayment(PaymentDTO dto, List<Long> sessionIds) {
+        if (dto.getPatientId() == null) {
             throw new PaymentException("Patient is required for upfront payment.");
         }
-        if (payment.getAmount() == null || payment.getAmount().signum() <= 0) {
+        if (dto.getAmount() == null || dto.getAmount().signum() <= 0) {
             throw new PaymentException("Payment amount must be greater than zero.");
         }
-        if (payment.getMethod() == null) {
+        if (dto.getMethod() == null) {
             throw new PaymentException("Payment method is required.");
         }
-        if (sessionsToPayFor == null || sessionsToPayFor.isEmpty()) {
+        if (sessionIds == null || sessionIds.isEmpty()) {
             throw new PaymentException("At least one session must be selected for upfront payment.");
         }
-        
+
+        Patient patient = patientDAO.getById(dto.getPatientId());
+        if (patient == null) throw new PaymentException("Patient not found.");
+
+        Payment payment = new Payment();
+        payment.setPatient(patient);
+        payment.setAmount(dto.getAmount());
+        payment.setMethod(Payment.PaymentMethod.valueOf(dto.getMethod().name()));
+        payment.setDiscount(dto.getDiscount());
+        payment.setPaymentType(Payment.PaymentType.UPFRONT);
+        payment.setDescription(dto.getDescription());
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
-        // It's upfront if we are paying for multiple, otherwise could just be single
         payment.setPaymentDate(LocalDateTime.now());
-        
-        // Save the payment first to generate its ID
+
         paymentDAO.save(payment);
-        
+
         // Link sessions and bulk update
-        List<Long> sessionIds = new java.util.ArrayList<>();
-        for (lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession ts : sessionsToPayFor) {
-            ts.setUpfrontPayment(payment);
-            ts.setPaymentStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PAID);
-            sessionDAO.update(ts);
-            sessionIds.add(ts.getId());
+        for (Long sessionId : sessionIds) {
+            TherapySession session = sessionDAO.getById(sessionId);
+            if (session != null) {
+                session.setUpfrontPayment(payment);
+                session.setPaymentStatus(TherapySession.PaymentStatus.PAID);
+                sessionDAO.update(session);
+            }
         }
-        
-        // Using our new bulk update method
-        // sessionDAO.bulkUpdatePaymentStatus(sessionIds, lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PAID);
     }
 
     /**
      * Process payment for a single session (inline quick-pay from Session Management).
      * Marks the session as PAID so it can be scheduled.
      */
-    public void processSessionPayment(Payment payment, lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession session) {
+    public void processSessionPayment(PaymentDTO dto, Long sessionId) {
+        TherapySession session = sessionDAO.getById(sessionId);
         if (session == null) {
-            throw new PaymentException("Session is required.");
+            throw new PaymentException("Session not found.");
         }
-        if (payment.getAmount() == null || payment.getAmount().signum() <= 0) {
+        if (dto.getAmount() == null || dto.getAmount().signum() <= 0) {
             throw new PaymentException("Payment amount must be greater than zero.");
         }
-        if (payment.getMethod() == null) {
+        if (dto.getMethod() == null) {
             throw new PaymentException("Payment method is required.");
         }
 
+        Payment payment = new Payment();
         payment.setSession(session);
         payment.setPatient(session.getPatient());
+        payment.setAmount(dto.getAmount());
+        payment.setMethod(Payment.PaymentMethod.valueOf(dto.getMethod().name()));
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
         payment.setPaymentType(Payment.PaymentType.SINGLE);
         payment.setPaymentDate(LocalDateTime.now());
         payment.setDescription("Session payment for session #" + session.getId());
 
-        // Save payment
         paymentDAO.save(payment);
 
-        // Update session payment status
-        session.setPaymentStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PAID);
+        session.setPaymentStatus(TherapySession.PaymentStatus.PAID);
         session.setPayment(payment);
         sessionDAO.update(session);
     }
 
-    public void updatePayment(Payment payment) {
-        paymentDAO.update(payment);
+    /**
+     * Save a simple upfront payment (used during patient registration).
+     */
+    public void saveRegistrationPayment(PaymentDTO dto) {
+        if (dto.getPatientId() == null) {
+            throw new PaymentException("Patient is required.");
+        }
+
+        Patient patient = patientDAO.getById(dto.getPatientId());
+        if (patient == null) throw new PaymentException("Patient not found.");
+
+        Payment payment = new Payment();
+        payment.setPatient(patient);
+        payment.setAmount(dto.getAmount());
+        payment.setMethod(Payment.PaymentMethod.valueOf(dto.getMethod().name()));
+        payment.setDiscount(dto.getDiscount());
+        payment.setPaymentType(Payment.PaymentType.UPFRONT);
+        payment.setStatus(Payment.PaymentStatus.COMPLETED);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setDescription(dto.getDescription());
+
+        paymentDAO.save(payment);
     }
 
-    public void deletePayment(Payment payment) {
-        paymentDAO.delete(payment);
+    public void updatePayment(PaymentDTO dto) {
+        Payment entity = paymentDAO.getById(dto.getId());
+        if (entity == null) throw new PaymentException("Payment not found.");
+        entity.setAmount(dto.getAmount());
+        if (dto.getMethod() != null) entity.setMethod(Payment.PaymentMethod.valueOf(dto.getMethod().name()));
+        if (dto.getStatus() != null) entity.setStatus(Payment.PaymentStatus.valueOf(dto.getStatus().name()));
+        entity.setDescription(dto.getDescription());
+        paymentDAO.update(entity);
     }
 
-    public List<Payment> getAllPayments() {
-        return paymentDAO.getAllWithDetails();
+    public void deletePayment(Long id) {
+        Payment entity = paymentDAO.getById(id);
+        if (entity == null) throw new PaymentException("Payment not found.");
+        paymentDAO.delete(entity);
     }
 
-    public Payment getPaymentBySession(Long sessionId) {
-        return paymentDAO.findBySession(sessionId);
+    public List<PaymentDTO> getAllPayments() {
+        return paymentDAO.getAllWithDetails().stream().map(this::toDTO).toList();
+    }
+
+    public PaymentDTO getPaymentBySession(Long sessionId) {
+        Payment entity = paymentDAO.findBySession(sessionId);
+        return entity != null ? toDTO(entity) : null;
     }
 
     public BigDecimal getMonthlyRevenue() {
@@ -133,5 +193,25 @@ public class PaymentBOImpl implements PaymentBO {
 
     public long getPaymentCount() {
         return paymentDAO.count();
+    }
+
+    // ==================== Conversion Helpers ====================
+
+    private PaymentDTO toDTO(Payment entity) {
+        PaymentDTO dto = new PaymentDTO();
+        dto.setId(entity.getId());
+        dto.setAmount(entity.getAmount());
+        dto.setPaymentDate(entity.getPaymentDate());
+        dto.setMethod(entity.getMethod() != null ? PaymentMethod.valueOf(entity.getMethod().name()) : null);
+        dto.setStatus(entity.getStatus() != null ? PaymentStatus.valueOf(entity.getStatus().name()) : null);
+        dto.setPaymentType(entity.getPaymentType() != null ? PaymentType.valueOf(entity.getPaymentType().name()) : null);
+        dto.setDiscount(entity.getDiscount());
+        dto.setDescription(entity.getDescription());
+        dto.setSessionId(entity.getSession() != null ? entity.getSession().getId() : null);
+        dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
+        // Display helpers
+        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : 
+                (entity.getSession() != null && entity.getSession().getPatient() != null ? entity.getSession().getPatient().getName() : "N/A"));
+        return dto;
     }
 }

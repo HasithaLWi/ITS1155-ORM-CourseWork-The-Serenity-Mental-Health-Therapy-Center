@@ -10,7 +10,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
 
@@ -56,7 +57,7 @@ public class LoginController {
         String password = txtPassword.getText();
 
         try {
-            User user = userService.login(username, password);
+            UserDTO user = userService.login(username, password);
             lblError.setText("");
             lblError.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px;");
             lblError.setText("Login successful! Loading dashboard...");
@@ -64,7 +65,7 @@ public class LoginController {
             // Route based on role
             String fxmlPath;
             String title;
-            if (user.getRole() == User.Role.ADMIN) {
+            if (user.getRole() == UserRole.ADMIN) {
                 fxmlPath = "/lk/ijse/theserenitymentalhealththerapycenter/view/AdminDashboard.fxml";
                 title = "Serenity - Admin Dashboard";
             } else {
@@ -112,13 +113,13 @@ public class LoginController {
             txtPassword.setManaged(false);
             txtPasswordVisible.setVisible(true);
             txtPasswordVisible.setManaged(true);
-            btnTogglePassword.setText("🙈");
+            btnTogglePassword.setText("\uD83D\uDE48");
         } else {
             txtPasswordVisible.setVisible(false);
             txtPasswordVisible.setManaged(false);
             txtPassword.setVisible(true);
             txtPassword.setManaged(true);
-            btnTogglePassword.setText("👁");
+            btnTogglePassword.setText("\uD83D\uDC41");
         }
     }
 

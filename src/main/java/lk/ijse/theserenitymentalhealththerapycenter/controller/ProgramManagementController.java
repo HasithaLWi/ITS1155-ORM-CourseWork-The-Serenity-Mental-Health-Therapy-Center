@@ -9,7 +9,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapyProgramTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.math.BigDecimal;
@@ -26,17 +27,17 @@ public class ProgramManagementController implements Initializable {
     @FXML private TextArea txtProgramDescription;
     @FXML private TextField txtSearchProgram;
 
-    @FXML private TableView<TherapyProgram> tblPrograms;
-    @FXML private TableColumn<TherapyProgram, Long> colProgramId;
-    @FXML private TableColumn<TherapyProgram, String> colProgramName;
-    @FXML private TableColumn<TherapyProgram, String> colProgramDuration;
-    @FXML private TableColumn<TherapyProgram, BigDecimal> colProgramFee;
-    @FXML private TableColumn<TherapyProgram, Integer> colTotalSessions;
-    @FXML private TableColumn<TherapyProgram, String> colProgramDescription;
+    @FXML private TableView<TherapyProgramTM> tblPrograms;
+    @FXML private TableColumn<TherapyProgramTM, String> colProgramId;
+    @FXML private TableColumn<TherapyProgramTM, String> colProgramName;
+    @FXML private TableColumn<TherapyProgramTM, String> colProgramDuration;
+    @FXML private TableColumn<TherapyProgramTM, BigDecimal> colProgramFee;
+    @FXML private TableColumn<TherapyProgramTM, Integer> colTotalSessions;
+    @FXML private TableColumn<TherapyProgramTM, String> colProgramDescription;
 
     private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
-    private FilteredList<TherapyProgram> filteredPrograms;
-    private TherapyProgram selectedProgram;
+    private FilteredList<TherapyProgramTM> filteredPrograms;
+    private TherapyProgramTM selectedProgram;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -53,7 +54,7 @@ public class ProgramManagementController implements Initializable {
     }
 
     private void setupTable() {
-        colProgramId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
+        colProgramId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getStringId()));
         colProgramName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getName()));
         colProgramDuration.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDuration()));
         colProgramFee.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getFee()));
@@ -63,7 +64,10 @@ public class ProgramManagementController implements Initializable {
 
     private void loadData() {
         try {
-            List<TherapyProgram> list = programService.getAllPrograms();
+            List<TherapyProgramTM> list = programService.getAllPrograms().stream().map(dto -> new TherapyProgramTM(
+                    dto.getStringId(), dto.getName(), dto.getDuration(), dto.getFee(), dto.getTotalSessions(), dto.getSessionFee(), dto.getDescription()
+            )).toList();
+
             filteredPrograms = new FilteredList<>(FXCollections.observableArrayList(list), p -> true);
             tblPrograms.setItems(filteredPrograms);
         } catch (Exception e) {
@@ -82,7 +86,7 @@ public class ProgramManagementController implements Initializable {
         });
     }
 
-    private void populateForm(TherapyProgram p) {
+    private void populateForm(TherapyProgramTM p) {
         txtProgramName.setText(p.getName());
         txtProgramDuration.setText(p.getDuration());
         txtTotalSessions.setText(p.getTotalSessions() != null ? String.valueOf(p.getTotalSessions()) : "");
@@ -93,13 +97,13 @@ public class ProgramManagementController implements Initializable {
     @FXML
     void handleSaveProgram(ActionEvent event) {
         try {
-            TherapyProgram p = new TherapyProgram();
-            p.setName(txtProgramName.getText());
-            p.setDuration(txtProgramDuration.getText());
-            p.setTotalSessions(parseSessions());
-            p.setFee(parseFee());
-            p.setDescription(txtProgramDescription.getText());
-            programService.saveProgram(p);
+            TherapyProgramDTO dto = new TherapyProgramDTO();
+            dto.setName(txtProgramName.getText());
+            dto.setDuration(txtProgramDuration.getText());
+            dto.setTotalSessions(parseSessions());
+            dto.setFee(parseFee());
+            dto.setDescription(txtProgramDescription.getText());
+            programService.saveProgram(dto);
             AlertUtil.showInfo("Success", "Program saved successfully.");
             handleClearProgram(event);
             loadData();
@@ -115,12 +119,15 @@ public class ProgramManagementController implements Initializable {
             return;
         }
         try {
-            selectedProgram.setName(txtProgramName.getText());
-            selectedProgram.setDuration(txtProgramDuration.getText());
-            selectedProgram.setTotalSessions(parseSessions());
-            selectedProgram.setFee(parseFee());
-            selectedProgram.setDescription(txtProgramDescription.getText());
-            programService.updateProgram(selectedProgram);
+            TherapyProgramDTO dto = new TherapyProgramDTO();
+            dto.setId(selectedProgram.getId());
+            dto.setName(txtProgramName.getText());
+            dto.setDuration(txtProgramDuration.getText());
+            dto.setTotalSessions(parseSessions());
+            dto.setFee(parseFee());
+            dto.setDescription(txtProgramDescription.getText());
+
+            programService.updateProgram(dto);
             AlertUtil.showInfo("Success", "Program updated successfully.");
             handleClearProgram(event);
             loadData();
@@ -131,14 +138,14 @@ public class ProgramManagementController implements Initializable {
 
     @FXML
     void handleDeleteProgram(ActionEvent event) {
-        TherapyProgram p = tblPrograms.getSelectionModel().getSelectedItem();
+        TherapyProgramTM p = tblPrograms.getSelectionModel().getSelectedItem();
         if (p == null) {
             AlertUtil.showWarning("Warning", "Please select a program to delete.");
             return;
         }
         if (AlertUtil.showConfirmation("Confirm", "Delete program \"" + p.getName() + "\"?")) {
             try {
-                programService.deleteProgram(p);
+                programService.deleteProgram(p.getId());
                 AlertUtil.showInfo("Deleted", "Program deleted.");
                 handleClearProgram(event);
                 loadData();

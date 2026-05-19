@@ -10,7 +10,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 
@@ -118,7 +118,7 @@ public class RegistrationController {
         try {
             userService.register(txtUsername.getText().trim(), txtPassword.getText(),
                     txtFullName.getText().trim(), txtEmail.getText().trim(),
-                    User.Role.RECEPTIONIST);
+                    UserRole.RECEPTIONIST);
 
             lblMessage.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 12px; -fx-font-weight: bold;");
             lblMessage.setText("Account created successfully! Redirecting...");

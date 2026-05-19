@@ -9,29 +9,32 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.PaymentTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class PaymentManagementController implements Initializable {
 
-    @FXML private ComboBox<TherapySession> cmbPaymentSession;
+    @FXML private ComboBox<TherapySessionDTO> cmbPaymentSession;
     @FXML private TextField txtPaymentAmount;
-    @FXML private ComboBox<Payment.PaymentMethod> cmbPaymentMethod;
+    @FXML private ComboBox<PaymentMethod> cmbPaymentMethod;
     @FXML private Label lblTotalRevenue;
 
-    @FXML private TableView<Payment> tblPayments;
-    @FXML private TableColumn<Payment, Long> colPaymentId;
-    @FXML private TableColumn<Payment, String> colPaymentPatient;
-    @FXML private TableColumn<Payment, BigDecimal> colPaymentAmount;
-    @FXML private TableColumn<Payment, String> colPaymentMethod;
-    @FXML private TableColumn<Payment, String> colPaymentDate;
-    @FXML private TableColumn<Payment, String> colPaymentStatus;
+    @FXML private TableView<PaymentTM> tblPayments;
+    @FXML private TableColumn<PaymentTM, String> colPaymentId;
+    @FXML private TableColumn<PaymentTM, String> colPaymentPatient;
+    @FXML private TableColumn<PaymentTM, BigDecimal> colPaymentAmount;
+    @FXML private TableColumn<PaymentTM, String> colPaymentMethod;
+    @FXML private TableColumn<PaymentTM, String> colPaymentDate;
+    @FXML private TableColumn<PaymentTM, String> colPaymentStatus;
 
     private final PaymentBOImpl paymentService = new PaymentBOImpl();
     private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
@@ -42,49 +45,58 @@ public class PaymentManagementController implements Initializable {
         setupTable();
         loadData();
     }
+
     private void loadComboBoxes() {
         try {
-            cmbPaymentSession.setItems(FXCollections.observableArrayList(sessionService.getAllSessions()));
+            cmbPaymentSession.setItems(FXCollections.observableArrayList(sessionService.getAllSessionDTOs()));
         } catch (Exception e) { System.err.println("Error: " + e.getMessage()); }
 
-        cmbPaymentMethod.setItems(FXCollections.observableArrayList(Payment.PaymentMethod.values()));
+        cmbPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
 
         cmbPaymentSession.setButtonCell(new ListCell<>() {
-            @Override protected void updateItem(TherapySession item, boolean empty) {
+            @Override protected void updateItem(TherapySessionDTO item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) setText("");
-                else setText("#" + item.getId() + " - " + (item.getPatient() != null ? item.getPatient().getName() : "N/A")
+                else setText("#" + item.getId() + " - " + (item.getPatientName() != null ? item.getPatientName() : "N/A")
                     + " (" + item.getSessionDate() + ")");
             }
         });
         cmbPaymentSession.setCellFactory(lv -> new ListCell<>() {
-            @Override protected void updateItem(TherapySession item, boolean empty) {
+            @Override protected void updateItem(TherapySessionDTO item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) setText("");
-                else setText("#" + item.getId() + " - " + (item.getPatient() != null ? item.getPatient().getName() : "N/A")
+                else setText("#" + item.getId() + " - " + (item.getPatientName() != null ? item.getPatientName() : "N/A")
                     + " (" + item.getSessionDate() + ")");
             }
         });
     }
 
     private void setupTable() {
-        colPaymentId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
-        colPaymentPatient.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getSession() != null && d.getValue().getSession().getPatient() != null
-                ? d.getValue().getSession().getPatient().getName() : "N/A"));
+        colPaymentId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
+        colPaymentPatient.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPatientName()));
         colPaymentAmount.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getAmount()));
-        colPaymentMethod.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getMethod() != null ? d.getValue().getMethod().name() : ""));
+        colPaymentMethod.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getMethod()));
         colPaymentDate.setCellValueFactory(d -> new SimpleStringProperty(
             d.getValue().getPaymentDate() != null
                 ? d.getValue().getPaymentDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : ""));
-        colPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getStatus() != null ? d.getValue().getStatus().name() : ""));
+        colPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus()));
     }
 
     private void loadData() {
         try {
-            tblPayments.setItems(FXCollections.observableArrayList(paymentService.getAllPayments()));
+            List<PaymentDTO> dtos = paymentService.getAllPayments();
+            List<PaymentTM> tms = dtos.stream().map(dto -> new PaymentTM(
+                    String.format("PAY%03d", dto.getId()),
+                    dto.getAmount(),
+                    dto.getPaymentDate(),
+                    dto.getMethod() != null ? dto.getMethod().name() : "",
+                    dto.getStatus() != null ? dto.getStatus().name() : "",
+                    dto.getPaymentType() != null ? dto.getPaymentType().name() : "",
+                    dto.getPatientName() != null ? dto.getPatientName() : "N/A",
+                    dto.getSessionId() != null ? String.format("S%03d", dto.getSessionId()) : ""
+            )).toList();
+            tblPayments.setItems(FXCollections.observableArrayList(tms));
+
             BigDecimal total = paymentService.getTotalRevenue();
             lblTotalRevenue.setText("Total Revenue: LKR " + (total != null ? total.toPlainString() : "0"));
         } catch (Exception e) { AlertUtil.showError("Error", "Failed to load payments: " + e.getMessage()); }
@@ -92,12 +104,18 @@ public class PaymentManagementController implements Initializable {
 
     @FXML void handleProcessPayment(ActionEvent event) {
         try {
-            Payment p = new Payment();
-            p.setSession(cmbPaymentSession.getValue());
+            TherapySessionDTO selectedSession = cmbPaymentSession.getValue();
+            if (selectedSession == null) {
+                AlertUtil.showWarning("Warning", "Please select a session.");
+                return;
+            }
+
+            PaymentDTO dto = new PaymentDTO();
+            dto.setSessionId(selectedSession.getId());
             String amtText = txtPaymentAmount.getText();
-            p.setAmount(amtText != null && !amtText.trim().isEmpty() ? new BigDecimal(amtText.trim()) : null);
-            p.setMethod(cmbPaymentMethod.getValue());
-            paymentService.processPayment(p);
+            dto.setAmount(amtText != null && !amtText.trim().isEmpty() ? new BigDecimal(amtText.trim()) : null);
+            dto.setMethod(cmbPaymentMethod.getValue());
+            paymentService.processPayment(dto);
             AlertUtil.showInfo("Success", "Payment processed.");
             handleClearPayment(event);
             loadData();

@@ -14,12 +14,17 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires java.xml.bind;
     requires javafx.graphics;
     requires java.base;
+    requires javafx.base;
 
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml, javafx.base;
     opens lk.ijse.theserenitymentalhealththerapycenter.entity to org.hibernate.orm.core, javafx.base;
+    opens lk.ijse.theserenitymentalhealththerapycenter.dto to javafx.base;
+    opens lk.ijse.theserenitymentalhealththerapycenter.dto.tm to javafx.base;
 
     exports lk.ijse.theserenitymentalhealththerapycenter;
     exports lk.ijse.theserenitymentalhealththerapycenter.controller;
     exports lk.ijse.theserenitymentalhealththerapycenter.entity;
+    exports lk.ijse.theserenitymentalhealththerapycenter.dto;
+    exports lk.ijse.theserenitymentalhealththerapycenter.dto.tm;
 }

@@ -2,6 +2,8 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.UserDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PasswordResetException;
@@ -30,7 +32,7 @@ public class UserBOImpl implements UserBO {
      * Authenticate a user with username and plain-text password.
      * Uses BCrypt to verify the password against the stored hash.
      */
-    public User login(String username, String plainTextPassword) {
+    public UserDTO login(String username, String plainTextPassword) {
         if (!ValidationUtil.isNotEmpty(username) || !ValidationUtil.isNotEmpty(plainTextPassword)) {
             throw new LoginException("Username and password are required.");
         }
@@ -44,14 +46,14 @@ public class UserBOImpl implements UserBO {
             throw new LoginException("Invalid username or password.");
         }
 
-        return user;
+        return toDTO(user);
     }
 
     /**
-     * Register a new user. Password and security answer are hashed with BCrypt before storing.
+     * Register a new user. Password is hashed with BCrypt before storing.
      */
     public void register(String username, String plainTextPassword, String fullName,
-                          String email, User.Role role) {
+                          String email, UserRole role) {
         // Validations
         if (!ValidationUtil.isNotEmpty(username)) {
             throw new RegistrationException("Username is required.");
@@ -76,25 +78,21 @@ public class UserBOImpl implements UserBO {
             throw new RegistrationException("Email '" + email + "' is already registered.");
         }
 
-        // Create and save user with hashed password and security answer
+        // Create and save user with hashed password
         User user = new User();
         user.setUsername(username);
         user.setPassword(PasswordUtil.hashPassword(plainTextPassword));
         user.setFullName(fullName);
         user.setEmail(email);
-        user.setRole(role);
+        user.setRole(User.Role.valueOf(role.name()));
 
         userDAO.save(user);
     }
 
-
-
-
     /**
      * Verify a user's identity for password reset using username and email.
-     * Returns the user if found, otherwise throws an exception.
      */
-    public User verifyIdentity(String username, String email) {
+    public UserDTO verifyIdentity(String username, String email) {
         if (!ValidationUtil.isNotEmpty(username) || !ValidationUtil.isNotEmpty(email)) {
             throw new PasswordResetException("Username and email are required.");
         }
@@ -104,10 +102,8 @@ public class UserBOImpl implements UserBO {
             throw new PasswordResetException("No account found with that username and email combination.");
         }
 
-
-        return user;
+        return toDTO(user);
     }
-
 
     /**
      * Reset a user's password.
@@ -140,15 +136,37 @@ public class UserBOImpl implements UserBO {
         return userDAO.usernameExists(username);
     }
 
-    public List<User> getAllUsers() {
-        return userDAO.getAll();
+    public List<UserDTO> getAllUsers() {
+        return userDAO.getAll().stream().map(this::toDTO).toList();
     }
 
-    public void updateUser(User user) {
-        userDAO.update(user);
+    public void updateUser(UserDTO dto) {
+        User entity = userDAO.getById(dto.getId());
+        if (entity == null) throw new RegistrationException("User not found.");
+        entity.setUsername(dto.getUsername());
+        entity.setFullName(dto.getFullName());
+        entity.setEmail(dto.getEmail());
+        if (dto.getRole() != null) {
+            entity.setRole(User.Role.valueOf(dto.getRole().name()));
+        }
+        userDAO.update(entity);
     }
 
-    public void deleteUser(User user) {
-        userDAO.delete(user);
+    public void deleteUser(Long id) {
+        User entity = userDAO.getById(id);
+        if (entity == null) throw new RegistrationException("User not found.");
+        userDAO.delete(entity);
+    }
+
+    // ==================== Conversion Helpers ====================
+
+    private UserDTO toDTO(User entity) {
+        UserDTO dto = new UserDTO();
+        dto.setId(entity.getId());
+        dto.setUsername(entity.getUsername());
+        dto.setFullName(entity.getFullName());
+        dto.setEmail(entity.getEmail());
+        dto.setRole(entity.getRole() != null ? UserRole.valueOf(entity.getRole().name()) : null);
+        return dto;
     }
 }

@@ -1,6 +1,5 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -12,13 +11,16 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.ProgramPaymentTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,31 +28,31 @@ import java.util.ResourceBundle;
 
 public class UpfrontPaymentDialogController implements Initializable {
 
-    @FXML private TableView<ProgramPaymentModel> tblPaymentPrograms;
-    @FXML private TableColumn<ProgramPaymentModel, String> colProgramName;
-    @FXML private TableColumn<ProgramPaymentModel, Integer> colTotalSessions;
-    @FXML private TableColumn<ProgramPaymentModel, ComboBox<Integer>> colSessionsToPay;
-    @FXML private TableColumn<ProgramPaymentModel, BigDecimal> colSubtotal;
+    @FXML private TableView<ProgramPaymentTM> tblPaymentPrograms;
+    @FXML private TableColumn<ProgramPaymentTM, String> colProgramName;
+    @FXML private TableColumn<ProgramPaymentTM, Integer> colTotalSessions;
+    @FXML private TableColumn<ProgramPaymentTM, Integer> colSessionsToPay;
+    @FXML private TableColumn<ProgramPaymentTM, BigDecimal> colSubtotal;
 
-    @FXML private ComboBox<Payment.PaymentMethod> cmbPaymentMethod;
+    @FXML private ComboBox<PaymentMethod> cmbPaymentMethod;
     @FXML private TextField txtDiscount;
 
     @FXML private Label lblSubtotal;
     @FXML private Label lblDiscount;
     @FXML private Label lblTotalDue;
 
-    private Patient currentPatient;
-    private List<TherapyProgram> enrolledPrograms;
+    private Long currentPatientId;
+    private List<TherapyProgramDTO> enrolledPrograms;
     private Runnable onSuccessCallback;
 
     private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
     private final PaymentBOImpl paymentService = new PaymentBOImpl();
 
-    private final ObservableList<ProgramPaymentModel> paymentModels = FXCollections.observableArrayList();
+    private final ObservableList<ProgramPaymentTM> paymentModels = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        cmbPaymentMethod.setItems(FXCollections.observableArrayList(Payment.PaymentMethod.values()));
+        cmbPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
         
         setupTable();
         
@@ -58,16 +60,46 @@ public class UpfrontPaymentDialogController implements Initializable {
     }
 
     private void setupTable() {
-        colProgramName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProgram().getName()));
-        colTotalSessions.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getProgram().getTotalSessions() != null ? d.getValue().getProgram().getTotalSessions() : 1));
+        colProgramName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProgramName()));
+        colTotalSessions.setCellValueFactory(d -> new SimpleObjectProperty<>(
+                d.getValue().getProgram().getTotalSessions() != null ? d.getValue().getProgram().getTotalSessions() : 1));
         
-        colSessionsToPay.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSessionSelector()));
+        // Custom cell factory for the sessions-to-pay ComboBox
+        colSessionsToPay.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSessionsToPay()));
+        colSessionsToPay.setCellFactory(column -> new TableCell<>() {
+            private final ComboBox<Integer> comboBox = new ComboBox<>();
+
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    ProgramPaymentTM model = getTableView().getItems().get(getIndex());
+                    int total = model.getProgram().getTotalSessions() != null ? model.getProgram().getTotalSessions() : 1;
+                    ObservableList<Integer> options = FXCollections.observableArrayList();
+                    for (int i = 0; i <= total; i++) options.add(i);
+                    comboBox.setItems(options);
+                    comboBox.setOnAction(null);
+                    comboBox.setValue(model.getSessionsToPay());
+                    comboBox.setOnAction(e -> {
+                        if (comboBox.getValue() != null) {
+                            model.setSessionsToPay(comboBox.getValue());
+                            model.setSubtotal(calculateLineTotal(model.getProgram(), comboBox.getValue()));
+                            calculateTotals();
+                            getTableView().refresh();
+                        }
+                    });
+                    setGraphic(comboBox);
+                }
+            }
+        });
         
-        colSubtotal.setCellValueFactory(d -> d.getValue().subtotalProperty());
+        colSubtotal.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSubtotal()));
     }
 
-    public void initData(Patient patient, List<TherapyProgram> programs, Runnable onSuccess) {
-        this.currentPatient = patient;
+    public void initData(Long patientId, List<TherapyProgramDTO> programs, Runnable onSuccess) {
+        this.currentPatientId = patientId;
         this.enrolledPrograms = programs;
         this.onSuccessCallback = onSuccess;
         
@@ -76,16 +108,10 @@ public class UpfrontPaymentDialogController implements Initializable {
 
     private void loadPrograms() {
         paymentModels.clear();
-        for (TherapyProgram program : enrolledPrograms) {
-            ProgramPaymentModel model = new ProgramPaymentModel(program);
-            
-            // Add listener to recalculate totals when combo box changes
-            model.getSessionSelector().valueProperty().addListener((obs, oldVal, newVal) -> {
-                model.updateSubtotal();
-                calculateTotals();
-                tblPaymentPrograms.refresh();
-            });
-            
+        for (TherapyProgramDTO program : enrolledPrograms) {
+            int total = program.getTotalSessions() != null ? program.getTotalSessions() : 1;
+            BigDecimal subtotal = calculateLineTotal(program, total);
+            ProgramPaymentTM model = new ProgramPaymentTM(program, program.getName(), total, total, subtotal);
             paymentModels.add(model);
         }
         tblPaymentPrograms.setItems(paymentModels);
@@ -94,7 +120,7 @@ public class UpfrontPaymentDialogController implements Initializable {
 
     private void calculateTotals() {
         BigDecimal subtotal = BigDecimal.ZERO;
-        for (ProgramPaymentModel model : paymentModels) {
+        for (ProgramPaymentTM model : paymentModels) {
             subtotal = subtotal.add(model.getSubtotal());
         }
         
@@ -123,12 +149,12 @@ public class UpfrontPaymentDialogController implements Initializable {
     @FXML
     void handleProcessPayment(ActionEvent event) {
         try {
-            if (currentPatient == null || currentPatient.getId() == null) {
+            if (currentPatientId == null) {
                 AlertUtil.showWarning("Warning", "Patient must be registered first before processing upfront payment.");
                 return;
             }
 
-            Payment.PaymentMethod method = cmbPaymentMethod.getValue();
+            PaymentMethod method = cmbPaymentMethod.getValue();
             if (method == null) {
                 AlertUtil.showWarning("Warning", "Please select a payment method.");
                 return;
@@ -136,32 +162,36 @@ public class UpfrontPaymentDialogController implements Initializable {
 
             BigDecimal discount = parseDiscount();
             BigDecimal subtotal = BigDecimal.ZERO;
-            List<TherapySession> sessionsToPayFor = new ArrayList<>();
+            List<Long> sessionIdsToPayFor = new ArrayList<>();
 
-            // Find unscheduled sessions for the patient
-            List<TherapySession> allUnscheduled = sessionService.findUnscheduledByPatient(currentPatient.getId());
+            // Find unscheduled sessions for the patient (via DTO)
+            List<TherapySessionDTO> allUnscheduled = sessionService.getAllSessionDTOs().stream()
+                    .filter(s -> s.getPatientId() != null && s.getPatientId().equals(currentPatientId))
+                    .filter(s -> s.getPaymentStatus() == SessionPaymentStatus.PENDING)
+                    .toList();
 
-            for (ProgramPaymentModel model : paymentModels) {
-                int selectedSessions = model.getSessionSelector().getValue();
+            for (ProgramPaymentTM model : paymentModels) {
+                int selectedSessions = model.getSessionsToPay();
                 if (selectedSessions > 0) {
                     subtotal = subtotal.add(model.getSubtotal());
                     
-                    // Filter unscheduled sessions for this program and grab the selected number
                     long programId = model.getProgram().getId();
-                    List<TherapySession> programSessions = allUnscheduled.stream()
-                            .filter(s -> s.getProgram() != null && s.getProgram().getId() == programId && s.getPaymentStatus() == TherapySession.PaymentStatus.PENDING)
+                    List<TherapySessionDTO> programSessions = allUnscheduled.stream()
+                            .filter(s -> s.getProgramId() != null && s.getProgramId() == programId)
                             .limit(selectedSessions)
                             .toList();
                             
                     if (programSessions.size() < selectedSessions) {
-                        AlertUtil.showWarning("Warning", "Not enough pending sessions available for " + model.getProgram().getName() + ".");
+                        AlertUtil.showWarning("Warning", "Not enough pending sessions available for " + model.getProgramName() + ".");
                         return;
                     }
-                    sessionsToPayFor.addAll(programSessions);
+                    for (TherapySessionDTO s : programSessions) {
+                        sessionIdsToPayFor.add(s.getId());
+                    }
                 }
             }
 
-            if (sessionsToPayFor.isEmpty()) {
+            if (sessionIdsToPayFor.isEmpty()) {
                 AlertUtil.showWarning("Warning", "Please select at least one session to pay for.");
                 return;
             }
@@ -169,15 +199,14 @@ public class UpfrontPaymentDialogController implements Initializable {
             BigDecimal totalDue = subtotal.subtract(discount);
             if (totalDue.signum() < 0) totalDue = BigDecimal.ZERO;
 
-            Payment payment = new Payment();
-            payment.setPatient(currentPatient);
-            payment.setAmount(totalDue);
-            payment.setMethod(method);
-            payment.setDiscount(discount);
-            payment.setPaymentType(Payment.PaymentType.UPFRONT);
-            payment.setDescription("Upfront package payment for " + sessionsToPayFor.size() + " sessions.");
+            PaymentDTO paymentDTO = new PaymentDTO();
+            paymentDTO.setPatientId(currentPatientId);
+            paymentDTO.setAmount(totalDue);
+            paymentDTO.setMethod(method);
+            paymentDTO.setDiscount(discount);
+            paymentDTO.setDescription("Upfront package payment for " + sessionIdsToPayFor.size() + " sessions.");
 
-            paymentService.processUpfrontPayment(payment, sessionsToPayFor);
+            paymentService.processUpfrontPayment(paymentDTO, sessionIdsToPayFor);
             
             AlertUtil.showInfo("Success", "Upfront payment processed successfully.");
             
@@ -194,60 +223,20 @@ public class UpfrontPaymentDialogController implements Initializable {
 
     @FXML
     void handleClose(ActionEvent event) {
-        Stage stage = (Stage) btnCloseOrAnyNode().getScene().getWindow();
+        Stage stage = (Stage) tblPaymentPrograms.getScene().getWindow();
         stage.close();
     }
-    
-    private javafx.scene.Node btnCloseOrAnyNode() {
-        return tblPaymentPrograms;
-    }
 
-    /**
-     * Inner class for table row model
-     */
-    public class ProgramPaymentModel {
-        private final TherapyProgram program;
-        private final ComboBox<Integer> sessionSelector;
-        private final SimpleObjectProperty<BigDecimal> subtotalProp;
+    private BigDecimal calculateLineTotal(TherapyProgramDTO program, int sessions) {
+        if (sessions == 0) return BigDecimal.ZERO;
 
-        public ProgramPaymentModel(TherapyProgram program) {
-            this.program = program;
-            
+        if (program.getSessionFee() != null) {
+            return program.getSessionFee().multiply(new BigDecimal(sessions));
+        } else if (program.getFee() != null) {
             int total = program.getTotalSessions() != null ? program.getTotalSessions() : 1;
-            ObservableList<Integer> options = FXCollections.observableArrayList();
-            for (int i = 0; i <= total; i++) {
-                options.add(i);
-            }
-            
-            this.sessionSelector = new ComboBox<>(options);
-            // Default to full package if enrolled, or 0
-            this.sessionSelector.getSelectionModel().select(Integer.valueOf(total));
-            
-            this.subtotalProp = new SimpleObjectProperty<>(calculateLineTotal(total));
+            BigDecimal perSession = program.getFee().divide(new BigDecimal(total), 2, RoundingMode.HALF_UP);
+            return perSession.multiply(new BigDecimal(sessions));
         }
-
-        public void updateSubtotal() {
-            int selected = sessionSelector.getValue() != null ? sessionSelector.getValue() : 0;
-            this.subtotalProp.set(calculateLineTotal(selected));
-        }
-
-        private BigDecimal calculateLineTotal(int sessions) {
-            if (sessions == 0) return BigDecimal.ZERO;
-            
-            // If sessionFee is set, use it. Otherwise, fee / totalSessions
-            if (program.getSessionFee() != null) {
-                return program.getSessionFee().multiply(new BigDecimal(sessions));
-            } else if (program.getFee() != null) {
-                int total = program.getTotalSessions() != null ? program.getTotalSessions() : 1;
-                BigDecimal perSession = program.getFee().divide(new BigDecimal(total), 2, java.math.RoundingMode.HALF_UP);
-                return perSession.multiply(new BigDecimal(sessions));
-            }
-            return BigDecimal.ZERO;
-        }
-
-        public TherapyProgram getProgram() { return program; }
-        public ComboBox<Integer> getSessionSelector() { return sessionSelector; }
-        public BigDecimal getSubtotal() { return subtotalProp.get(); }
-        public SimpleObjectProperty<BigDecimal> subtotalProperty() { return subtotalProp; }
+        return BigDecimal.ZERO;
     }
 }

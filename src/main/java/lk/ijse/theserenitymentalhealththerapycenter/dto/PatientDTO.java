@@ -1,9 +1,5 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
 
-
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,12 +15,11 @@ public class PatientDTO {
     private String phone;
     private String address;
     private LocalDate registeredDate;
-    private ArrayList<TherapyProgram> programs; // programId -> programName
-    private ArrayList<TherapySession> sessions; // sessionId -> sessionDate
+    private ArrayList<TherapyProgramDTO> programs;
     private Map<Long, Integer> upfrontSessionsPerProgram = new HashMap<>(); // programId -> sessions paid upfront
     private String interviewNote;
 
-    public PatientDTO(long id, String name, String email, String phone, String address, LocalDate registeredDate, ArrayList<TherapyProgram> programs, ArrayList<TherapySession> sessions) {
+    public PatientDTO(long id, String name, String email, String phone, String address, LocalDate registeredDate, ArrayList<TherapyProgramDTO> programs) {
         this.id = String.format("P%03d", id); // P001, P002, ...
         this.name = name;
         this.email = email;
@@ -32,7 +27,6 @@ public class PatientDTO {
         this.address = address;
         this.registeredDate = registeredDate;
         this.programs = programs;
-        this.sessions = sessions;
     }
 
     public void setId(long id) {
@@ -41,5 +35,8 @@ public class PatientDTO {
     public long getId() {
         String pId = this.id.substring(1); // Remove 'P' prefix
         return Long.parseLong(pId);
+    }
+    public String getStringId() {
+        return this.id;
     }
 }

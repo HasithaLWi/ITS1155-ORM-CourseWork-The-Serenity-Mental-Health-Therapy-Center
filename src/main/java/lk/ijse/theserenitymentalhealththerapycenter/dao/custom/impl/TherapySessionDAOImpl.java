@@ -17,13 +17,32 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         super(TherapySession.class);
     }
 
+    @Override
+    public TherapySession getById(Object id) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return session.createQuery(
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.id = :id",
+                    TherapySession.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        }
+    }
+
     /**
      * Find all sessions for a given date.
      */
     public List<TherapySession> findByDate(LocalDate date) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
-                    "FROM TherapySession s WHERE s.sessionDate = :date ORDER BY s.sessionTime", TherapySession.class);
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.sessionDate = :date ORDER BY s.sessionTime", TherapySession.class);
             query.setParameter("date", date);
             return query.list();
         }
@@ -35,7 +54,11 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
     public List<TherapySession> findByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
-                    "FROM TherapySession s WHERE s.patient.id = :patientId ORDER BY s.sessionDate DESC", TherapySession.class);
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.patient.id = :patientId ORDER BY s.sessionDate DESC", TherapySession.class);
             query.setParameter("patientId", patientId);
             return query.list();
         }
@@ -47,7 +70,11 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
     public List<TherapySession> findByTherapist(Long therapistId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
-                    "FROM TherapySession s WHERE s.therapist.id = :therapistId ORDER BY s.sessionDate DESC", TherapySession.class);
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.therapist.id = :therapistId ORDER BY s.sessionDate DESC", TherapySession.class);
             query.setParameter("therapistId", therapistId);
             return query.list();
         }
@@ -59,7 +86,11 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
     public List<TherapySession> findByDateRange(LocalDate startDate, LocalDate endDate) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<TherapySession> query = session.createQuery(
-                    "FROM TherapySession s WHERE s.sessionDate BETWEEN :startDate AND :endDate ORDER BY s.sessionDate, s.sessionTime",
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.sessionDate BETWEEN :startDate AND :endDate ORDER BY s.sessionDate, s.sessionTime",
                     TherapySession.class);
             query.setParameter("startDate", startDate);
             query.setParameter("endDate", endDate);
@@ -100,7 +131,11 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
     public List<TherapySession> findByPatientAndProgram(Long patientId, Long programId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
-                    "FROM TherapySession s WHERE s.patient.id = :patientId AND s.program.id = :programId " +
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.patient.id = :patientId AND s.program.id = :programId " +
                             "ORDER BY s.sequenceNumber",
                     TherapySession.class)
                     .setParameter("patientId", patientId)
@@ -115,7 +150,11 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
     public List<TherapySession> findUnscheduledByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
-                    "FROM TherapySession s WHERE s.patient.id = :patientId AND s.status = :status " +
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.patient.id = :patientId AND s.status = :status " +
                             "ORDER BY s.program.id, s.sequenceNumber",
                     TherapySession.class)
                     .setParameter("patientId", patientId)
@@ -161,7 +200,11 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
     public List<TherapySession> findByTherapistAndDate(Long therapistId, LocalDate date) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
-                    "FROM TherapySession s WHERE s.therapist.id = :therapistId AND s.sessionDate = :date " +
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.therapist.id = :therapistId AND s.sessionDate = :date " +
                             "AND s.status = :status ORDER BY s.sessionTime",
                     TherapySession.class)
                     .setParameter("therapistId", therapistId)

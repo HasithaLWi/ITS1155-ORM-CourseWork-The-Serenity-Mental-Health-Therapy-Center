@@ -6,6 +6,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @lombok.NoArgsConstructor
@@ -19,6 +21,8 @@ public class PatientDTO {
     private LocalDate registeredDate;
     private ArrayList<TherapyProgram> programs; // programId -> programName
     private ArrayList<TherapySession> sessions; // sessionId -> sessionDate
+    private Map<Long, Integer> upfrontSessionsPerProgram = new HashMap<>(); // programId -> sessions paid upfront
+    private String interviewNote;
 
     public PatientDTO(long id, String name, String email, String phone, String address, LocalDate registeredDate, ArrayList<TherapyProgram> programs, ArrayList<TherapySession> sessions) {
         this.id = String.format("P%03d", id); // P001, P002, ...

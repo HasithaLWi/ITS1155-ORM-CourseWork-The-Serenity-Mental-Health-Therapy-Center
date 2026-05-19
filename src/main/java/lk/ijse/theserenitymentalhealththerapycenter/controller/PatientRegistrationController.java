@@ -16,6 +16,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import static java.util.Locale.filter;
@@ -65,7 +67,6 @@ public class PatientRegistrationController implements Initializable {
 
     private final PatientBOImpl patientService = new PatientBOImpl();
     private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
-    private final lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl sessionService = new lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl();
     private final lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl paymentService = new lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl();
 
     private final ObservableList<ProgramPaymentModel> paymentModels = FXCollections.observableArrayList();
@@ -207,61 +208,53 @@ public class PatientRegistrationController implements Initializable {
                 return;
             }
 
-            // 1. Register Patient and Generate Sessions
+            // 1. Build the PatientDTO with programs and upfront session counts
             PatientDTO p = new PatientDTO();
             p.setName(txtPatientName.getText());
             p.setEmail(txtPatientEmail.getText());
             p.setPhone(txtPatientPhone.getText());
             p.setAddress(txtPatientAddress.getText());
+            p.setInterviewNote(txtInterviewNote.getText());
 
             ArrayList<TherapyProgram> programs = new ArrayList<>();
+            Map<Long, Integer> upfrontMap = new HashMap<>();
+
             for (ProgramPaymentModel model : paymentModels) {
                 programs.add(model.getProgram());
+                int sessionsToPay = model.getSessionSelector().getValue() != null ? model.getSessionSelector().getValue() : 0;
+                upfrontMap.put(model.getProgram().getId(), sessionsToPay);
             }
             p.setPrograms(programs);
+            p.setUpfrontSessionsPerProgram(upfrontMap);
 
+            // 2. Register patient — saves PatientTherapyProgram records with upfront credit (NO sessions created)
             Long patientId = patientService.registerPatient(p);
 
-            // 2. If there's an upfront payment, process it immediately
+            // 3. If there's an upfront payment, record the payment
             if (totalDue.compareTo(java.math.BigDecimal.ZERO) > 0) {
                 lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl pDao = new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl();
                 lk.ijse.theserenitymentalhealththerapycenter.entity.Patient registeredPatient = pDao.getById(patientId);
 
-                java.util.List<lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession> allUnscheduled = sessionService
-                        .findUnscheduledByPatient(patientId);
-                java.util.List<lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession> sessionsToPayFor = new ArrayList<>();
+                lk.ijse.theserenitymentalhealththerapycenter.entity.Payment payment = new lk.ijse.theserenitymentalhealththerapycenter.entity.Payment();
+                payment.setPatient(registeredPatient);
+                payment.setAmount(totalDue);
+                payment.setMethod(method);
+                payment.setDiscount(discount);
+                payment.setPaymentType(
+                        lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentType.UPFRONT);
 
-                for (ProgramPaymentModel model : paymentModels) {
-                    int selectedSessions = model.getSessionSelector().getValue();
-                    if (selectedSessions > 0) {
-                        long programId = model.getProgram().getId();
-                        java.util.List<lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession> programSessions = allUnscheduled
-                                .stream()
-                                .filter(s -> s.getProgram() != null && s.getProgram().getId() == programId && s
-                                        .getPaymentStatus() == lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PENDING)
-                                .limit(selectedSessions)
-                                .toList();
-                        sessionsToPayFor.addAll(programSessions);
-                    }
-                }
+                int totalSessionsPaid = upfrontMap.values().stream().mapToInt(Integer::intValue).sum();
+                payment.setDescription("Upfront payment at registration for " + totalSessionsPaid + " sessions.");
+                payment.setStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentStatus.COMPLETED);
+                payment.setPaymentDate(java.time.LocalDateTime.now());
 
-                if (!sessionsToPayFor.isEmpty()) {
-                    lk.ijse.theserenitymentalhealththerapycenter.entity.Payment payment = new lk.ijse.theserenitymentalhealththerapycenter.entity.Payment();
-                    payment.setPatient(registeredPatient);
-                    payment.setAmount(totalDue);
-                    payment.setMethod(method);
-                    payment.setDiscount(discount);
-                    payment.setPaymentType(
-                            lk.ijse.theserenitymentalhealththerapycenter.entity.Payment.PaymentType.UPFRONT);
-                    payment.setDescription("Embedded upfront payment for " + sessionsToPayFor.size() + " sessions.");
-
-                    paymentService.processUpfrontPayment(payment, sessionsToPayFor);
-                }
+                // Save the payment record (no session linking needed — credit is tracked in PatientTherapyProgram)
+                new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl().save(payment);
             }
 
-            lblRegMessage.setText("Patient registered & payment processed successfully!");
+            lblRegMessage.setText("Patient registered & upfront credit saved successfully!");
             lblRegMessage.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 12px;");
-            AlertUtil.showInfo("Success", "Patient registered and sessions generated successfully.");
+            AlertUtil.showInfo("Success", "Patient registered successfully. Sessions will be created on-demand in Session Management.");
             handleClearPatientForm(event);
 
         } catch (Exception e) {

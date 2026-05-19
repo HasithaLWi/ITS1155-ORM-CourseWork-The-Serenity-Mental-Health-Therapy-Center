@@ -3,6 +3,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -17,10 +18,12 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TherapyProgram {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, length = 150)
@@ -41,15 +44,11 @@ public class TherapyProgram {
     @Column(length = 500)
     private String description;
 
-//    @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @ToString.Exclude
-//    private List<PatientTherapyProgram> patientTherapyPrograms = new ArrayList<>();
-
-    @ManyToMany(mappedBy = "programs")
+    @OneToMany(mappedBy = "program", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @ToString.Exclude
-    private List<Patient> patients = new ArrayList<>();
+    private List<PatientTherapyProgram> patientTherapyPrograms = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "programs")
+    @ManyToMany(mappedBy = "programs",  fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @ToString.Exclude
-    private Set<Therapist> therapists = new HashSet<>();
+    private List<Therapist> therapists = new ArrayList<>();
 }

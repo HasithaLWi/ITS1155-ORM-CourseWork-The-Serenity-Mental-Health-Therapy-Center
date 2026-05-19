@@ -4,6 +4,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Cache;
@@ -24,10 +25,12 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Patient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, length = 100)
@@ -45,24 +48,18 @@ public class Patient {
     @Column(name = "registered_date")
     private LocalDate registeredDate = LocalDate.now();
 
-//    @OneToMany(mappedBy = "patient",
-//            cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @ToString.Exclude
-//    private List<PatientTherapyProgram> patientTherapyPrograms = new ArrayList<>();
+    @Column(name = "interview_note", length = 2000)
+    private String interviewNote;
 
-    @ManyToMany
-    @JoinTable(
-            name = "patient_program",
-            joinColumns = @JoinColumn(name = "patient_id"),
-            inverseJoinColumns = @JoinColumn(name = "program_id")
-    )
-    private List<TherapyProgram> programs = new ArrayList<>();
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private List<PatientTherapyProgram> patientTherapyPrograms = new ArrayList<>();
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @ToString.Exclude
     private Set<TherapySession> sessions = new HashSet<>();
 
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.MERGE)
     @ToString.Exclude
     private List<Payment> payments = new ArrayList<>();
 }

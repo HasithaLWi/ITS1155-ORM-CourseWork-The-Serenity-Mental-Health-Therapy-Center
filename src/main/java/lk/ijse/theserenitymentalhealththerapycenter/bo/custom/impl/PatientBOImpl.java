@@ -2,6 +2,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientTherapyProgramDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
@@ -9,15 +10,17 @@ import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PatientBOImpl implements PatientBO {
     private final PatientDAOImpl patientDAO = new PatientDAOImpl();
-
-    private final lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl therapySessionDAO = new lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl();
+    private final PatientTherapyProgramDAOImpl ptpDAO = new PatientTherapyProgramDAOImpl();
 
     /**
-     * Register a new patient with validation and generate sessions for their programs.
+     * Register a new patient with validation.
+     * Creates PatientTherapyProgram records with upfront credit — NO sessions are generated.
      * Returns the generated patient ID.
      */
     public Long registerPatient(PatientDTO patient) {
@@ -38,36 +41,28 @@ public class PatientBOImpl implements PatientBO {
         p.setEmail(patient.getEmail());
         p.setAddress(patient.getAddress());
         p.setPhone(patient.getPhone());
+        p.setInterviewNote(patient.getInterviewNote());
         
-        // Use a transaction since we are saving a patient and their programs
-        // We'll just save the patient first to get the generated ID
-        for (TherapyProgram program : patient.getPrograms()) {
-            p.getPrograms().add(program);
-        }
-        
+        // Save patient first to get the generated ID
         patientDAO.save(p);
 
-        // Generate sessions for each enrolled program
-        List<lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession> generatedSessions = new java.util.ArrayList<>();
+        // Create PatientTherapyProgram records with upfront credit (NO sessions generated)
+        List<PatientTherapyProgram> enrollments = new ArrayList<>();
+        Map<Long, Integer> upfrontMap = patient.getUpfrontSessionsPerProgram();
+
         for (TherapyProgram program : patient.getPrograms()) {
-            int numSessions = (program.getTotalSessions() != null) ? program.getTotalSessions() : 1;
-            
-            for (int i = 1; i <= numSessions; i++) {
-                lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession session = new lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession();
-                session.setPatient(p);
-                session.setProgram(program);
-                session.setSequenceNumber(i);
-                session.setStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.SessionStatus.UNSCHEDULED);
-                session.setPaymentStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PENDING);
-                
-                generatedSessions.add(session);
+            int upfrontSessions = 0;
+            if (upfrontMap != null && upfrontMap.containsKey(program.getId())) {
+                upfrontSessions = upfrontMap.get(program.getId());
             }
+            PatientTherapyProgram ptp = new PatientTherapyProgram(p, program, upfrontSessions);
+            enrollments.add(ptp);
         }
-        
-        if (!generatedSessions.isEmpty()) {
-            therapySessionDAO.saveAll(generatedSessions);
+
+        if (!enrollments.isEmpty()) {
+            ptpDAO.saveAll(enrollments);
         }
-        
+
         return p.getId();
     }
 
@@ -101,5 +96,26 @@ public class PatientBOImpl implements PatientBO {
 
     public long getPatientCount() {
         return patientDAO.count();
+    }
+
+    /**
+     * Get all program enrollments for a patient (with credit info).
+     */
+    public List<PatientTherapyProgram> getPatientPrograms(Long patientId) {
+        return ptpDAO.findByPatient(patientId);
+    }
+
+    /**
+     * Get specific patient-program enrollment.
+     */
+    public PatientTherapyProgram getPatientProgram(Long patientId, Long programId) {
+        return ptpDAO.findByPatientAndProgram(patientId, programId);
+    }
+
+    /**
+     * Deduct one upfront credit for a patient-program enrollment.
+     */
+    public void deductUpfrontCredit(Long patientId, Long programId) {
+        ptpDAO.deductCredit(patientId, programId);
     }
 }

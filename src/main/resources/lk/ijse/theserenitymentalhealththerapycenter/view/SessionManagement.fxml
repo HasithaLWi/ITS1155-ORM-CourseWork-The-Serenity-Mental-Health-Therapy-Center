@@ -42,6 +42,7 @@
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="PROGRAM" />
                     <ComboBox fx:id="cmbSessionProgram" maxWidth="Infinity" promptText="Select program" styleClass="combo-autocomplete" />
+                    <Label fx:id="lblCreditInfo" style="-fx-text-fill: #4A7FA5; -fx-font-size: 10px; -fx-font-weight: bold;" text="" />
                 </VBox>
             </HBox>
             <HBox spacing="16">
@@ -62,26 +63,34 @@
                 <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="NOTES" />
                 <TextArea fx:id="txtSessionNotes" prefRowCount="2" promptText="Session notes..." style="-fx-background-color: #FFFFFF; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px; -fx-padding: 8;" wrapText="true" />
             </VBox>
+            <HBox fx:id="hboxInlinePayment" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
+                <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="INLINE PAYMENT:" />
+                <Label fx:id="lblInlinePaymentPrice" style="-fx-font-size: 12px; -fx-text-fill: #2D3436; -fx-font-weight: bold;" text="0 LKR" />
+                <ComboBox fx:id="cmbInlinePaymentMethod" prefWidth="120" promptText="Method" />
+                <Button onAction="#handleProcessInlinePayment" styleClass="btn-primary" text="✔️ Process Payment" />
+                <Button onAction="#handleCancelInlinePayment" styleClass="btn-secondary" text="❌ Cancel" />
+            </HBox>
             <HBox alignment="CENTER_LEFT" spacing="10">
                 <Region HBox.hgrow="ALWAYS" />
             <HBox fx:id="hboxSessionActions" spacing="10.0">
                <children>
-                       <Button maxHeight="1.7976931348623157E308" onAction="#handleCompleteSession" style="-fx-background-color: #7AB88F; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;" text="✅  Complete Session" HBox.hgrow="ALWAYS" />
-                       <Button maxHeight="1.7976931348623157E308" onAction="#handleCancelSession" style="-fx-background-color: #C47171; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;" text="↩  Cancel/Reschedule" HBox.hgrow="ALWAYS" />
+                       <Button fx:id="btnCompleteSession" maxHeight="1.7976931348623157E308" onAction="#handleCompleteSession" style="-fx-background-color: #7AB88F; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;" text="✅ Complete Session" HBox.hgrow="ALWAYS" />
+                       <Button fx:id="btnCancelSession" maxHeight="1.7976931348623157E308" onAction="#handleCancelSession" style="-fx-background-color: #C47171; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;" text="↩ Cancel/Reschedule" HBox.hgrow="ALWAYS" />
                </children>
             </HBox>
-            <Button fx:id="btnSessionPay" layoutX="650.0" layoutY="14.0" styleClass="btn-secondary" text="💵 Pay" />
-                <Button onAction="#handleUpdateSession" styleClass="btn-secondary" text="✏️  Update" />
-                <Button onAction="#handleClearSession" styleClass="btn-secondary" text="🔄  Clear" />
+                 <Button fx:id="btnCreateSession" onAction="#handleCreateAndScheduleSession" style="-fx-background-color: #4A7FA5; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;" text="➕ Create &amp; Schedule" HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnSessionPay" layoutX="650.0" layoutY="14.0" onAction="#handleInlinePay" styleClass="btn-secondary" text="💵 Pay" />
+            <Button fx:id="btnUpdateSession" layoutX="650.0" layoutY="14.0" onAction="#handleUpdateSession" styleClass="btn-secondary" text="✏️ Update" />
+                <Button onAction="#handleClearSession" styleClass="btn-secondary" text="🔄 Clear" />
             </HBox>
         </VBox>
-      <VBox fx:id="vboxPatientSessions" layoutX="38.0" layoutY="389.0" spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
+      <VBox fx:id="vboxPatientSessions" layoutX="38.0" layoutY="389.0" maxWidth="1.7976931348623157E308" spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
          <children>
                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
                    <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="Patient Sessions" />
                </HBox>
                <Separator />
-               <TableView fx:id="tblPatientSessions" prefHeight="200" VBox.vgrow="ALWAYS">
+               <TableView fx:id="tblPatientSessions" VBox.vgrow="ALWAYS">
                    <columns>
                        <TableColumn fx:id="colPatSessionId" prefWidth="50" text="ID" />
                        <TableColumn fx:id="colPatSequenceNumber" prefWidth="40" text="Seq" />

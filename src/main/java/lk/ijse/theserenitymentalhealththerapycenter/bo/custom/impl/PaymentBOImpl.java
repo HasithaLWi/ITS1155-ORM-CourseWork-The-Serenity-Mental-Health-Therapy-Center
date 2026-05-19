@@ -71,6 +71,37 @@ public class PaymentBOImpl implements PaymentBO {
         // sessionDAO.bulkUpdatePaymentStatus(sessionIds, lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PAID);
     }
 
+    /**
+     * Process payment for a single session (inline quick-pay from Session Management).
+     * Marks the session as PAID so it can be scheduled.
+     */
+    public void processSessionPayment(Payment payment, lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession session) {
+        if (session == null) {
+            throw new PaymentException("Session is required.");
+        }
+        if (payment.getAmount() == null || payment.getAmount().signum() <= 0) {
+            throw new PaymentException("Payment amount must be greater than zero.");
+        }
+        if (payment.getMethod() == null) {
+            throw new PaymentException("Payment method is required.");
+        }
+
+        payment.setSession(session);
+        payment.setPatient(session.getPatient());
+        payment.setStatus(Payment.PaymentStatus.COMPLETED);
+        payment.setPaymentType(Payment.PaymentType.SINGLE);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setDescription("Session payment for session #" + session.getId());
+
+        // Save payment
+        paymentDAO.save(payment);
+
+        // Update session payment status
+        session.setPaymentStatus(lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.PaymentStatus.PAID);
+        session.setPayment(payment);
+        sessionDAO.update(session);
+    }
+
     public void updatePayment(Payment payment) {
         paymentDAO.update(payment);
     }

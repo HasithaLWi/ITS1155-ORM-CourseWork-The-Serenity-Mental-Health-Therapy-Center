@@ -19,4 +19,6 @@ public class PaymentTM {
     private String paymentType;
     private String patientName;
     private String sessionId; // E.g., S001
+    private String description;
+    private Long patientId;
 }

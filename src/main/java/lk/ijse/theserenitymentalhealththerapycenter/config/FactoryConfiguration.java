@@ -45,4 +45,8 @@ public class FactoryConfiguration {
     public Session getSession() {
         return sessionFactory.openSession();
     }
+
+    public Session getCurrentSession() {
+        return sessionFactory.getCurrentSession();
+    }
 }

@@ -372,3 +372,59 @@
     -fx-padding: 4 8;
     -fx-background-radius: 4;
 }
+
+
+/* ─── DATE PICKER ─── */
+.date-picker {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E5DFD8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.date-picker:focused {
+    -fx-border-color: #6B9DC2;
+    -fx-effect: dropshadow(gaussian, rgba(107, 157, 194, 0.2), 8, 0, 0, 0);
+}
+
+.date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 8 12;
+    -fx-text-fill: #2D3436;
+    -fx-prompt-text-fill: #95A5A6;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: #6B9DC2;
+}
+
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: #F5F0EB;
+}
+
+.date-picker-popup > .calendar-grid {
+    -fx-background-color: #FFFFFF;
+}
+
+.date-picker-popup > .calendar-grid > .date-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2D3436;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.date-picker-popup > .calendar-grid > .date-cell:hover {
+    -fx-background-color: #F2F7FB;
+}
+
+.date-picker-popup > .calendar-grid > .selected {
+    -fx-background-color: #6B9DC2;
+    -fx-text-fill: #FFFFFF;
+}

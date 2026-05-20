@@ -46,15 +46,11 @@ public class Payment {
     @Column(length = 300)
     private String description;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id")
-    private TherapySession session;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
-    @OneToMany(mappedBy = "upfrontPayment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "payment", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<TherapySession> coveredSessions = new ArrayList<>();
 
@@ -67,6 +63,6 @@ public class Payment {
     }
 
     public enum PaymentType {
-        SINGLE, UPFRONT, PARTIAL_UPFRONT
+        SINGLE, UPFRONT, PARTIAL_UPFRONT, EXPENSE
     }
 }

@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -86,6 +85,9 @@ public class SessionManagementController implements Initializable {
     @FXML private TableColumn<TherapySessionTM, Integer> colSequenceNumber;
     @FXML private TableColumn<TherapySessionTM, String> colPaymentStatus;
 
+    @FXML private Label lblTimeAvailabilityMsg;
+    @FXML private Label lblDateAvailabilityMsg;
+
     private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
     private final PatientBOImpl patientService = new PatientBOImpl();
     private final TherapistBOImpl therapistService = new TherapistBOImpl();
@@ -94,6 +96,10 @@ public class SessionManagementController implements Initializable {
 
     private TherapySessionDTO selectedSession;
     private int currentCredit = 0;
+    private boolean keepPatient = false;
+    private boolean isScheduleValid = true;
+    private boolean isSessionOnCurrentPatient = false;
+
 
     private List<TherapySessionDTO> allSessionsCache;
     private List<PatientDTO> allPatientsCache;
@@ -205,6 +211,69 @@ public class SessionManagementController implements Initializable {
             }
         });
 
+        dpSessionDate.valueProperty().addListener((obs, oldVal, newVal) -> {
+            isSessionOnCurrentPatient = false;
+            isScheduleValid = true;
+            lblDateAvailabilityMsg.setText("");
+
+
+
+
+        if (newVal != null) {
+            if(selectedSession != null && selectedSession.getSessionDate().equals(newVal)) return;
+
+
+            List<TherapySessionDTO> selectedDateSessions = allSessionsCache.stream()
+                    .filter(s -> s.getSessionDate() != null && s.getSessionDate().equals(newVal))
+                    .filter(s -> s.getTherapistId() != null && cmbSessionTherapist.getValue() != null && s.getTherapistId().equals(cmbSessionTherapist.getValue().getId()))
+                .toList();
+            if (!selectedDateSessions.isEmpty()) {
+                lblDateAvailabilityMsg.setText(selectedDateSessions.size() + " session(s) already scheduled on this date.");
+                isScheduleValid = true;
+
+                if(selectedDateSessions.stream().anyMatch(s -> s.getPatientId() != null && cmbSessionPatient.getValue() != null && s.getPatientId().equals(cmbSessionPatient.getValue().getId()))) {
+                    lblDateAvailabilityMsg.setText(lblDateAvailabilityMsg.getText() + " (Patient have a session on this date.)");
+                    isScheduleValid = true;
+                    isSessionOnCurrentPatient = true;
+
+                }else if(selectedDateSessions.stream().anyMatch(s -> s.getSessionTime() != null && cmbSessionTime.getValue() != null && s.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")).equals(cmbSessionTime.getValue()))) {
+                    lblTimeAvailabilityMsg.setText("Selected time slot is not available for the chosen therapist.");
+                    isScheduleValid = false;
+                }
+            } else {
+                lblDateAvailabilityMsg.setText("");
+                isScheduleValid = true;
+            }
+        }
+        });
+
+        cmbSessionTime.valueProperty().addListener((obs, oldVal, newVal) -> {
+            isScheduleValid = true;
+            lblTimeAvailabilityMsg.setText("");
+
+
+            if (newVal != null) {
+
+                if(selectedSession != null && selectedSession.getSessionTime() != null
+                        && selectedSession.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")).equals(newVal)) return;
+
+                List<TherapySessionDTO> selectedDateSessions = allSessionsCache.stream()
+                        .filter(s -> s.getSessionTime() != null && s.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")).equals(newVal))
+                        .filter(s -> s.getSessionDate() != null && dpSessionDate.getValue() != null && s.getSessionDate().equals(dpSessionDate.getValue()))
+                        .filter(s -> s.getTherapistId() != null && cmbSessionTherapist.getValue() != null && s.getTherapistId().equals(cmbSessionTherapist.getValue().getId()))
+                        .toList();
+                if (!selectedDateSessions.isEmpty()) {
+                    lblTimeAvailabilityMsg.setText("Selected time slot is not available for the chosen therapist.");
+                    isScheduleValid = false;
+
+                } else {
+                    lblTimeAvailabilityMsg.setText("");
+                    isScheduleValid = true;
+
+                }
+            }
+        });
+
         txtAllSessionSearch.textProperty().addListener((obs, oldVal, newVal) -> filterAllSessions());
         dpFilterDate.valueProperty().addListener((obs, o, n) -> filterAllSessions());
         cmbFilterTime.valueProperty().addListener((obs, o, n) -> filterAllSessions());
@@ -231,14 +300,18 @@ public class SessionManagementController implements Initializable {
                 TherapySessionDTO fullDTO = sessionService.getSessionById(Long.parseLong(n.getId().replace("S", "")));
                 if (fullDTO != null) {
                     boolean needsPay = (fullDTO.getPaymentStatus() == SessionPaymentStatus.PENDING);
+
+                    selectedSession = fullDTO;
                     populateForm(fullDTO);
+                    selectedSession = fullDTO;
+
                     updateActionButtonsVisibility(true, needsPay);
 
                     cmbSessionId.setMouseTransparent(true);
                     cmbSessionPatient.setMouseTransparent(true);
                     cmbSessionProgram.setMouseTransparent(true);
 
-                    selectedSession = fullDTO;
+
                     lblCreditInfo.setText("");
                 }
             }
@@ -249,9 +322,12 @@ public class SessionManagementController implements Initializable {
         cmbSessionId.valueProperty().addListener((obs, o, n) -> {
             if (n != null) {
                 boolean needsPay = (n.getPaymentStatus() == SessionPaymentStatus.PENDING);
-                populateForm(n);
-                updateActionButtonsVisibility(true, needsPay);
+
                 selectedSession = n;
+                populateForm(n);
+                selectedSession = n;
+
+                updateActionButtonsVisibility(true, needsPay);
                 lblCreditInfo.setText("");
 
                 Platform.runLater(() -> {
@@ -485,6 +561,15 @@ public class SessionManagementController implements Initializable {
             AlertUtil.showWarning("Warning", "Patient and Program are required.");
             return;
         }
+        if(cmbSessionTherapist.getValue() == null || cmbSessionTime.getValue() == null || dpSessionDate.getValue() == null) {
+            AlertUtil.showWarning("Warning", "Therapist, Date and Time are required to schedule the session.");
+            return;
+        }
+
+        if(!isScheduleValid && !isSessionOnCurrentPatient){
+            AlertUtil.showWarning("Warning", "Therapist, Date and Time is invalid.");
+            return;
+        }
 
         try {
             TherapySessionDTO newSession = new TherapySessionDTO();
@@ -514,6 +599,8 @@ public class SessionManagementController implements Initializable {
             loadAllData();
             loadData();
             loadPatientSessions(cmbSessionPatient.getValue());
+
+            handleInlinePay(event);
 
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
@@ -595,7 +682,8 @@ public class SessionManagementController implements Initializable {
                 loadPatientSessions(cmbSessionPatient.getValue());
             }
 
-            handleUpdateSession(event); 
+            handleUpdateSession(event);
+//            handleClearSession(event);
 
         } catch (Exception e) {
             AlertUtil.showError("Error", "Payment failed: " + e.getMessage());
@@ -608,6 +696,7 @@ public class SessionManagementController implements Initializable {
             AlertUtil.showWarning("Warning", "Select a session first.");
             return;
         }
+
         try {
             selectedSession.setPatientId(cmbSessionPatient.getValue().getId());
             selectedSession.setTherapistId(cmbSessionTherapist.getValue() != null ? cmbSessionTherapist.getValue().getId() : null);
@@ -616,11 +705,31 @@ public class SessionManagementController implements Initializable {
             selectedSession.setSessionTime(parseTime());
             selectedSession.setStatus(cmbSessionStatus.getValue());
             selectedSession.setNotes(txtSessionNotes.getText());
+
+            if(selectedSession.getStatus().equals(SessionStatus.SCHEDULED)) {
+                if (sessionService.getSessionById(selectedSession.getId()).getPaymentStatus() == SessionPaymentStatus.PENDING) {
+                    AlertUtil.showWarning("Payment Required",
+                            "Session is scheduled but upfront credit is 0.\nPlease pay to confirm this session.");
+                    updateActionButtonsVisibility(true, true);
+                    btnUpdateSession.setVisible(false);
+                    btnUpdateSession.setManaged(false);
+                    return;
+                } else if (selectedSession.getTherapistId() == null ||
+                selectedSession.getSessionTime() == null || selectedSession.getSessionDate() == null) {
+                    AlertUtil.showWarning("Warning", "Therapist, Date and Time are required to schedule the session.");
+                    return;
+                }else if(!isScheduleValid && !isSessionOnCurrentPatient){
+                    AlertUtil.showWarning("Warning", "Therapist, Date and Time is invalid.");
+                }
+            }
             
             sessionService.updateSession(selectedSession);
             AlertUtil.showInfo("Success", "Session updated.");
 
+            keepPatient = true;
             handleClearSession(event);
+
+
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
         }
@@ -643,18 +752,18 @@ public class SessionManagementController implements Initializable {
                 long sid = Long.parseLong(s.getId().replace("S", ""));
                 TherapySessionDTO nextSession = sessionService.completeSession(sid);
                 AlertUtil.showInfo("Success", "Session completed.");
-                
+
                 loadAllData();
                 loadData();
-                
-                if (nextSession != null) {
-                    if (AlertUtil.showConfirmation("Next Session", "Would you like to schedule the next session ("
-                            + nextSession.getSequenceNumber() + ") now?")) {
-                        selectedSession = nextSession;
-                        populateForm(nextSession);
-                    }
-                }
-                
+
+//                if (nextSession != null) {
+//                    if (AlertUtil.showConfirmation("Next Session", "Would you like to schedule the next session ("
+//                            + nextSession.getSequenceNumber() + ") now?")) {
+//                        selectedSession = nextSession;
+//                        populateForm(nextSession);
+//                    }
+//                }
+
                 if (cmbSessionPatient.getValue() != null) {
                     loadPatientSessions(cmbSessionPatient.getValue());
                 }
@@ -678,7 +787,7 @@ public class SessionManagementController implements Initializable {
                 sessionService.cancelAndReschedule(sid);
                 AlertUtil.showInfo("Success", "Session cancelled and returned to unscheduled pool.");
                 handleClearSession(event);
-                
+
                 loadAllData();
                 loadData();
                 if (cmbSessionPatient.getValue() != null) {
@@ -703,7 +812,7 @@ public class SessionManagementController implements Initializable {
                 long sid = Long.parseLong(s.getId().replace("S", ""));
                 sessionService.deleteSession(sid);
                 handleClearSession(event);
-                
+
                 loadAllData();
                 loadData();
                 if (cmbSessionPatient.getValue() != null) {
@@ -718,7 +827,11 @@ public class SessionManagementController implements Initializable {
     @FXML
     void handleClearSession(ActionEvent event) {
         cmbSessionId.setValue(null);
-        cmbSessionPatient.setValue(null);
+        if (!keepPatient) {
+            cmbSessionPatient.setValue(null);
+        }
+        keepPatient = false;
+
         cmbSessionTherapist.setValue(null);
         cmbSessionProgram.setValue(null);
         dpSessionDate.setValue(null);
@@ -727,6 +840,8 @@ public class SessionManagementController implements Initializable {
         txtSessionNotes.clear();
         selectedSession = null;
         lblCreditInfo.setText("");
+        lblTimeAvailabilityMsg.setText("");
+        lblDateAvailabilityMsg.setText("");
         currentCredit = 0;
 
         tblSessions.getSelectionModel().clearSelection();
@@ -751,6 +866,10 @@ public class SessionManagementController implements Initializable {
         cmbSessionTime.setVisible(false);
         cmbSessionTherapist.setVisible(false);
         dpSessionDate.setVisible(false);
+
+isScheduleValid = true;
+        isSessionOnCurrentPatient = false;
+
     }
 
     private LocalTime parseTime() {

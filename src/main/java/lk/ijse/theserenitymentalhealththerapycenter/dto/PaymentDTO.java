@@ -3,6 +3,9 @@ package lk.ijse.theserenitymentalhealththerapycenter.dto;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentType;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class PaymentDTO {
     private String id;
@@ -20,6 +24,9 @@ public class PaymentDTO {
     private PaymentType paymentType;
     private BigDecimal discount;
     private String description;
+
+    private PatientDTO patient;
+    private TherapySessionDTO session;
     
     // Relationships
     private Long sessionId;

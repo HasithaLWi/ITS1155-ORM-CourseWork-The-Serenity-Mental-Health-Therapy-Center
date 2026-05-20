@@ -1,8 +1,10 @@
 package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientTherapyProgramDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapistDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapyProgramDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl;
@@ -10,8 +12,11 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SchedulingException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +28,7 @@ public class TherapySessionBOImpl implements TherapySessionBO {
     private final PatientDAOImpl patientDAO = new PatientDAOImpl();
     private final TherapistDAOImpl therapistDAO = new TherapistDAOImpl();
     private final TherapyProgramDAOImpl programDAO = new TherapyProgramDAOImpl();
+    private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
 
     /**
      * Create and schedule a new session on-demand.
@@ -49,51 +55,63 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         if (totalSessions != null && totalSessions > 0 && existingCount >= totalSessions) {
             throw new SchedulingException("Maximum sessions (" + totalSessions + ") already reached for this program.");
         }
-        
-        TherapySession session = new TherapySession();
-        session.setPatient(patientDAO.getById(patientId));
-        session.setProgram(programDAO.getById(programId));
-        if (sessionDTO.getTherapistId() != null) {
-            session.setTherapist(therapistDAO.getById(sessionDTO.getTherapistId()));
-        }
-        session.setSessionDate(sessionDTO.getSessionDate());
-        session.setSessionTime(sessionDTO.getSessionTime());
-        session.setNotes(sessionDTO.getNotes());
-        session.setSequenceNumber((int) existingCount + 1);
 
         // Check upfront credit
         PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(patientId, programId);
         int remainingCredit = (ptp != null) ? ptp.getRemainingCredit() : 0;
 
-        if (remainingCredit > 0) {
-            // Has credit — create as SCHEDULED + PAID
-            if (session.getTherapist() == null) {
-                throw new SchedulingException("Therapist is required to schedule a session.");
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession therapySession = new TherapySession();
+            therapySession.setPatient(patientDAO.getById(patientId, session));
+            therapySession.setProgram(programDAO.getById(programId, session));
+            if (sessionDTO.getTherapistId() != null) {
+                therapySession.setTherapist(therapistDAO.getById(sessionDTO.getTherapistId(), session));
             }
-            if (session.getSessionDate() == null) {
-                throw new SchedulingException("Session date is required.");
+            therapySession.setSessionDate(sessionDTO.getSessionDate());
+            therapySession.setSessionTime(sessionDTO.getSessionTime());
+            therapySession.setNotes(sessionDTO.getNotes());
+            therapySession.setSequenceNumber((int) existingCount + 1);
+
+            if (remainingCredit > 0) {
+                // Has credit — create as SCHEDULED + PAID
+                if (therapySession.getTherapist() == null) {
+                    throw new SchedulingException("Therapist is required to schedule a session.");
+                }
+                if (therapySession.getSessionDate() == null) {
+                    throw new SchedulingException("Session date is required.");
+                }
+
+                // Check therapist availability
+                checkTherapistAvailability(therapySession);
+
+                // Find the upfront payment and link it to the session
+                Payment upfrontPayment = paymentDAO.findUpfrontByPatient(patientId, session);
+
+                therapySession.setStatus(TherapySession.SessionStatus.SCHEDULED);
+                therapySession.setPaymentStatus(TherapySession.PaymentStatus.PAID);
+                therapySession.setPayment(upfrontPayment);
+                sessionDAO.save(therapySession, session);
+
+                // Deduct credit
+                ptpDAO.deductCredit(patientId, programId);
+            } else {
+                // No credit — create as UNSCHEDULED + PENDING (no date/time)
+                therapySession.setSessionDate(null);
+                therapySession.setSessionTime(null);
+                therapySession.setTherapist(null);
+                therapySession.setStatus(TherapySession.SessionStatus.UNSCHEDULED);
+                therapySession.setPaymentStatus(TherapySession.PaymentStatus.PENDING);
+                sessionDAO.save(therapySession, session);
             }
 
-            // Check therapist availability
-            checkTherapistAvailability(session);
-
-            session.setStatus(TherapySession.SessionStatus.SCHEDULED);
-            session.setPaymentStatus(TherapySession.PaymentStatus.PAID);
-            sessionDAO.save(session);
-
-            // Deduct credit
-            ptpDAO.deductCredit(patientId, programId);
-        } else {
-            // No credit — create as UNSCHEDULED + PENDING (no date/time)
-            session.setSessionDate(null);
-            session.setSessionTime(null);
-            session.setTherapist(null);
-            session.setStatus(TherapySession.SessionStatus.UNSCHEDULED);
-            session.setPaymentStatus(TherapySession.PaymentStatus.PENDING);
-            sessionDAO.save(session);
+            transaction.commit();
+            return toDTO(therapySession);
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
         }
-
-        return toDTO(session);
     }
 
     /**

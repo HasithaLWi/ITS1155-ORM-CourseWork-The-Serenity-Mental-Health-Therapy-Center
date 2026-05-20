@@ -1,17 +1,23 @@
 package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientTherapyProgramDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +25,8 @@ import java.util.Map;
 public class PatientBOImpl implements PatientBO {
     private final PatientDAOImpl patientDAO = new PatientDAOImpl();
     private final PatientTherapyProgramDAOImpl ptpDAO = new PatientTherapyProgramDAOImpl();
+    private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
+
 
     /**
      * Register a new patient with validation.
@@ -38,44 +46,69 @@ public class PatientBOImpl implements PatientBO {
             throw new RegistrationException("Invalid phone number format.");
         }
 
-        Patient p = new Patient();
-        p.setName(patient.getName());
-        p.setEmail(patient.getEmail());
-        p.setAddress(patient.getAddress());
-        p.setPhone(patient.getPhone());
-        p.setInterviewNote(patient.getInterviewNote());
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            Patient p = new Patient();
+            p.setName(patient.getName());
+            p.setEmail(patient.getEmail());
+            p.setAddress(patient.getAddress());
+            p.setPhone(patient.getPhone());
+            p.setInterviewNote(patient.getInterviewNote());
 
-        // Save patient first to get the generated ID
-        patientDAO.save(p);
+            // Save patient first to get the generated ID
+            patientDAO.save(p, session);
 
-        // Create PatientTherapyProgram records with upfront credit (NO sessions generated)
-        List<PatientTherapyProgram> enrollments = new ArrayList<>();
-        Map<Long, Integer> upfrontMap = patient.getUpfrontSessionsPerProgram();
+            // Create PatientTherapyProgram records with upfront credit (NO sessions generated)
+            List<PatientTherapyProgram> enrollments = new ArrayList<>();
+            Map<Long, Integer> upfrontMap = patient.getUpfrontSessionsPerProgram();
 
-        for (TherapyProgramDTO programDto : patient.getPrograms()) {
-            TherapyProgram programEntity = new TherapyProgram();
-            programEntity.setId(programDto.getId());
-            programEntity.setName(programDto.getName());
-            programEntity.setDuration(programDto.getDuration());
-            programEntity.setFee(programDto.getFee());
-            programEntity.setTotalSessions(programDto.getTotalSessions());
-            programEntity.setSessionFee(programDto.getSessionFee());
-            programEntity.setDescription(programDto.getDescription());
+            for (TherapyProgramDTO programDto : patient.getPrograms()) {
+                TherapyProgram programEntity = new TherapyProgram();
+                programEntity.setId(programDto.getId());
+                programEntity.setName(programDto.getName());
+                programEntity.setDuration(programDto.getDuration());
+                programEntity.setFee(programDto.getFee());
+                programEntity.setTotalSessions(programDto.getTotalSessions());
+                programEntity.setSessionFee(programDto.getSessionFee());
+                programEntity.setDescription(programDto.getDescription());
 
-            int upfrontSessions = 0;
-            if (upfrontMap != null && upfrontMap.containsKey(programDto.getId())) {
-                upfrontSessions = upfrontMap.get(programDto.getId());
+                int upfrontSessions = 0;
+                if (upfrontMap != null && upfrontMap.containsKey(programDto.getId())) {
+                    upfrontSessions = upfrontMap.get(programDto.getId());
+                }
+
+                PatientTherapyProgram ptp = new PatientTherapyProgram(p, programEntity, upfrontSessions);
+                enrollments.add(ptp);
             }
-            
-            PatientTherapyProgram ptp = new PatientTherapyProgram(p, programEntity, upfrontSessions);
-            enrollments.add(ptp);
-        }
 
-        if (!enrollments.isEmpty()) {
-            ptpDAO.saveAll(enrollments);
-        }
+            if (!enrollments.isEmpty()) {
+                for (PatientTherapyProgram ptp : enrollments) {
+                    ptpDAO.save(ptp, session);
+                }
+            }
 
-        return p.getId();
+            // Save payment if upfront payment data is provided
+            if (patient.getUpfrontPayment() != null && patient.getUpfrontPayment().getAmount() != null) {
+                Payment payment = new Payment();
+                payment.setPatient(p);
+                payment.setAmount(patient.getUpfrontPayment().getAmount());
+                payment.setMethod(Payment.PaymentMethod.valueOf(patient.getUpfrontPayment().getMethod().name()));
+                payment.setDiscount(patient.getUpfrontPayment().getDiscount());
+                payment.setPaymentType(Payment.PaymentType.UPFRONT);
+                payment.setStatus(Payment.PaymentStatus.COMPLETED);
+                payment.setPaymentDate(LocalDateTime.now());
+                payment.setDescription(patient.getUpfrontPayment().getDescription());
+
+                paymentDAO.save(payment, session);
+            }
+
+            transaction.commit();
+            return p.getId();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw new RegistrationException("Failed to register patient: " + e.getMessage());
+        }
     }
 
     public void updatePatient(PatientDTO dto) {

@@ -54,12 +54,12 @@ public class TherapySession {
     @JoinColumn(name = "program_id")
     private TherapyProgram program;
 
-    @OneToOne(mappedBy = "session", cascade = CascadeType.ALL)
-    private Payment payment;
+//    @OneToOne(mappedBy = "session", cascade = CascadeType.ALL)
+//    private Payment payment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "upfront_payment_id")
-    private Payment upfrontPayment;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
     public enum SessionStatus {
         UNSCHEDULED, SCHEDULED, COMPLETED, CANCELLED, NO_SHOW

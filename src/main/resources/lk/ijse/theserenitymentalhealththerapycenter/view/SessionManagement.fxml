@@ -49,10 +49,12 @@
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="DATE" />
                     <DatePicker fx:id="dpSessionDate" maxWidth="Infinity" promptText="Select date" />
+               <Label fx:id="lblDateAvailabilityMsg" style="-fx-text-fill: #4A7FA5; -fx-font-size: 10px; -fx-font-weight: bold;" text="" wrapText="true" />
                 </VBox>
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="TIME" />
                     <ComboBox fx:id="cmbSessionTime" maxWidth="Infinity" promptText="Select time" />
+               <Label fx:id="lblTimeAvailabilityMsg" style="-fx-text-fill: #4A7FA5; -fx-font-size: 10px; -fx-font-weight: bold;" text="" wrapText="true" />
                 </VBox>
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="STATUS" />
@@ -61,7 +63,7 @@
             </HBox>
             <VBox spacing="4">
                 <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="NOTES" />
-                <TextArea fx:id="txtSessionNotes" prefRowCount="2" promptText="Session notes..." style="-fx-background-color: #FFFFFF; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px; -fx-padding: 8;" wrapText="true" />
+                <TextArea fx:id="txtSessionNotes" prefRowCount="5" promptText="Session notes..." style="-fx-background-color: #FFFFFF; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px; -fx-padding: 8;" wrapText="true" />
             </VBox>
             <HBox fx:id="hboxInlinePayment" alignment="CENTER_LEFT" managed="false" spacing="10" visible="false">
                 <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="INLINE PAYMENT:" />

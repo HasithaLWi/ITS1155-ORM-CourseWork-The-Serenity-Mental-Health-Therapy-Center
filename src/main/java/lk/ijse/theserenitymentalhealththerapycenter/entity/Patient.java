@@ -59,7 +59,7 @@ public class Patient {
     @ToString.Exclude
     private Set<TherapySession> sessions = new HashSet<>();
 
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Payment> payments = new ArrayList<>();
 }

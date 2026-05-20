@@ -255,21 +255,29 @@ public class PatientRegistrationController implements Initializable {
             p.setUpfrontSessionsPerProgram(upfrontMap);
 
             // 2. Register patient — saves PatientTherapyProgram records with upfront credit
-            Long patientId = patientService.registerPatient(p);
+//            Long patientId = patientService.registerPatient(p);
 
             // 3. If there's an upfront payment, record it via PaymentBO
             if (totalDue.compareTo(BigDecimal.ZERO) > 0) {
                 int totalSessionsPaid = upfrontMap.values().stream().mapToInt(Integer::intValue).sum();
 
                 PaymentDTO paymentDTO = new PaymentDTO();
-                paymentDTO.setPatientId(patientId);
+//                paymentDTO.setPatientId(patientId);
                 paymentDTO.setAmount(totalDue);
                 paymentDTO.setMethod(method);
                 paymentDTO.setDiscount(discount);
                 paymentDTO.setDescription("Upfront payment at registration for " + totalSessionsPaid + " sessions.");
+//                paymentDTO.setPatient(p); // Set the patient DTO for reference in the payment record
 
-                paymentService.saveRegistrationPayment(paymentDTO);
+//                paymentService.saveRegistrationPayment(paymentDTO);
+
+                p.setUpfrontPayment(paymentDTO);
+            }else {
+                AlertUtil.showWarning("Notice", "Please make upfront payment for registrations.");
             }
+
+
+            Long patientId = patientService.registerPatient(p);
 
             lblRegMessage.setText("Patient registered & upfront credit saved successfully!");
             lblRegMessage.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 12px;");

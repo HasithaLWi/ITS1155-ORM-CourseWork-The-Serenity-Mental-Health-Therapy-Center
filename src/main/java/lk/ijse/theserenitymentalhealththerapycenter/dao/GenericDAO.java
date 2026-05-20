@@ -59,6 +59,20 @@ public class GenericDAO<T> {
         }
     }
 
+    // ---- Session-aware overloads (for BO-managed transactions) ----
+
+    public void save(T entity, Session session) {
+        session.persist(entity);
+    }
+
+    public void update(T entity, Session session) {
+        session.merge(entity);
+    }
+
+    public T getById(Object id, Session session) {
+        return session.get(type, id);
+    }
+
     public List<T> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
 

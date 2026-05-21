@@ -5,11 +5,87 @@ import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
 
-public class PatientDAOImpl extends GenericDAO<Patient> implements PatientDAO {
+public class PatientDAOImpl  implements PatientDAO {
+
+    public void save(Patient entity) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction transaction = session.beginTransaction();
+            try {
+                session.persist(entity);
+                transaction.commit();
+            } catch (Exception e) {
+                if (transaction != null) transaction.rollback();
+                throw e;
+            }
+        }
+    }
+
+    public void update(Patient entity) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction transaction = session.beginTransaction();
+            try {
+                Patient existing = session.get(Patient.class, entity.getId());
+                if (existing == null) {
+                    throw new IllegalArgumentException("Patient not found with ID: " + entity.getId());
+                }
+                entity.setName(entity.getName());
+                entity.setEmail(entity.getEmail());
+                entity.setPhone(entity.getPhone());
+                entity.setAddress(entity.getAddress());
+                entity.setInterviewNote(entity.getInterviewNote());
+
+//                session.merge(entity);
+                transaction.commit();
+            } catch (Exception e) {
+                if (transaction != null) transaction.rollback();
+                throw e;
+            }
+        }
+    }
+
+    public void delete(Patient entity) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction transaction = session.beginTransaction();
+            try {
+                Patient merged = session.merge(entity);
+                session.remove(merged);
+                transaction.commit();
+            } catch (Exception e) {
+                if (transaction != null) transaction.rollback();
+                throw e;
+            }
+        }
+    }
+
+    public Patient getById(Object id) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return session.get(Patient.class, id);
+        }
+    }
+
+    public void save(Patient entity, Session session) {
+        session.persist(entity);
+    }
+
+    public void update(Patient entity, Session session) {
+        session.merge(entity);
+    }
+
+    public Patient getById(Object id, Session session) {
+        return session.get(Patient.class, id);
+    }
+
+    public long count() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return session.createQuery("SELECT COUNT(e) FROM " + Patient.class.getSimpleName() + " e", Long.class)
+                    .uniqueResult();
+        }
+    }
 
     @Override
     public List<Patient> getAll() {
@@ -22,13 +98,6 @@ public class PatientDAOImpl extends GenericDAO<Patient> implements PatientDAO {
         }
     }
 
-    public PatientDAOImpl() {
-        super(Patient.class);
-    }
-
-    /**
-     * Search patients by name (HQL LIKE query).
-     */
     @Override
     public List<Patient> searchByName(String name) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
@@ -39,9 +108,6 @@ public class PatientDAOImpl extends GenericDAO<Patient> implements PatientDAO {
         }
     }
 
-    /**
-     * Find patients who are enrolled in ALL therapy programs (HQL with HAVING COUNT).
-     */
     public List<Patient> findPatientsInAllPrograms() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             long totalPrograms = session.createQuery(
@@ -55,9 +121,6 @@ public class PatientDAOImpl extends GenericDAO<Patient> implements PatientDAO {
         }
     }
 
-    /**
-     * Get patients with their enrolled programs (JOIN FETCH to avoid N+1).
-     */
     public List<Patient> getAllWithPrograms() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -66,9 +129,6 @@ public class PatientDAOImpl extends GenericDAO<Patient> implements PatientDAO {
         }
     }
 
-    /**
-     * Find patient by phone number.
-     */
     public Patient findByPhone(String phone) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<Patient> query = session.createQuery(

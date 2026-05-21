@@ -30,14 +30,7 @@ public class TherapySessionBOImpl implements TherapySessionBO {
     private final TherapyProgramDAOImpl programDAO = new TherapyProgramDAOImpl();
     private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
 
-    /**
-     * Create and schedule a new session on-demand.
-     * If upfront credit is available, the session is created as SCHEDULED + PAID.
-     * If no credit, the session is created as UNSCHEDULED + PENDING (no date/time).
-     *
-     * @return the created session DTO
-     */
-    public TherapySessionDTO createAndScheduleSession(TherapySessionDTO sessionDTO) {
+    public TherapySessionDTO createAndScheduleSession(TherapySessionDTO sessionDTO) throws Exception {
         if (sessionDTO.getPatientId() == null) {
             throw new SchedulingException("Patient is required.");
         }
@@ -83,6 +76,9 @@ public class TherapySessionBOImpl implements TherapySessionBO {
                     throw new SchedulingException("Session date is required.");
                 }
 
+                // Validate date is not in the past
+                validateSessionDate(therapySession.getSessionDate());
+
                 // Check therapist availability
                 checkTherapistAvailability(therapySession);
 
@@ -114,9 +110,6 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         }
     }
 
-    /**
-     * Schedule an existing UNSCHEDULED session that has been paid for.
-     */
     public void scheduleSession(TherapySessionDTO sessionDTO) {
         TherapySession session = sessionDAO.getById(sessionDTO.getId());
         if (session == null) throw new SchedulingException("Session not found.");
@@ -137,6 +130,10 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         if (session.getSessionDate() == null) {
             throw new SchedulingException("Session date is required.");
         }
+
+        // Validate date is not in the past
+        validateSessionDate(session.getSessionDate());
+
         if (session.getPaymentStatus() == TherapySession.PaymentStatus.PENDING) {
             throw new SchedulingException("Payment is still PENDING for this session. Please pay first.");
         }
@@ -160,17 +157,18 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         session.setSessionTime(sessionDTO.getSessionTime());
         if (sessionDTO.getStatus() != null) session.setStatus(TherapySession.SessionStatus.valueOf(sessionDTO.getStatus().name()));
         session.setNotes(sessionDTO.getNotes());
-        
+
+        // Validate date is not in the past when scheduling
+        if (session.getStatus() == TherapySession.SessionStatus.SCHEDULED && session.getSessionDate() != null) {
+            validateSessionDate(session.getSessionDate());
+        }
+
         if (session.getTherapist() != null) {
             checkTherapistAvailability(session);
         }
         sessionDAO.update(session);
     }
 
-    /**
-     * Complete a session and potentially return the next unscheduled session.
-     * Returns null if no more sessions in the program.
-     */
     public TherapySessionDTO completeSession(Long sessionId) {
         TherapySession session = sessionDAO.getById(sessionId);
         if (session == null) throw new SchedulingException("Session not found.");
@@ -186,9 +184,6 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         return null;
     }
 
-    /**
-     * Cancel a scheduled session (Scenario 6). Reverts to UNSCHEDULED with no date/time.
-     */
     public void cancelAndReschedule(Long sessionId) {
         TherapySession session = sessionDAO.getById(sessionId);
         if (session == null) throw new SchedulingException("Session not found.");
@@ -231,9 +226,6 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         return session != null ? toDTO(session) : null;
     }
 
-    /**
-     * Get all sessions as DTOs (for use in controllers that must not touch entities).
-     */
     public List<TherapySessionDTO> getAllSessionDTOs() {
         return sessionDAO.getAllWithDetails().stream().map(this::toDTO).collect(Collectors.toList());
     }
@@ -266,9 +258,12 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         return sessionDAO.count();
     }
 
-    /**
-     * Check if a therapist is already booked at the same date/time (excluding the current session).
-     */
+    private void validateSessionDate(LocalDate sessionDate) {
+        if (sessionDate != null && sessionDate.isBefore(LocalDate.now())) {
+            throw new SchedulingException("Cannot schedule a session on a past date (" + sessionDate + "). Please select today or a future date.");
+        }
+    }
+
     private void checkTherapistAvailability(TherapySession session) {
         if (session.getTherapist() == null || session.getSessionDate() == null || session.getSessionTime() == null) {
             return;
@@ -286,7 +281,7 @@ public class TherapySessionBOImpl implements TherapySessionBO {
                 });
     }
 
-    // ==================== Conversion Helpers ====================
+
 
     public TherapySessionDTO toDTO(TherapySession entity) {
         TherapySessionDTO dto = new TherapySessionDTO();

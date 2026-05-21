@@ -1,103 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.PaymentManagementController"
-            fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@calm-clarity.css">
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.PaymentManagementController">
     <VBox spacing="20" style="-fx-padding: 28;">
 
         <!-- ═══════════════════ MAKE PAYMENT CARD ═══════════════════ -->
         <VBox spacing="12" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
             <HBox alignment="CENTER_LEFT" spacing="16">
-                <Label text="💳  Make Payment" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <Region HBox.hgrow="ALWAYS"/>
+                <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="💳  Make Payment" />
+                <Region HBox.hgrow="ALWAYS" />
                 <VBox spacing="4">
-                    <Label text="PAYMENT TYPE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                    <ComboBox fx:id="cmbPaymentType" promptText="Select type" prefWidth="200"/>
+                    <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="PAYMENT TYPE" />
+                    <ComboBox fx:id="cmbPaymentType" prefWidth="200" promptText="Select type" />
                 </VBox>
             </HBox>
-            <Separator/>
+            <Separator />
 
             <!-- ─── SESSION PAYMENT PANE ─── -->
-            <VBox fx:id="paneSessionPayment" spacing="12" managed="true" visible="true">
+            <VBox fx:id="paneSessionPayment" managed="true" spacing="12" visible="true">
                 <!-- Row 1: Session ID autocomplete -->
                 <HBox spacing="16">
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="SESSION ID (autocomplete)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbSessionId" promptText="Type session ID or patient name..." editable="true" maxWidth="Infinity" styleClass="combo-autocomplete"/>
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="SESSION ID (autocomplete)" />
+                        <ComboBox fx:id="cmbSessionId" editable="true" maxWidth="Infinity" promptText="Type session ID or patient name..." styleClass="combo-autocomplete" />
                     </VBox>
-                    <VBox spacing="4" prefWidth="160">
-                        <Label text="COST (LKR)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <TextField fx:id="txtSessionCost" promptText="0.00" editable="false" style="-fx-background-color: #F5F0EB;"/>
-                    </VBox>
-                </HBox>
-                <Separator style="-fx-padding: 4 0;"/>
-                <Label text="— OR pay by Patient / Program —" style="-fx-text-fill: #95A5A6; -fx-font-size: 11px;" maxWidth="Infinity" alignment="CENTER"/>
-
-                <!-- Row 2: Patient + Program + Sessions count -->
-                <HBox spacing="16">
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="PATIENT" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbSessionPatient" promptText="Select patient" editable="true" maxWidth="Infinity" styleClass="combo-autocomplete"/>
-                    </VBox>
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="PROGRAM" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbSessionProgram" promptText="Select program" maxWidth="Infinity"/>
-                    </VBox>
-                    <VBox spacing="4" prefWidth="120">
-                        <Label text="SESSIONS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbSessionCount" promptText="0" prefWidth="120"/>
-                    </VBox>
-                    <VBox spacing="4" prefWidth="160">
-                        <Label text="TOTAL COST (LKR)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <TextField fx:id="txtBulkCost" promptText="0.00" editable="false" style="-fx-background-color: #F5F0EB;"/>
+                    <VBox prefWidth="160" spacing="4">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="COST (LKR)" />
+                        <TextField fx:id="txtSessionCost" editable="false" promptText="0.00" style="-fx-background-color: #F5F0EB;" />
                     </VBox>
                 </HBox>
+                <Separator style="-fx-padding: 4 0;" />
 
                 <!-- Row 3: Payment method + buttons -->
-                <HBox spacing="16" alignment="CENTER_LEFT">
+                <HBox alignment="CENTER_LEFT" spacing="16">
                     <VBox spacing="4">
-                        <Label text="METHOD" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbPaymentMethod" promptText="Payment method" prefWidth="180"/>
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="METHOD" />
+                        <ComboBox fx:id="cmbPaymentMethod" prefWidth="180" promptText="Payment method" />
                     </VBox>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="✅  Process Payment" onAction="#handleProcessPayment" styleClass="btn-primary" style="-fx-padding: 10 24;"/>
-                    <Button text="🔄  Clear" onAction="#handleClearPayment" styleClass="btn-secondary"/>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button onAction="#handleProcessPayment" style="-fx-padding: 10 24;" styleClass="btn-primary" text="✅  Process Payment" />
+                    <Button onAction="#handleClearPayment" styleClass="btn-secondary" text="🔄  Clear" />
                 </HBox>
             </VBox>
 
             <!-- ─── EXPENSE PANE ─── -->
-            <VBox fx:id="paneExpense" spacing="12" managed="false" visible="false">
+            <VBox fx:id="paneExpense" managed="false" spacing="12" visible="false">
                 <HBox spacing="16">
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="EXPENSE TYPE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbExpenseType" promptText="Select expense type" maxWidth="Infinity"/>
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="EXPENSE TYPE" />
+                        <ComboBox fx:id="cmbExpenseType" maxWidth="Infinity" promptText="Select expense type" />
                     </VBox>
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="PATIENT" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbExpensePatient" promptText="Select patient" editable="true" maxWidth="Infinity" styleClass="combo-autocomplete"/>
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="PATIENT" />
+                        <ComboBox fx:id="cmbExpensePatient" editable="true" maxWidth="Infinity" promptText="Select patient" styleClass="combo-autocomplete" />
                     </VBox>
                 </HBox>
                 <HBox spacing="16">
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
-                        <Label text="AMOUNT (LKR)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <TextField fx:id="txtExpenseAmount" promptText="0.00"/>
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="AMOUNT (LKR)" />
+                        <TextField fx:id="txtExpenseAmount" promptText="0.00" />
                     </VBox>
                     <VBox spacing="4">
-                        <Label text="METHOD" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="cmbExpenseMethod" promptText="Payment method" prefWidth="180"/>
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="METHOD" />
+                        <ComboBox fx:id="cmbExpenseMethod" prefWidth="180" promptText="Payment method" />
                     </VBox>
                 </HBox>
                 <VBox spacing="4">
-                    <Label text="DESCRIPTION" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                    <TextField fx:id="txtExpenseDescription" promptText="Reason / details..."/>
+                    <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="DESCRIPTION" />
+                    <TextField fx:id="txtExpenseDescription" promptText="Reason / details..." />
                 </VBox>
-                <HBox spacing="10" alignment="CENTER_RIGHT">
-                    <Button text="✅  Process Expense" onAction="#handleProcessExpense" styleClass="btn-primary" style="-fx-padding: 10 24;"/>
-                    <Button text="🔄  Clear" onAction="#handleClearExpense" styleClass="btn-secondary"/>
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Button onAction="#handleProcessExpense" style="-fx-padding: 10 24;" styleClass="btn-primary" text="✅  Process Expense" />
+                    <Button onAction="#handleClearExpense" styleClass="btn-secondary" text="🔄  Clear" />
                 </HBox>
             </VBox>
         </VBox>
@@ -105,48 +91,48 @@
         <!-- ═══════════════════ VIEW PAYMENTS CARD ═══════════════════ -->
         <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
             <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
-                <Label text="Payment Records" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="lblTotalRevenue" text="Total Revenue: LKR 0" style="-fx-text-fill: #7AB88F; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="Payment Records" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblTotalRevenue" style="-fx-text-fill: #7AB88F; -fx-font-size: 13px; -fx-font-weight: bold;" text="Total Revenue: LKR 0" />
             </HBox>
-            <Separator/>
+            <Separator />
 
             <!-- Filter Bar -->
-            <HBox spacing="12" alignment="CENTER_LEFT" style="-fx-padding: 12 20;">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 12 20;">
                 <VBox spacing="2">
-                    <Label text="PATIENT" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
-                    <ComboBox fx:id="cmbFilterPatient" promptText="All patients" editable="true" prefWidth="200" styleClass="combo-autocomplete"/>
+                    <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;" text="PATIENT" />
+                    <ComboBox fx:id="cmbFilterPatient" editable="true" prefWidth="200" promptText="All patients" styleClass="combo-autocomplete" />
                 </VBox>
                 <VBox spacing="2">
-                    <Label text="FROM" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
-                    <DatePicker fx:id="dpFilterFrom" promptText="Start date" prefWidth="140"/>
+                    <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;" text="FROM" />
+                    <DatePicker fx:id="dpFilterFrom" prefWidth="140" promptText="Start date" />
                 </VBox>
                 <VBox spacing="2">
-                    <Label text="TO" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
-                    <DatePicker fx:id="dpFilterTo" promptText="End date" prefWidth="140"/>
+                    <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;" text="TO" />
+                    <DatePicker fx:id="dpFilterTo" prefWidth="140" promptText="End date" />
                 </VBox>
                 <VBox spacing="2">
-                    <Label text="TYPE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
-                    <ComboBox fx:id="cmbFilterType" promptText="All types" prefWidth="150"/>
+                    <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;" text="TYPE" />
+                    <ComboBox fx:id="cmbFilterType" prefWidth="150" promptText="All types" />
                 </VBox>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button text="🔍 Search" onAction="#handleFilterPayments" styleClass="btn-dark" style="-fx-padding: 8 16;"/>
-                <Button text="✕ Clear" onAction="#handleClearFilters" styleClass="btn-secondary" style="-fx-padding: 8 16;"/>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button onAction="#handleFilterPayments" style="-fx-padding: 8 16;" styleClass="btn-dark" text="🔍 Search" />
+                <Button onAction="#handleClearFilters" style="-fx-padding: 8 16;" styleClass="btn-secondary" text="✕ Clear" />
             </HBox>
-            <Separator/>
+            <Separator />
 
             <TableView fx:id="tblPayments" prefHeight="350">
                 <columns>
-                    <TableColumn fx:id="colPaymentId" text="ID" prefWidth="70"/>
-                    <TableColumn fx:id="colPaymentPatient" text="Patient" prefWidth="160"/>
-                    <TableColumn fx:id="colPaymentAmount" text="Amount (LKR)" prefWidth="110"/>
-                    <TableColumn fx:id="colPaymentMethod" text="Method" prefWidth="100"/>
-                    <TableColumn fx:id="colPaymentType" text="Type" prefWidth="100"/>
-                    <TableColumn fx:id="colPaymentDate" text="Date" prefWidth="140"/>
-                    <TableColumn fx:id="colPaymentStatus" text="Status" prefWidth="90"/>
-                    <TableColumn fx:id="colPaymentDesc" text="Description" prefWidth="180"/>
+                    <TableColumn fx:id="colPaymentId" prefWidth="70" text="ID" />
+                    <TableColumn fx:id="colPaymentPatient" prefWidth="160" text="Patient" />
+                    <TableColumn fx:id="colPaymentAmount" prefWidth="110" text="Amount (LKR)" />
+                    <TableColumn fx:id="colPaymentMethod" prefWidth="100" text="Method" />
+                    <TableColumn fx:id="colPaymentType" prefWidth="100" text="Type" />
+                    <TableColumn fx:id="colPaymentDate" prefWidth="140" text="Date" />
+                    <TableColumn fx:id="colPaymentStatus" prefWidth="90" text="Status" />
+                    <TableColumn fx:id="colPaymentDesc" prefWidth="180" text="Description" />
                 </columns>
-                <placeholder><Label text="No payments recorded yet." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+                <placeholder><Label style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;" text="No payments recorded yet." /></placeholder>
             </TableView>
         </VBox>
     </VBox>

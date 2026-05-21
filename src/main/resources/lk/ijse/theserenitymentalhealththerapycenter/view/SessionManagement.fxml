@@ -89,7 +89,7 @@
       <VBox fx:id="vboxPatientSessions" layoutX="38.0" layoutY="389.0" maxWidth="1.7976931348623157E308" spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
          <children>
                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
-                   <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="Patient Sessions" />
+                   <Label fx:id="lblPatientSessionTbl" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="Patient Sessions" />
                </HBox>
                <Separator />
                <TableView fx:id="tblPatientSessions" VBox.vgrow="ALWAYS">

@@ -39,10 +39,10 @@ public class PaymentManagementController implements Initializable {
     @FXML private VBox paneSessionPayment;
     @FXML private ComboBox<TherapySessionDTO> cmbSessionId;
     @FXML private TextField txtSessionCost;
-    @FXML private ComboBox<PatientDTO> cmbSessionPatient;
-    @FXML private ComboBox<PatientTherapyProgramDTO> cmbSessionProgram;
-    @FXML private ComboBox<Integer> cmbSessionCount;
-    @FXML private TextField txtBulkCost;
+//    @FXML private ComboBox<PatientDTO> cmbSessionPatient;
+//    @FXML private ComboBox<PatientTherapyProgramDTO> cmbSessionProgram;
+//    @FXML private ComboBox<Integer> cmbSessionCount;
+//    @FXML private TextField txtBulkCost;
     @FXML private ComboBox<PaymentMethod> cmbPaymentMethod;
 
     // ─── Expense pane ───
@@ -84,7 +84,6 @@ public class PaymentManagementController implements Initializable {
         setupPaymentTypeSelector();
         setupSimpleCombos();
         setupSessionIdCombo();
-        setupPatientProgramChain();
         setupTable();
         loadData();
     }
@@ -105,7 +104,7 @@ public class PaymentManagementController implements Initializable {
                 .toList();
         } catch (Exception e) {
             unpaidSessionsList = new ArrayList<>();
-            System.err.println("Error loading sessions: " + e.getMessage());
+            System.err.println("Error loading unpaid sessions: " + e.getMessage());
         }
     }
 
@@ -135,25 +134,15 @@ public class PaymentManagementController implements Initializable {
         // Filter type
         cmbFilterType.setItems(FXCollections.observableArrayList("ALL", "SINGLE", "UPFRONT", "EXPENSE"));
 
-        // Program combo cell factory (not editable, no autocomplete needed)
-        cmbSessionProgram.setButtonCell(createProgramListCell());
-        cmbSessionProgram.setCellFactory(lv -> createProgramListCell());
 
-        // Session count combo (not editable)
-        // No special setup needed
 
-        // ── Patient autocomplete combos (using setupAutocomplete) ──
-        Function<PatientDTO, String> patientDisplay = p -> "#" + p.getId() + " - " + p.getName();
-        Function<PatientDTO, String> patientSearch = p -> "#" + p.getId() + " " + p.getName();
 
-        ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionPatient,
-            new ArrayList<>(allPatientsList), patientDisplay, patientSearch);
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbExpensePatient,
-            new ArrayList<>(allPatientsList), patientDisplay, patientSearch);
+            new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbFilterPatient,
-            new ArrayList<>(allPatientsList), patientDisplay, patientSearch);
+            new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
     }
 
     private void setupSessionIdCombo() {
@@ -206,62 +195,8 @@ public class PaymentManagementController implements Initializable {
         return BigDecimal.ZERO;
     }
 
-    // ─── Patient → Program → Session count chain ───
-    private void setupPatientProgramChain() {
-        // When patient changes in session payment form
-        cmbSessionPatient.valueProperty().addListener((obs, oldVal, newVal) -> {
-            cmbSessionProgram.getItems().clear();
-            cmbSessionCount.getItems().clear();
-            txtBulkCost.clear();
 
-            if (newVal != null) {
-                try {
-                    List<PatientTherapyProgramDTO> programs = patientService.getPatientPrograms(newVal.getId());
-                    cmbSessionProgram.setItems(FXCollections.observableArrayList(programs));
-                } catch (Exception ex) {
-                    System.err.println("Error loading programs: " + ex.getMessage());
-                }
-            }
-        });
 
-        // When program changes
-        cmbSessionProgram.valueProperty().addListener((obs, oldVal, newVal) -> {
-            cmbSessionCount.getItems().clear();
-            txtBulkCost.clear();
-
-            if (newVal != null) {
-                PatientDTO patient = cmbSessionPatient.getValue();
-                if (patient != null) {
-                    long unpaidCount = unpaidSessionsList.stream()
-                        .filter(s -> s.getPatientId() != null && s.getPatientId().equals(patient.getId()))
-                        .filter(s -> s.getProgramId() != null && s.getProgramId().equals(newVal.getProgramId()))
-                        .count();
-
-                    ObservableList<Integer> counts = FXCollections.observableArrayList();
-                    for (int i = 1; i <= unpaidCount; i++) counts.add(i);
-                    if (counts.isEmpty()) counts.add(0);
-                    cmbSessionCount.setItems(counts);
-                }
-            }
-        });
-
-        // When session count changes
-        cmbSessionCount.valueProperty().addListener((obs, oldVal, newVal) -> {
-            PatientTherapyProgramDTO ptp = cmbSessionProgram.getValue();
-            if (newVal != null && newVal > 0 && ptp != null) {
-                BigDecimal cost = calculateBulkCost(ptp, newVal);
-                txtBulkCost.setText(cost.toPlainString());
-            } else {
-                txtBulkCost.clear();
-            }
-        });
-    }
-
-    private BigDecimal calculateBulkCost(PatientTherapyProgramDTO ptp, int sessions) {
-        if (sessions == 0) return BigDecimal.ZERO;
-        BigDecimal perSession = calculatePerSessionFee(ptp);
-        return perSession.multiply(new BigDecimal(sessions));
-    }
 
     // ═══════════════════ TABLE ═══════════════════
 
@@ -315,12 +250,9 @@ public class PaymentManagementController implements Initializable {
             TherapySessionDTO selectedSession = cmbSessionId.getValue();
 
             if (selectedSession != null) {
-                // ─── Path A: Pay by session ID ───
+
                 processSessionIdPayment(selectedSession);
-            } else if (cmbSessionPatient.getValue() != null && cmbSessionProgram.getValue() != null
-                       && cmbSessionCount.getValue() != null && cmbSessionCount.getValue() > 0) {
-                // ─── Path B: Pay by patient/program/count ───
-                processPatientProgramPayment();
+
             } else {
                 AlertUtil.showWarning("Warning", "Select a session OR choose patient \u2192 program \u2192 session count.");
                 return;
@@ -356,58 +288,17 @@ public class PaymentManagementController implements Initializable {
         paymentService.processPayment(dto);
     }
 
-    private void processPatientProgramPayment() {
-        PatientDTO patient = cmbSessionPatient.getValue();
-        PatientTherapyProgramDTO ptp = cmbSessionProgram.getValue();
-        int count = cmbSessionCount.getValue();
-        PaymentMethod method = cmbPaymentMethod.getValue();
 
-        if (method == null) {
-            throw new RuntimeException("Please select a payment method.");
-        }
-
-        String costText = txtBulkCost.getText();
-        BigDecimal totalCost = (costText != null && !costText.trim().isEmpty())
-            ? new BigDecimal(costText.trim()) : BigDecimal.ZERO;
-
-        if (totalCost.signum() <= 0) {
-            throw new RuntimeException("Payment amount must be greater than zero.");
-        }
-
-        // Find unpaid sessions for this patient+program
-        List<Long> sessionIds = unpaidSessionsList.stream()
-            .filter(s -> s.getPatientId() != null && s.getPatientId().equals(patient.getId()))
-            .filter(s -> s.getProgramId() != null && s.getProgramId().equals(ptp.getProgramId()))
-            .limit(count)
-            .map(TherapySessionDTO::getId)
-            .toList();
-
-        if (sessionIds.size() < count) {
-            throw new RuntimeException("Not enough unpaid sessions available. Found " + sessionIds.size() + " but need " + count + ".");
-        }
-
-        PaymentDTO dto = new PaymentDTO();
-        dto.setPatientId(patient.getId());
-        dto.setAmount(totalCost);
-        dto.setMethod(method);
-        dto.setDescription("Session payment for " + count + " sessions (" + ptp.getProgramName() + ")");
-        paymentService.processUpfrontPayment(dto, sessionIds);
-    }
 
     @FXML
     void handleClearPayment(ActionEvent event) {
         cmbSessionId.setValue(null);
         if (cmbSessionId.getEditor() != null) cmbSessionId.getEditor().clear();
         txtSessionCost.clear();
-        cmbSessionPatient.setValue(null);
-        if (cmbSessionPatient.getEditor() != null) cmbSessionPatient.getEditor().clear();
-        cmbSessionProgram.getItems().clear();
-        cmbSessionCount.getItems().clear();
-        txtBulkCost.clear();
         cmbPaymentMethod.setValue(null);
     }
 
-    // ═══════════════════ HANDLERS: EXPENSE ═══════════════════
+
 
     @FXML
     void handleProcessExpense(ActionEvent event) {
@@ -475,7 +366,7 @@ public class PaymentManagementController implements Initializable {
         txtExpenseDescription.clear();
     }
 
-    // ═══════════════════ HANDLERS: FILTERS ═══════════════════
+
 
     @FXML
     void handleFilterPayments(ActionEvent event) {
@@ -523,14 +414,5 @@ public class PaymentManagementController implements Initializable {
         }
     }
 
-    private ListCell<PatientTherapyProgramDTO> createProgramListCell() {
-        return new ListCell<>() {
-            @Override
-            protected void updateItem(PatientTherapyProgramDTO item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) setText("");
-                else setText(item.getProgramName() != null ? item.getProgramName() : "Program #" + item.getProgramId());
-            }
-        };
-    }
+
 }

@@ -1,7 +1,7 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import org.hibernate.Session;
@@ -10,93 +10,104 @@ import org.hibernate.query.Query;
 
 import java.util.List;
 
-public class PatientDAOImpl  implements PatientDAO {
+public class PatientDAOImpl implements PatientDAO {
 
+    // ==================== CrudDAO: Self-Contained ====================
+
+    @Override
     public void save(Patient entity) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Transaction transaction = session.beginTransaction();
-            try {
-                session.persist(entity);
-                transaction.commit();
-            } catch (Exception e) {
-                if (transaction != null) transaction.rollback();
-                throw e;
-            }
-        }
+        CrudUtil.save(entity);
     }
 
+    @Override
     public void update(Patient entity) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Transaction transaction = session.beginTransaction();
+            Transaction tx = session.beginTransaction();
             try {
                 Patient existing = session.get(Patient.class, entity.getId());
-                if (existing == null) {
-                    throw new IllegalArgumentException("Patient not found with ID: " + entity.getId());
+                if (existing != null) {
+                    existing.setName(entity.getName());
+                    existing.setEmail(entity.getEmail());
+                    existing.setPhone(entity.getPhone());
+                    existing.setAddress(entity.getAddress());
+                    existing.setInterviewNote(entity.getInterviewNote());
                 }
-                entity.setName(entity.getName());
-                entity.setEmail(entity.getEmail());
-                entity.setPhone(entity.getPhone());
-                entity.setAddress(entity.getAddress());
-                entity.setInterviewNote(entity.getInterviewNote());
-
-//                session.merge(entity);
-                transaction.commit();
+                tx.commit();
             } catch (Exception e) {
-                if (transaction != null) transaction.rollback();
+                if (tx != null) tx.rollback();
                 throw e;
             }
         }
     }
 
+    @Override
     public void delete(Patient entity) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Transaction transaction = session.beginTransaction();
-            try {
-                Patient merged = session.merge(entity);
-                session.remove(merged);
-                transaction.commit();
-            } catch (Exception e) {
-                if (transaction != null) transaction.rollback();
-                throw e;
-            }
-        }
+        CrudUtil.delete(entity);
     }
 
+    @Override
     public Patient getById(Object id) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.get(Patient.class, id);
         }
     }
 
-    public void save(Patient entity, Session session) {
-        session.persist(entity);
-    }
-
-    public void update(Patient entity, Session session) {
-        session.merge(entity);
-    }
-
-    public Patient getById(Object id, Session session) {
-        return session.get(Patient.class, id);
-    }
-
-    public long count() {
+    @Override
+    public List<Patient> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery("SELECT COUNT(e) FROM " + Patient.class.getSimpleName() + " e", Long.class)
-                    .uniqueResult();
+            return session.createQuery("FROM Patient", Patient.class)
+                    .setCacheable(true)
+                    .list();
         }
     }
 
     @Override
-    public List<Patient> getAll() {
+    public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery("FROM Patient ", Patient.class)
-                    .setCacheable(true)
-                    .list();
-
-
+            return CrudUtil.count(Patient.class, session);
         }
     }
+
+    // ==================== CrudDAO: Session-Aware ====================
+
+    @Override
+    public void save(Patient entity, Session session) {
+        CrudUtil.save(entity, session);
+    }
+
+    @Override
+    public void update(Patient entity, Session session) {
+        Patient existing = session.get(Patient.class, entity.getId());
+        if (existing != null) {
+            existing.setName(entity.getName());
+            existing.setEmail(entity.getEmail());
+            existing.setPhone(entity.getPhone());
+            existing.setAddress(entity.getAddress());
+            existing.setInterviewNote(entity.getInterviewNote());
+        }
+    }
+
+    @Override
+    public void delete(Patient entity, Session session) {
+        CrudUtil.delete(entity, session);
+    }
+
+    @Override
+    public Patient getById(Object id, Session session) {
+        return session.get(Patient.class, id);
+    }
+
+    @Override
+    public List<Patient> getAll(Session session) {
+        return CrudUtil.getAll(Patient.class, session);
+    }
+
+    @Override
+    public long count(Session session) {
+        return CrudUtil.count(Patient.class, session);
+    }
+
+    // ==================== Custom Methods ====================
 
     @Override
     public List<Patient> searchByName(String name) {
@@ -108,6 +119,7 @@ public class PatientDAOImpl  implements PatientDAO {
         }
     }
 
+    @Override
     public List<Patient> findPatientsInAllPrograms() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             long totalPrograms = session.createQuery(
@@ -121,6 +133,7 @@ public class PatientDAOImpl  implements PatientDAO {
         }
     }
 
+    @Override
     public List<Patient> getAllWithPrograms() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -129,6 +142,7 @@ public class PatientDAOImpl  implements PatientDAO {
         }
     }
 
+    @Override
     public Patient findByPhone(String phone) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<Patient> query = session.createQuery(

@@ -12,12 +12,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapistBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
@@ -138,11 +137,11 @@ public class SessionManagementController implements Initializable {
     @FXML
     private Label lblDateAvailabilityMsg;
 
-    private final TherapySessionBO sessionService = (TherapySessionBOImpl) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
-    private final PatientBOImpl patientService = new PatientBOImpl();
-    private final TherapistBOImpl therapistService = new TherapistBOImpl();
-    private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
-    private final PaymentBOImpl paymentService = new PaymentBOImpl();
+    private final TherapySessionBO sessionService = (TherapySessionBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
+    private final PatientBO patientService = (PatientBO) BOFactory.getInstance().getBO(BOFactory.BOType.PATIENT);
+    private final TherapistBO therapistService = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
+    private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
+    private final PaymentBO paymentService = (PaymentBO) BOFactory.getInstance().getBO(BOFactory.BOType.PAYMENT);
 
     private TherapySessionDTO selectedSession;
     private int currentCredit = 0;

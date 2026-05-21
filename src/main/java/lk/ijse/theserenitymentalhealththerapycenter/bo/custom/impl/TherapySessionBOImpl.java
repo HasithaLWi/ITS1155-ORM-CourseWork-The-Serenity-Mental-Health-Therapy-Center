@@ -2,12 +2,8 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientTherapyProgramDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapistDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapyProgramDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapySessionDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
@@ -23,184 +19,192 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TherapySessionBOImpl implements TherapySessionBO {
-    private final TherapySessionDAOImpl sessionDAO = new TherapySessionDAOImpl();
-    private final PatientTherapyProgramDAOImpl ptpDAO = new PatientTherapyProgramDAOImpl();
-    private final PatientDAOImpl patientDAO = new PatientDAOImpl();
-    private final TherapistDAOImpl therapistDAO = new TherapistDAOImpl();
-    private final TherapyProgramDAOImpl programDAO = new TherapyProgramDAOImpl();
-    private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
+    private final TherapySessionDAO sessionDAO =
+            (TherapySessionDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPY_SESSION);
+    private final PatientTherapyProgramDAO ptpDAO =
+            (PatientTherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT_THERAPY_PROGRAM);
+    private final PatientDAO patientDAO =
+            (PatientDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT);
+    private final TherapistDAO therapistDAO =
+            (TherapistDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPIST);
+    private final TherapyProgramDAO programDAO =
+            (TherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPY_PROGRAM);
+    private final PaymentDAO paymentDAO =
+            (PaymentDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PAYMENT);
 
-    public TherapySessionDTO createAndScheduleSession(TherapySessionDTO sessionDTO) throws Exception {
-        if (sessionDTO.getPatientId() == null) {
-            throw new SchedulingException("Patient is required.");
-        }
-        if (sessionDTO.getProgramId() == null) {
-            throw new SchedulingException("Program is required.");
-        }
+    public TherapySessionDTO createAndScheduleSession(TherapySessionDTO sessionDTO) {
+        if (sessionDTO.getPatientId() == null) throw new SchedulingException("Patient is required.");
+        if (sessionDTO.getProgramId() == null) throw new SchedulingException("Program is required.");
 
         Long patientId = sessionDTO.getPatientId();
         Long programId = sessionDTO.getProgramId();
 
-        // Auto-assign sequence number
         long existingCount = sessionDAO.countByPatientAndProgram(patientId, programId);
-        
         Integer totalSessions = programDAO.getById(programId).getTotalSessions();
         if (totalSessions != null && totalSessions > 0 && existingCount >= totalSessions) {
             throw new SchedulingException("Maximum sessions (" + totalSessions + ") already reached for this program.");
         }
 
-        // Check upfront credit
         PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(patientId, programId);
         int remainingCredit = (ptp != null) ? ptp.getRemainingCredit() : 0;
 
-        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Session session = FactoryConfiguration.getInstance().getSession();
         Transaction transaction = session.beginTransaction();
         try {
-            TherapySession therapySession = new TherapySession();
-            therapySession.setPatient(patientDAO.getById(patientId, session));
-            therapySession.setProgram(programDAO.getById(programId, session));
-            if (sessionDTO.getTherapistId() != null) {
-                therapySession.setTherapist(therapistDAO.getById(sessionDTO.getTherapistId(), session));
-            }
-            therapySession.setSessionDate(sessionDTO.getSessionDate());
-            therapySession.setSessionTime(sessionDTO.getSessionTime());
-            therapySession.setNotes(sessionDTO.getNotes());
-            therapySession.setSequenceNumber((int) existingCount + 1);
+            TherapySession ts = new TherapySession();
+            ts.setPatient(patientDAO.getById(patientId, session));
+            ts.setProgram(programDAO.getById(programId, session));
+            if (sessionDTO.getTherapistId() != null) ts.setTherapist(therapistDAO.getById(sessionDTO.getTherapistId(), session));
+            ts.setSessionDate(sessionDTO.getSessionDate());
+            ts.setSessionTime(sessionDTO.getSessionTime());
+            ts.setNotes(sessionDTO.getNotes());
+            ts.setSequenceNumber((int) existingCount + 1);
 
             if (remainingCredit > 0) {
-                // Has credit — create as SCHEDULED + PAID
-                if (therapySession.getTherapist() == null) {
-                    throw new SchedulingException("Therapist is required to schedule a session.");
-                }
-                if (therapySession.getSessionDate() == null) {
-                    throw new SchedulingException("Session date is required.");
-                }
+                if (ts.getTherapist() == null) throw new SchedulingException("Therapist is required to schedule a session.");
+                if (ts.getSessionDate() == null) throw new SchedulingException("Session date is required.");
+                validateSessionDate(ts.getSessionDate());
+                checkTherapistAvailability(ts);
 
-                // Validate date is not in the past
-                validateSessionDate(therapySession.getSessionDate());
-
-                // Check therapist availability
-                checkTherapistAvailability(therapySession);
-
-                // Find the upfront payment and link it to the session
                 Payment upfrontPayment = paymentDAO.findUpfrontByPatient(patientId, session);
-
-                therapySession.setStatus(TherapySession.SessionStatus.SCHEDULED);
-                therapySession.setPaymentStatus(TherapySession.PaymentStatus.PAID);
-                therapySession.setPayment(upfrontPayment);
-                sessionDAO.save(therapySession, session);
-
-                // Deduct credit
-                ptpDAO.deductCredit(patientId, programId);
+                ts.setStatus(TherapySession.SessionStatus.SCHEDULED);
+                ts.setPaymentStatus(TherapySession.PaymentStatus.PAID);
+                ts.setPayment(upfrontPayment);
+                sessionDAO.save(ts, session);
+                ptpDAO.deductCredit(patientId, programId, session);
             } else {
-                // No credit — create as UNSCHEDULED + PENDING (no date/time)
-                therapySession.setSessionDate(null);
-                therapySession.setSessionTime(null);
-                therapySession.setTherapist(null);
-                therapySession.setStatus(TherapySession.SessionStatus.UNSCHEDULED);
-                therapySession.setPaymentStatus(TherapySession.PaymentStatus.PENDING);
-                sessionDAO.save(therapySession, session);
+                ts.setSessionDate(null);
+                ts.setSessionTime(null);
+                ts.setTherapist(null);
+                ts.setStatus(TherapySession.SessionStatus.UNSCHEDULED);
+                ts.setPaymentStatus(TherapySession.PaymentStatus.PENDING);
+                sessionDAO.save(ts, session);
             }
 
             transaction.commit();
-            return toDTO(therapySession);
+            return toDTO(ts);
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
+        } finally {
+            session.close();
         }
     }
 
     public void scheduleSession(TherapySessionDTO sessionDTO) {
-        TherapySession session = sessionDAO.getById(sessionDTO.getId());
-        if (session == null) throw new SchedulingException("Session not found.");
-        
-        if (session.getPatient() == null) {
-            throw new SchedulingException("Patient is required.");
-        }
-        
-        session.setTherapist(sessionDTO.getTherapistId() != null ? therapistDAO.getById(sessionDTO.getTherapistId()) : null);
-        
-        if (session.getTherapist() == null) {
-            throw new SchedulingException("Therapist is required.");
-        }
-        
-        session.setSessionDate(sessionDTO.getSessionDate());
-        session.setSessionTime(sessionDTO.getSessionTime());
-        
-        if (session.getSessionDate() == null) {
-            throw new SchedulingException("Session date is required.");
-        }
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession ts = sessionDAO.getById(sessionDTO.getId(), session);
+            if (ts == null) throw new SchedulingException("Session not found.");
+            if (ts.getPatient() == null) throw new SchedulingException("Patient is required.");
 
-        // Validate date is not in the past
-        validateSessionDate(session.getSessionDate());
+            if (sessionDTO.getTherapistId() != null) ts.setTherapist(therapistDAO.getById(sessionDTO.getTherapistId(), session));
+            if (ts.getTherapist() == null) throw new SchedulingException("Therapist is required.");
 
-        if (session.getPaymentStatus() == TherapySession.PaymentStatus.PENDING) {
-            throw new SchedulingException("Payment is still PENDING for this session. Please pay first.");
+            ts.setSessionDate(sessionDTO.getSessionDate());
+            ts.setSessionTime(sessionDTO.getSessionTime());
+            if (ts.getSessionDate() == null) throw new SchedulingException("Session date is required.");
+
+            validateSessionDate(ts.getSessionDate());
+
+            if (ts.getPaymentStatus() == TherapySession.PaymentStatus.PENDING)
+                throw new SchedulingException("Payment is still PENDING for this session. Please pay first.");
+
+            checkTherapistAvailability(ts);
+            ts.setStatus(TherapySession.SessionStatus.SCHEDULED);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
         }
-
-        // Check therapist availability
-        checkTherapistAvailability(session);
-
-        session.setStatus(TherapySession.SessionStatus.SCHEDULED);
-        sessionDAO.update(session);
     }
 
     public void updateSession(TherapySessionDTO sessionDTO) {
-        TherapySession session = sessionDAO.getById(sessionDTO.getId());
-        if (session == null) throw new SchedulingException("Session not found.");
-        
-        session.setPatient(sessionDTO.getPatientId() != null ? patientDAO.getById(sessionDTO.getPatientId()) : null);
-        session.setTherapist(sessionDTO.getTherapistId() != null ? therapistDAO.getById(sessionDTO.getTherapistId()) : null);
-        session.setProgram(sessionDTO.getProgramId() != null ? programDAO.getById(sessionDTO.getProgramId()) : null);
-        
-        session.setSessionDate(sessionDTO.getSessionDate());
-        session.setSessionTime(sessionDTO.getSessionTime());
-        if (sessionDTO.getStatus() != null) session.setStatus(TherapySession.SessionStatus.valueOf(sessionDTO.getStatus().name()));
-        session.setNotes(sessionDTO.getNotes());
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession ts = sessionDAO.getById(sessionDTO.getId(), session);
+            if (ts == null) throw new SchedulingException("Session not found.");
 
-        // Validate date is not in the past when scheduling
-        if (session.getStatus() == TherapySession.SessionStatus.SCHEDULED && session.getSessionDate() != null) {
-            validateSessionDate(session.getSessionDate());
-        }
+            if (sessionDTO.getPatientId() != null) ts.setPatient(patientDAO.getById(sessionDTO.getPatientId(), session));
+            if (sessionDTO.getTherapistId() != null) ts.setTherapist(therapistDAO.getById(sessionDTO.getTherapistId(), session));
+            if (sessionDTO.getProgramId() != null) ts.setProgram(programDAO.getById(sessionDTO.getProgramId(), session));
 
-        if (session.getTherapist() != null) {
-            checkTherapistAvailability(session);
+            ts.setSessionDate(sessionDTO.getSessionDate());
+            ts.setSessionTime(sessionDTO.getSessionTime());
+            if (sessionDTO.getStatus() != null) ts.setStatus(TherapySession.SessionStatus.valueOf(sessionDTO.getStatus().name()));
+            ts.setNotes(sessionDTO.getNotes());
+
+            if (ts.getStatus() == TherapySession.SessionStatus.SCHEDULED && ts.getSessionDate() != null) {
+                validateSessionDate(ts.getSessionDate());
+            }
+            if (ts.getTherapist() != null) checkTherapistAvailability(ts);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
         }
-        sessionDAO.update(session);
     }
 
     public TherapySessionDTO completeSession(Long sessionId) {
-        TherapySession session = sessionDAO.getById(sessionId);
-        if (session == null) throw new SchedulingException("Session not found.");
-        
-        session.setStatus(TherapySession.SessionStatus.COMPLETED);
-        sessionDAO.update(session);
-        
-        // Find next unscheduled session for this patient/program
-        List<TherapySession> unscheduled = sessionDAO.findUnscheduledByPatient(session.getPatient().getId());
-        if (unscheduled != null && !unscheduled.isEmpty()) {
-            return toDTO(unscheduled.get(0));
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession ts = sessionDAO.getById(sessionId, session);
+            if (ts == null) throw new SchedulingException("Session not found.");
+            ts.setStatus(TherapySession.SessionStatus.COMPLETED);
+            transaction.commit();
+
+            List<TherapySession> unscheduled = sessionDAO.findUnscheduledByPatient(ts.getPatient().getId());
+            if (unscheduled != null && !unscheduled.isEmpty()) return toDTO(unscheduled.get(0));
+            return null;
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
         }
-        return null;
     }
 
     public void cancelAndReschedule(Long sessionId) {
-        TherapySession session = sessionDAO.getById(sessionId);
-        if (session == null) throw new SchedulingException("Session not found.");
-        
-        session.setStatus(TherapySession.SessionStatus.UNSCHEDULED);
-        session.setSessionDate(null);
-        session.setSessionTime(null);
-        session.setTherapist(null);
-        sessionDAO.update(session);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession ts = sessionDAO.getById(sessionId, session);
+            if (ts == null) throw new SchedulingException("Session not found.");
+            ts.setStatus(TherapySession.SessionStatus.UNSCHEDULED);
+            ts.setSessionDate(null);
+            ts.setSessionTime(null);
+            ts.setTherapist(null);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
-    
+
     public void cancelSession(Long sessionId) {
-        TherapySession session = sessionDAO.getById(sessionId);
-        if (session == null) throw new SchedulingException("Session not found.");
-        
-        session.setStatus(TherapySession.SessionStatus.CANCELLED);
-        sessionDAO.update(session);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession ts = sessionDAO.getById(sessionId, session);
+            if (ts == null) throw new SchedulingException("Session not found.");
+            ts.setStatus(TherapySession.SessionStatus.CANCELLED);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public long countCompletedByPatientAndProgram(Long patientId, Long programId) {
@@ -216,14 +220,24 @@ public class TherapySessionBOImpl implements TherapySessionBO {
     }
 
     public void deleteSession(Long sessionId) {
-        TherapySession session = sessionDAO.getById(sessionId);
-        if (session == null) throw new SchedulingException("Session not found.");
-        sessionDAO.delete(session);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapySession ts = sessionDAO.getById(sessionId, session);
+            if (ts == null) throw new SchedulingException("Session not found.");
+            sessionDAO.delete(ts, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public TherapySessionDTO getSessionById(Long id) {
-        TherapySession session = sessionDAO.getById(id);
-        return session != null ? toDTO(session) : null;
+        TherapySession ts = sessionDAO.getById(id);
+        return ts != null ? toDTO(ts) : null;
     }
 
     public List<TherapySessionDTO> getAllSessionDTOs() {
@@ -250,13 +264,10 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         return sessionDAO.findByDateRange(start, end).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public long getTodaySessionCount() {
-        return sessionDAO.countByDate(LocalDate.now());
-    }
+    public long getTodaySessionCount() { return sessionDAO.countByDate(LocalDate.now()); }
+    public long getSessionCount() { return sessionDAO.count(); }
 
-    public long getSessionCount() {
-        return sessionDAO.count();
-    }
+    // ==================== Validation Helpers ====================
 
     private void validateSessionDate(LocalDate sessionDate) {
         if (sessionDate != null && sessionDate.isBefore(LocalDate.now())) {
@@ -264,24 +275,19 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         }
     }
 
-    private void checkTherapistAvailability(TherapySession session) {
-        if (session.getTherapist() == null || session.getSessionDate() == null || session.getSessionTime() == null) {
-            return;
-        }
-
-        long therapistId = session.getTherapist().getId();
+    private void checkTherapistAvailability(TherapySession ts) {
+        if (ts.getTherapist() == null || ts.getSessionDate() == null || ts.getSessionTime() == null) return;
+        long therapistId = ts.getTherapist().getId();
         sessionDAO.getAllWithDetails().stream()
                 .filter(s -> s.getTherapist() != null && s.getTherapist().getId().equals(therapistId))
-                .filter(s -> s.getSessionDate() != null && s.getSessionDate().equals(session.getSessionDate()))
-                .filter(s -> s.getSessionTime() != null && s.getSessionTime().equals(session.getSessionTime()))
-                .filter(s -> session.getId() == null || !s.getId().equals(session.getId()))
+                .filter(s -> s.getSessionDate() != null && s.getSessionDate().equals(ts.getSessionDate()))
+                .filter(s -> s.getSessionTime() != null && s.getSessionTime().equals(ts.getSessionTime()))
+                .filter(s -> ts.getId() == null || !s.getId().equals(ts.getId()))
                 .findAny()
-                .ifPresent(s -> {
-                    throw new SchedulingException("Therapist is already booked for this date and time.");
-                });
+                .ifPresent(s -> { throw new SchedulingException("Therapist is already booked for this date and time."); });
     }
 
-
+    // ==================== Conversion ====================
 
     public TherapySessionDTO toDTO(TherapySession entity) {
         TherapySessionDTO dto = new TherapySessionDTO();
@@ -295,7 +301,6 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
         dto.setTherapistId(entity.getTherapist() != null ? entity.getTherapist().getId() : null);
         dto.setProgramId(entity.getProgram() != null ? entity.getProgram().getId() : null);
-        // Display helpers
         dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : null);
         dto.setTherapistName(entity.getTherapist() != null ? entity.getTherapist().getName() : null);
         dto.setProgramName(entity.getProgram() != null ? entity.getProgram().getName() : null);

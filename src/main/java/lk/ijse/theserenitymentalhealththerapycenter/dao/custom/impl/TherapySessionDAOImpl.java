@@ -1,7 +1,7 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapySessionDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import org.hibernate.Session;
@@ -11,10 +11,44 @@ import org.hibernate.query.Query;
 import java.time.LocalDate;
 import java.util.List;
 
-public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements TherapySessionDAO {
+public class TherapySessionDAOImpl implements TherapySessionDAO {
 
-    public TherapySessionDAOImpl() {
-        super(TherapySession.class);
+    // ==================== CrudDAO: Self-Contained ====================
+
+    @Override
+    public void save(TherapySession entity) {
+        CrudUtil.save(entity);
+    }
+
+    @Override
+    public void update(TherapySession entity) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                TherapySession existing = session.get(TherapySession.class, entity.getId());
+                if (existing != null) {
+                    existing.setPatient(entity.getPatient());
+                    existing.setTherapist(entity.getTherapist());
+                    existing.setProgram(entity.getProgram());
+                    existing.setSessionDate(entity.getSessionDate());
+                    existing.setSessionTime(entity.getSessionTime());
+                    existing.setStatus(entity.getStatus());
+                    existing.setPaymentStatus(entity.getPaymentStatus());
+                    existing.setNotes(entity.getNotes());
+                    existing.setPayment(entity.getPayment());
+                    existing.setSequenceNumber(entity.getSequenceNumber());
+                }
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public void delete(TherapySession entity) {
+        CrudUtil.delete(entity);
     }
 
     @Override
@@ -32,75 +66,133 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Find all sessions for a given date.
-     */
+    @Override
+    public List<TherapySession> getAll() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return CrudUtil.getAll(TherapySession.class, session);
+        }
+    }
+
+    @Override
+    public long count() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return CrudUtil.count(TherapySession.class, session);
+        }
+    }
+
+    // ==================== CrudDAO: Session-Aware ====================
+
+    @Override
+    public void save(TherapySession entity, Session session) {
+        CrudUtil.save(entity, session);
+    }
+
+    @Override
+    public void update(TherapySession entity, Session session) {
+        TherapySession existing = session.get(TherapySession.class, entity.getId());
+        if (existing != null) {
+            existing.setPatient(entity.getPatient());
+            existing.setTherapist(entity.getTherapist());
+            existing.setProgram(entity.getProgram());
+            existing.setSessionDate(entity.getSessionDate());
+            existing.setSessionTime(entity.getSessionTime());
+            existing.setStatus(entity.getStatus());
+            existing.setPaymentStatus(entity.getPaymentStatus());
+            existing.setNotes(entity.getNotes());
+            existing.setPayment(entity.getPayment());
+            existing.setSequenceNumber(entity.getSequenceNumber());
+        }
+    }
+
+    @Override
+    public void delete(TherapySession entity, Session session) {
+        CrudUtil.delete(entity, session);
+    }
+
+    @Override
+    public TherapySession getById(Object id, Session session) {
+        return session.createQuery(
+                "SELECT DISTINCT s FROM TherapySession s " +
+                        "LEFT JOIN FETCH s.patient " +
+                        "LEFT JOIN FETCH s.therapist " +
+                        "LEFT JOIN FETCH s.program " +
+                        "WHERE s.id = :id",
+                TherapySession.class)
+                .setParameter("id", id)
+                .uniqueResult();
+    }
+
+    @Override
+    public List<TherapySession> getAll(Session session) {
+        return CrudUtil.getAll(TherapySession.class, session);
+    }
+
+    @Override
+    public long count(Session session) {
+        return CrudUtil.count(TherapySession.class, session);
+    }
+
+    // ==================== Custom Methods ====================
+
+    @Override
     public List<TherapySession> findByDate(LocalDate date) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<TherapySession> query = session.createQuery(
+            return session.createQuery(
                     "SELECT DISTINCT s FROM TherapySession s " +
                             "LEFT JOIN FETCH s.patient " +
                             "LEFT JOIN FETCH s.therapist " +
                             "LEFT JOIN FETCH s.program " +
-                            "WHERE s.sessionDate = :date ORDER BY s.sessionTime", TherapySession.class);
-            query.setParameter("date", date);
-            return query.list();
+                            "WHERE s.sessionDate = :date ORDER BY s.sessionTime", TherapySession.class)
+                    .setParameter("date", date)
+                    .list();
         }
     }
 
-    /**
-     * Find all sessions for a specific patient.
-     */
+    @Override
     public List<TherapySession> findByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<TherapySession> query = session.createQuery(
+            return session.createQuery(
                     "SELECT DISTINCT s FROM TherapySession s " +
                             "LEFT JOIN FETCH s.patient " +
                             "LEFT JOIN FETCH s.therapist " +
                             "LEFT JOIN FETCH s.program " +
-                            "WHERE s.patient.id = :patientId ORDER BY s.sessionDate DESC", TherapySession.class);
-            query.setParameter("patientId", patientId);
-            return query.list();
+                            "WHERE s.patient.id = :patientId ORDER BY s.sessionDate DESC", TherapySession.class)
+                    .setParameter("patientId", patientId)
+                    .list();
         }
     }
 
-    /**
-     * Find all sessions for a specific therapist.
-     */
+    @Override
     public List<TherapySession> findByTherapist(Long therapistId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<TherapySession> query = session.createQuery(
+            return session.createQuery(
                     "SELECT DISTINCT s FROM TherapySession s " +
                             "LEFT JOIN FETCH s.patient " +
                             "LEFT JOIN FETCH s.therapist " +
                             "LEFT JOIN FETCH s.program " +
-                            "WHERE s.therapist.id = :therapistId ORDER BY s.sessionDate DESC", TherapySession.class);
-            query.setParameter("therapistId", therapistId);
-            return query.list();
+                            "WHERE s.therapist.id = :therapistId ORDER BY s.sessionDate DESC", TherapySession.class)
+                    .setParameter("therapistId", therapistId)
+                    .list();
         }
     }
 
-    /**
-     * Find sessions within a date range.
-     */
+    @Override
     public List<TherapySession> findByDateRange(LocalDate startDate, LocalDate endDate) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<TherapySession> query = session.createQuery(
+            return session.createQuery(
                     "SELECT DISTINCT s FROM TherapySession s " +
                             "LEFT JOIN FETCH s.patient " +
                             "LEFT JOIN FETCH s.therapist " +
                             "LEFT JOIN FETCH s.program " +
                             "WHERE s.sessionDate BETWEEN :startDate AND :endDate ORDER BY s.sessionDate, s.sessionTime",
-                    TherapySession.class);
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
-            return query.list();
+                    TherapySession.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .list();
         }
     }
 
-    /**
-     * Count sessions on a specific date.
-     */
+    @Override
     public long countByDate(LocalDate date) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -110,9 +202,7 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Get all sessions with eagerly fetched patient, therapist, and program.
-     */
+    @Override
     public List<TherapySession> getAllWithDetails() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -125,9 +215,7 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Find all sessions for a patient enrolled in a specific program, ordered by sequence.
-     */
+    @Override
     public List<TherapySession> findByPatientAndProgram(Long patientId, Long programId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -144,9 +232,7 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Find unscheduled sessions for a patient (across all programs).
-     */
+    @Override
     public List<TherapySession> findUnscheduledByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -163,9 +249,7 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Count completed sessions for a patient in a specific program (for progress dashboard).
-     */
+    @Override
     public long countCompletedByPatientAndProgram(Long patientId, Long programId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -179,9 +263,7 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Count total sessions for a patient in a specific program.
-     */
+    @Override
     public long countByPatientAndProgram(Long patientId, Long programId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -194,9 +276,7 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Find scheduled sessions for a therapist on a specific date.
-     */
+    @Override
     public List<TherapySession> findByTherapistAndDate(Long therapistId, LocalDate date) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -214,41 +294,19 @@ public class TherapySessionDAOImpl extends GenericDAO<TherapySession> implements
         }
     }
 
-    /**
-     * Bulk update payment status for a list of session IDs.
-     */
-    public void bulkUpdatePaymentStatus(List<Long> sessionIds, TherapySession.PaymentStatus paymentStatus) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Transaction transaction = session.beginTransaction();
-            try {
-                session.createQuery(
-                        "UPDATE TherapySession s SET s.paymentStatus = :status WHERE s.id IN :ids")
-                        .setParameter("status", paymentStatus)
-                        .setParameter("ids", sessionIds)
-                        .executeUpdate();
-                transaction.commit();
-            } catch (Exception e) {
-                if (transaction != null) transaction.rollback();
-                throw e;
-            }
-        }
+    @Override
+    public void bulkUpdatePaymentStatus(List<Long> sessionIds, TherapySession.PaymentStatus paymentStatus, Session session) {
+        session.createQuery(
+                "UPDATE TherapySession s SET s.paymentStatus = :status WHERE s.id IN :ids")
+                .setParameter("status", paymentStatus)
+                .setParameter("ids", sessionIds)
+                .executeUpdate();
     }
 
-    /**
-     * Save multiple sessions in a single transaction (for bulk session generation).
-     */
-    public void saveAll(List<TherapySession> sessions) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Transaction transaction = session.beginTransaction();
-            try {
-                for (TherapySession ts : sessions) {
-                    session.persist(ts);
-                }
-                transaction.commit();
-            } catch (Exception e) {
-                if (transaction != null) transaction.rollback();
-                throw e;
-            }
+    @Override
+    public void saveAll(List<TherapySession> sessions, Session session) {
+        for (TherapySession ts : sessions) {
+            CrudUtil.save(ts, session);
         }
     }
 }

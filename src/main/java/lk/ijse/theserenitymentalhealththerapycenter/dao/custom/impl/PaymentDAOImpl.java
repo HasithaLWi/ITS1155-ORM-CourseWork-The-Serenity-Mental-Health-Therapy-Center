@@ -1,25 +1,121 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.GenericDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PaymentDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
+public class PaymentDAOImpl implements PaymentDAO {
 
-    public PaymentDAOImpl() {
-        super(Payment.class);
+    // ==================== CrudDAO: Self-Contained ====================
+
+    @Override
+    public void save(Payment entity) {
+        CrudUtil.save(entity);
     }
 
-    /**
-     * Find payment by session ID.
-     */
+    @Override
+    public void update(Payment entity) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                Payment existing = session.get(Payment.class, entity.getId());
+                if (existing != null) {
+                    existing.setAmount(entity.getAmount());
+                    existing.setMethod(entity.getMethod());
+                    existing.setStatus(entity.getStatus());
+                    existing.setPaymentType(entity.getPaymentType());
+                    existing.setPaymentDate(entity.getPaymentDate());
+                    existing.setDescription(entity.getDescription());
+                    existing.setDiscount(entity.getDiscount());
+                    existing.setPatient(entity.getPatient());
+                }
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public void delete(Payment entity) {
+        CrudUtil.delete(entity);
+    }
+
+    @Override
+    public Payment getById(Object id) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return CrudUtil.getById(Payment.class, id, session);
+        }
+    }
+
+    @Override
+    public List<Payment> getAll() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return CrudUtil.getAll(Payment.class, session);
+        }
+    }
+
+    @Override
+    public long count() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return CrudUtil.count(Payment.class, session);
+        }
+    }
+
+    // ==================== CrudDAO: Session-Aware ====================
+
+    @Override
+    public void save(Payment entity, Session session) {
+        CrudUtil.save(entity, session);
+    }
+
+    @Override
+    public void update(Payment entity, Session session) {
+        Payment existing = session.get(Payment.class, entity.getId());
+        if (existing != null) {
+            existing.setAmount(entity.getAmount());
+            existing.setMethod(entity.getMethod());
+            existing.setStatus(entity.getStatus());
+            existing.setPaymentType(entity.getPaymentType());
+            existing.setPaymentDate(entity.getPaymentDate());
+            existing.setDescription(entity.getDescription());
+            existing.setDiscount(entity.getDiscount());
+            existing.setPatient(entity.getPatient());
+        }
+    }
+
+    @Override
+    public void delete(Payment entity, Session session) {
+        CrudUtil.delete(entity, session);
+    }
+
+    @Override
+    public Payment getById(Object id, Session session) {
+        return CrudUtil.getById(Payment.class, id, session);
+    }
+
+    @Override
+    public List<Payment> getAll(Session session) {
+        return CrudUtil.getAll(Payment.class, session);
+    }
+
+    @Override
+    public long count(Session session) {
+        return CrudUtil.count(Payment.class, session);
+    }
+
+    // ==================== Custom Methods ====================
+
+    @Override
     public Payment findBySession(Long sessionId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<Payment> query = session.createQuery(
@@ -29,9 +125,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Find payments within a date range.
-     */
+    @Override
     public List<Payment> findByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<Payment> query = session.createQuery(
@@ -43,9 +137,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Get total revenue for completed payments within a date range.
-     */
+    @Override
     public BigDecimal getTotalRevenue(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             BigDecimal result = session.createQuery(
@@ -60,9 +152,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Get all payments with eagerly fetched session details.
-     */
+    @Override
     public List<Payment> getAllWithDetails() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -74,9 +164,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Find all payments for a specific patient.
-     */
+    @Override
     public List<Payment> findByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -87,9 +175,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Find the upfront payment for a patient (used to link sessions created from upfront credit).
-     */
+    @Override
     public Payment findUpfrontByPatient(Long patientId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -105,9 +191,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Find the upfront payment for a patient using an existing session (for BO-managed transactions).
-     */
+    @Override
     public Payment findUpfrontByPatient(Long patientId, Session session) {
         return session.createQuery(
                 "FROM Payment p WHERE p.patient.id = :patientId " +
@@ -121,9 +205,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
                 .uniqueResult();
     }
 
-    /**
-     * Find payments for a specific patient within a date range.
-     */
+    @Override
     public List<Payment> findByPatientAndDateRange(Long patientId, LocalDateTime start, LocalDateTime end) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient LEFT JOIN FETCH p.coveredSessions WHERE 1=1";
@@ -141,9 +223,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Find payments by type.
-     */
+    @Override
     public List<Payment> findByType(Payment.PaymentType type) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -155,9 +235,7 @@ public class PaymentDAOImpl extends GenericDAO<Payment> implements PaymentDAO {
         }
     }
 
-    /**
-     * Filtered search with all criteria (patient, date range, type).
-     */
+    @Override
     public List<Payment> findFiltered(Long patientId, LocalDateTime start, LocalDateTime end, Payment.PaymentType type) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient LEFT JOIN FETCH p.coveredSessions WHERE 1=1";

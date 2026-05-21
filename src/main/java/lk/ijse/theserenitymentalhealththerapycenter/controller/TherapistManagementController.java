@@ -8,7 +8,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapistBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapistTM;
@@ -35,7 +36,7 @@ public class TherapistManagementController implements Initializable {
     @FXML private TableColumn<TherapistTM, String> colTherapistEmail;
     @FXML private TableColumn<TherapistTM, String> colTherapistStatus;
 
-    private final TherapistBOImpl therapistService = new TherapistBOImpl();
+    private final TherapistBO therapistService = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
     private FilteredList<TherapistTM> filteredTherapists;
     private TherapistTM selectedTherapist;
 

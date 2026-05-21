@@ -9,8 +9,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
@@ -45,8 +46,8 @@ public class UpfrontPaymentDialogController implements Initializable {
     private List<TherapyProgramDTO> enrolledPrograms;
     private Runnable onSuccessCallback;
 
-    private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
-    private final PaymentBOImpl paymentService = new PaymentBOImpl();
+    private final TherapySessionBO sessionService = (TherapySessionBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
+    private final PaymentBO paymentService = (PaymentBO) BOFactory.getInstance().getBO(BOFactory.BOType.PAYMENT);
 
     private final ObservableList<ProgramPaymentTM> paymentModels = FXCollections.observableArrayList();
 

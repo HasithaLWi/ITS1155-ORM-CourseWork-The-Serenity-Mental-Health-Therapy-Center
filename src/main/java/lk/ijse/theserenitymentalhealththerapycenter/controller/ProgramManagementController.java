@@ -8,7 +8,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapyProgramBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapyProgramTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
@@ -35,7 +36,7 @@ public class ProgramManagementController implements Initializable {
     @FXML private TableColumn<TherapyProgramTM, Integer> colTotalSessions;
     @FXML private TableColumn<TherapyProgramTM, String> colProgramDescription;
 
-    private final TherapyProgramBOImpl programService = new TherapyProgramBOImpl();
+    private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
     private FilteredList<TherapyProgramTM> filteredPrograms;
     private TherapyProgramTM selectedProgram;
 

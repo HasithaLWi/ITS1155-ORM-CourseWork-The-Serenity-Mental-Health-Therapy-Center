@@ -1,8 +1,9 @@
 package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapyProgramDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapyProgramDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
@@ -10,33 +11,71 @@ import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SerenityException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.List;
 
 public class TherapyProgramBOImpl implements TherapyProgramBO {
-    private final TherapyProgramDAOImpl programDAO = new TherapyProgramDAOImpl();
+    private final TherapyProgramDAO programDAO =
+            (TherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPY_PROGRAM);
 
     public void saveProgram(TherapyProgramDTO dto) {
         validateProgram(dto);
-        programDAO.save(toEntity(dto));
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            programDAO.save(toEntity(dto), session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public void updateProgram(TherapyProgramDTO dto) {
         validateProgram(dto);
-        programDAO.update(toEntity(dto));
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            TherapyProgram entity = programDAO.getById(dto.getId(), session);
+            if (entity == null) throw new SerenityException("Program not found.");
+            entity.setName(dto.getName());
+            entity.setDuration(dto.getDuration());
+            entity.setFee(dto.getFee());
+            entity.setTotalSessions(dto.getTotalSessions());
+            entity.setSessionFee(dto.getSessionFee());
+            entity.setDescription(dto.getDescription());
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public void deleteProgram(Long id) {
-        TherapyProgram entity = programDAO.getById(id);
-        if (entity == null) throw new SerenityException("Program not found.");
-        programDAO.delete(entity);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            TherapyProgram entity = programDAO.getById(id, session);
+            if (entity == null) throw new SerenityException("Program not found.");
+            programDAO.delete(entity, session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public TherapyProgramDTO getProgramById(Long id) {
         TherapyProgram entity = programDAO.getById(id);
-        if (entity == null) {
-            throw new SerenityException("Program not found with ID: " + id);
-        }
+        if (entity == null) throw new SerenityException("Program not found with ID: " + id);
         return toDTO(entity);
     }
 
@@ -64,22 +103,15 @@ public class TherapyProgramBOImpl implements TherapyProgramBO {
         dto.setSessionFee(entity.getSessionFee());
         dto.setDescription(entity.getDescription());
         dto.setTherapists(entity.getTherapists().stream().map(t ->
-                new TherapistDTO(
-                        t.getId(),
-                        t.getName(),
-                        t.getSpecialty(),
-                        t.getPhone(),
-                        t.getEmail(),
+                new TherapistDTO(t.getId(), t.getName(), t.getSpecialty(), t.getPhone(), t.getEmail(),
                         t.getStatus().equals(Therapist.Status.ACTIVE) ? TherapistStatus.ACTIVE : TherapistStatus.INACTIVE
-                        )).toList());
+                )).toList());
         return dto;
     }
 
     public TherapyProgram toEntity(TherapyProgramDTO dto) {
         TherapyProgram entity = new TherapyProgram();
-        if (dto.getId() > 0) {
-            entity.setId(dto.getId());
-        }
+        if (dto.getId() > 0) entity.setId(dto.getId());
         entity.setName(dto.getName());
         entity.setDuration(dto.getDuration());
         entity.setFee(dto.getFee());
@@ -90,11 +122,7 @@ public class TherapyProgramBOImpl implements TherapyProgramBO {
     }
 
     private void validateProgram(TherapyProgramDTO program) {
-        if (!ValidationUtil.isNotEmpty(program.getName())) {
-            throw new SerenityException("Program name is required.");
-        }
-        if (program.getFee() != null && program.getFee().signum() < 0) {
-            throw new SerenityException("Program fee cannot be negative.");
-        }
+        if (!ValidationUtil.isNotEmpty(program.getName())) throw new SerenityException("Program name is required.");
+        if (program.getFee() != null && program.getFee().signum() < 0) throw new SerenityException("Program fee cannot be negative.");
     }
 }

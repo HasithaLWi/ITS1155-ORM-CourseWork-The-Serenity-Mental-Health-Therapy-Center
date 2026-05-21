@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface PatientDAO extends CrudDAO<Patient> {
     List<Patient> searchByName(String name);
+    List<Patient> findPatientsInAllPrograms();
+    List<Patient> getAllWithPrograms();
+    Patient findByPhone(String phone);
 }

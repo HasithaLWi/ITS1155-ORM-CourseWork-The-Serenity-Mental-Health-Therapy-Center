@@ -13,7 +13,8 @@ import javafx.util.Duration;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
 
 import java.io.IOException;
 
@@ -37,7 +38,7 @@ public class LoginController {
     @FXML
     private HBox passwordContainer;
 
-    private final UserBOImpl userService = new UserBOImpl();
+    private final UserBO userService = (UserBO) BOFactory.getInstance().getBO(BOFactory.BOType.USER);
     private boolean passwordVisible = false;
 
     @FXML

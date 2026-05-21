@@ -9,7 +9,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.UserBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
@@ -34,7 +35,7 @@ public class RegistrationController {
     @FXML private Label lblAuthenticationInfo;
     @FXML private Label lblAuthenticationError;
 
-    private final UserBOImpl userService = new UserBOImpl();
+    private final UserBO userService = (UserBO) BOFactory.getInstance().getBO(BOFactory.BOType.USER);
 
     private static final String VALID_STYLE =
             "-fx-background-color: #FFFFFF; -fx-text-fill: #2D3436; -fx-prompt-text-fill: #95A5A6; "

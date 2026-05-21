@@ -2,9 +2,10 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PatientTherapyProgramDAOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.PaymentDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientTherapyProgramDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PaymentDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
@@ -23,10 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 public class PatientBOImpl implements PatientBO {
-    private final PatientDAOImpl patientDAO = new PatientDAOImpl();
-    private final PatientTherapyProgramDAOImpl ptpDAO = new PatientTherapyProgramDAOImpl();
-    private final PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
-
+    private final PatientDAO patientDAO =
+            (PatientDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT);
+    private final PatientTherapyProgramDAO ptpDAO =
+            (PatientTherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT_THERAPY_PROGRAM);
+    private final PaymentDAO paymentDAO =
+            (PaymentDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PAYMENT);
 
     /**
      * Register a new patient with validation.
@@ -46,7 +49,7 @@ public class PatientBOImpl implements PatientBO {
             throw new RegistrationException("Invalid phone number format.");
         }
 
-        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Session session = FactoryConfiguration.getInstance().getSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient p = new Patient();
@@ -108,24 +111,45 @@ public class PatientBOImpl implements PatientBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw new RegistrationException("Failed to register patient: " + e.getMessage());
+        } finally {
+            session.close();
         }
     }
 
     public void updatePatient(PatientDTO dto) {
-        Patient entity = patientDAO.getById(dto.getId());
-        if (entity == null) throw new RegistrationException("Patient not found.");
-        entity.setName(dto.getName());
-        entity.setEmail(dto.getEmail());
-        entity.setPhone(dto.getPhone());
-        entity.setAddress(dto.getAddress());
-        entity.setInterviewNote(dto.getInterviewNote());
-        patientDAO.update(entity);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            Patient entity = patientDAO.getById(dto.getId(), session);
+            if (entity == null) throw new RegistrationException("Patient not found.");
+            entity.setName(dto.getName());
+            entity.setEmail(dto.getEmail());
+            entity.setPhone(dto.getPhone());
+            entity.setAddress(dto.getAddress());
+            entity.setInterviewNote(dto.getInterviewNote());
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public void deletePatient(Long id) {
-        Patient entity = patientDAO.getById(id);
-        if (entity == null) throw new RegistrationException("Patient not found.");
-        patientDAO.delete(entity);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            Patient entity = patientDAO.getById(id, session);
+            if (entity == null) throw new RegistrationException("Patient not found.");
+            patientDAO.delete(entity, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public PatientDTO getPatientById(Long id) {
@@ -173,19 +197,39 @@ public class PatientBOImpl implements PatientBO {
      * Deduct one upfront credit for a patient-program enrollment.
      */
     public void deductUpfrontCredit(Long patientId, Long programId) {
-        ptpDAO.deductCredit(patientId, programId);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            ptpDAO.deductCredit(patientId, programId, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     /**
      * Enroll a patient in a new program with optional upfront sessions.
      */
     public void enrollPatientInProgram(Long patientId, Long programId, int upfrontSessions) {
-        Patient patient = patientDAO.getById(patientId);
-        if (patient == null) throw new RegistrationException("Patient not found.");
-        TherapyProgram program = new TherapyProgram();
-        program.setId(programId);
-        PatientTherapyProgram ptp = new PatientTherapyProgram(patient, program, upfrontSessions);
-        ptpDAO.save(ptp);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            Patient patient = patientDAO.getById(patientId, session);
+            if (patient == null) throw new RegistrationException("Patient not found.");
+            TherapyProgram program = new TherapyProgram();
+            program.setId(programId);
+            PatientTherapyProgram ptp = new PatientTherapyProgram(patient, program, upfrontSessions);
+            ptpDAO.save(ptp, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     // ==================== Conversion Helpers ====================
@@ -201,6 +245,7 @@ public class PatientBOImpl implements PatientBO {
         dto.setInterviewNote(entity.getInterviewNote());
         return dto;
     }
+
     public TherapyProgramDTO toDTO(TherapyProgram entity) {
         TherapyProgramDTO dto = new TherapyProgramDTO();
         dto.setId(entity.getId());

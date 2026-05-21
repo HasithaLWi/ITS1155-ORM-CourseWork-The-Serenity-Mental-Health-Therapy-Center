@@ -14,7 +14,7 @@ public class BOFactory {
         return boFactory;
     }
 
-    public SuperBO  getBO(BOType boType) {
+    public SuperBO getBO(BOType boType) {
         return switch (boType) {
             case PATIENT -> new PatientBOImpl();
             case USER -> new UserBOImpl();
@@ -22,7 +22,6 @@ public class BOFactory {
             case THERAPY_PROGRAM -> new TherapyProgramBOImpl();
             case THERAPY_SESSION -> new TherapySessionBOImpl();
             case PAYMENT -> new PaymentBOImpl();
-            default -> null;
         };
     }
 

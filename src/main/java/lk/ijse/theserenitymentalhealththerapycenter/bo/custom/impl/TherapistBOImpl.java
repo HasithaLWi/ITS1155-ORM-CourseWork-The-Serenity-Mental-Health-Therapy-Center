@@ -1,32 +1,73 @@
 package lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl.TherapistDAOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SerenityException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.List;
 
 public class TherapistBOImpl implements TherapistBO {
-    private final TherapistDAOImpl therapistDAO = new TherapistDAOImpl();
+    private final TherapistDAO therapistDAO =
+            (TherapistDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPIST);
 
     public void saveTherapist(TherapistDTO dto) {
         validateTherapist(dto);
-        therapistDAO.save(toEntity(dto));
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            therapistDAO.save(toEntity(dto), session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public void updateTherapist(TherapistDTO dto) {
         validateTherapist(dto);
-        therapistDAO.update(toEntity(dto));
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Therapist entity = therapistDAO.getById(dto.getId(), session);
+            if (entity == null) throw new SerenityException("Therapist not found.");
+            entity.setName(dto.getName());
+            entity.setSpecialty(dto.getSpecialty());
+            entity.setPhone(dto.getPhone());
+            entity.setEmail(dto.getEmail());
+            entity.setStatus(dto.getStatus() != null ? Therapist.Status.valueOf(dto.getStatus().name()) : Therapist.Status.ACTIVE);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public void deleteTherapist(Long id) {
-        Therapist entity = therapistDAO.getById(id);
-        if (entity == null) throw new SerenityException("Therapist not found.");
-        therapistDAO.delete(entity);
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Therapist entity = therapistDAO.getById(id, session);
+            if (entity == null) throw new SerenityException("Therapist not found.");
+            therapistDAO.delete(entity, session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
     }
 
     public TherapistDTO getTherapistById(Long id) {

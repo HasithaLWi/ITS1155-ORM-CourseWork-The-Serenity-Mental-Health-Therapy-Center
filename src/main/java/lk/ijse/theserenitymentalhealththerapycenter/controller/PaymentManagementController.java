@@ -9,9 +9,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PatientBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.PaymentBOImpl;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.TherapySessionBOImpl;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
@@ -71,9 +72,9 @@ public class PaymentManagementController implements Initializable {
     @FXML private TableColumn<PaymentTM, String> colPaymentDesc;
     @FXML private Label lblTotalRevenue;
 
-    private final PaymentBOImpl paymentService = new PaymentBOImpl();
-    private final TherapySessionBOImpl sessionService = new TherapySessionBOImpl();
-    private final PatientBOImpl patientService = new PatientBOImpl();
+    private final PaymentBO paymentService = (PaymentBO) BOFactory.getInstance().getBO(BOFactory.BOType.PAYMENT);
+    private final TherapySessionBO sessionService = (TherapySessionBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
+    private final PatientBO patientService = (PatientBO) BOFactory.getInstance().getBO(BOFactory.BOType.PATIENT);
 
     private List<PatientDTO> allPatientsList;
     private List<TherapySessionDTO> unpaidSessionsList;

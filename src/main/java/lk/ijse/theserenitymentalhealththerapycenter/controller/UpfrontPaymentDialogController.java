@@ -30,18 +30,28 @@ import java.util.ResourceBundle;
 
 public class UpfrontPaymentDialogController implements Initializable {
 
-    @FXML private TableView<ProgramPaymentTM> tblPaymentPrograms;
-    @FXML private TableColumn<ProgramPaymentTM, String> colProgramName;
-    @FXML private TableColumn<ProgramPaymentTM, Integer> colTotalSessions;
-    @FXML private TableColumn<ProgramPaymentTM, Integer> colSessionsToPay;
-    @FXML private TableColumn<ProgramPaymentTM, BigDecimal> colSubtotal;
+    @FXML
+    private TableView<ProgramPaymentTM> tblPaymentPrograms;
+    @FXML
+    private TableColumn<ProgramPaymentTM, String> colProgramName;
+    @FXML
+    private TableColumn<ProgramPaymentTM, Integer> colTotalSessions;
+    @FXML
+    private TableColumn<ProgramPaymentTM, Integer> colSessionsToPay;
+    @FXML
+    private TableColumn<ProgramPaymentTM, BigDecimal> colSubtotal;
 
-    @FXML private ComboBox<PaymentMethod> cmbPaymentMethod;
-    @FXML private TextField txtDiscount;
+    @FXML
+    private ComboBox<PaymentMethod> cmbPaymentMethod;
+    @FXML
+    private TextField txtDiscount;
 
-    @FXML private Label lblSubtotal;
-    @FXML private Label lblDiscount;
-    @FXML private Label lblTotalDue;
+    @FXML
+    private Label lblSubtotal;
+    @FXML
+    private Label lblDiscount;
+    @FXML
+    private Label lblTotalDue;
 
     private Long currentPatientId;
     private List<TherapyProgramDTO> enrolledPrograms;
@@ -55,9 +65,9 @@ public class UpfrontPaymentDialogController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         cmbPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
-        
+
         setupTable();
-        
+
         txtDiscount.textProperty().addListener((obs, oldVal, newVal) -> calculateTotals());
     }
 
@@ -95,7 +105,7 @@ public class UpfrontPaymentDialogController implements Initializable {
                 }
             }
         });
-        
+
         colSubtotal.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSubtotal()));
     }
 
@@ -103,7 +113,7 @@ public class UpfrontPaymentDialogController implements Initializable {
         this.currentPatientId = patientId;
         this.enrolledPrograms = programs;
         this.onSuccessCallback = onSuccess;
-        
+
         loadPrograms();
     }
 
@@ -124,10 +134,10 @@ public class UpfrontPaymentDialogController implements Initializable {
         for (ProgramPaymentTM model : paymentModels) {
             subtotal = subtotal.add(model.getSubtotal());
         }
-        
+
         BigDecimal discount = parseDiscount();
         BigDecimal totalDue = subtotal.subtract(discount);
-        
+
         if (totalDue.signum() < 0) {
             totalDue = BigDecimal.ZERO;
         }
@@ -175,13 +185,13 @@ public class UpfrontPaymentDialogController implements Initializable {
                 int selectedSessions = model.getSessionsToPay();
                 if (selectedSessions > 0) {
                     subtotal = subtotal.add(model.getSubtotal());
-                    
+
                     long programId = model.getProgram().getId();
                     List<TherapySessionDTO> programSessions = allUnscheduled.stream()
                             .filter(s -> s.getProgramId() != null && s.getProgramId() == programId)
                             .limit(selectedSessions)
                             .toList();
-                            
+
                     if (programSessions.size() < selectedSessions) {
                         AlertUtil.showWarning("Warning", "Not enough pending sessions available for " + model.getProgramName() + ".");
                         return;
@@ -208,18 +218,18 @@ public class UpfrontPaymentDialogController implements Initializable {
             paymentDTO.setDescription("Upfront package payment for " + sessionIdsToPayFor.size() + " sessions.");
 
             paymentService.processUpfrontPayment(paymentDTO, sessionIdsToPayFor);
-            
+
             AlertUtil.showInfo("Success", "Upfront payment processed successfully.");
 
             if (paymentDTO.getId() != 0) {
                 JasperReportUtil.printInvoice(paymentDTO.getId());
             }
-            
+
             if (onSuccessCallback != null) {
                 onSuccessCallback.run();
             }
             handleClose(event);
-            
+
         } catch (Exception e) {
             AlertUtil.showError("Error", "Payment failed: " + e.getMessage());
             e.printStackTrace();

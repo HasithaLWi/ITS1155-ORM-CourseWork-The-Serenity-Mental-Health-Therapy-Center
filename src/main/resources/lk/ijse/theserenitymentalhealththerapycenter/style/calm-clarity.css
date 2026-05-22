@@ -1,22 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════
-   CALM CLARITY — JavaFX Theme Stylesheet
-   The Serenity Mental Health Therapy Center
-   
-   Palette:
-     Background:  #FAF8F5 (warm off-white)
-     Cards:       #FFFFFF
-     Azure:       #6B9DC2 (primary), #4A7FA5 (darker)
-     Sage:        #8BAF9E (secondary), #6A9A84 (darker)
-     Sidebar:     #2C4A52 / #243F46
-     Text:        #2D3436 / #636E72 / #95A5A6
-     Success:     #7AB88F
-     Error:       #C47171
-   ═══════════════════════════════════════════════════════════════ */
 
-
-
-
-/* ─── GLOBAL TEXT ─── */
 .label {
     -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", sans-serif;
     -fx-text-fill: #2D3436;
@@ -25,7 +7,7 @@
 
 
 
-/* ─── TEXT FIELDS & PASSWORD FIELDS ─── */
+
 .text-field,
 .password-field,
 .text-area {
@@ -48,7 +30,7 @@
 }
 
 
-/* ─── BUTTONS ─── */
+
 .button {
     -fx-font-family: "Segoe UI", sans-serif;
     -fx-background-radius: 12;
@@ -58,7 +40,7 @@
 
 
 
-/* ─── PRIMARY BUTTON ─── */
+
 .btn-primary {
     -fx-background-color: linear-gradient(to right, #4A7FA5, #6B9DC2);
     -fx-text-fill: #FFFFFF;
@@ -80,7 +62,7 @@
 }
 
 
-/* ─── SECONDARY / OUTLINE BUTTON ─── */
+
 .btn-secondary {
     -fx-background-color: #FFFFFF;
     -fx-text-fill: #4A7FA5;
@@ -99,7 +81,7 @@
 }
 
 
-/* ─── DARK ACTION BUTTON (tables) ─── */
+
 .btn-dark {
     -fx-background-color: #2C4A52;
     -fx-text-fill: #FFFFFF;
@@ -115,7 +97,7 @@
 }
 
 
-/* ─── SIDEBAR NAV BUTTONS ─── */
+
 .nav-btn {
     -fx-background-color: transparent;
     -fx-text-fill: #C8DDD2;
@@ -156,7 +138,7 @@
 }
 
 
-/* ─── HYPERLINKS ─── */
+
 .hyperlink {
     -fx-text-fill: #4A7FA5;
     -fx-border-color: transparent;
@@ -172,7 +154,7 @@
 }
 
 
-/* ─── COMBO BOX ─── */
+
 .combo-box {
     -fx-background-color: #FFFFFF;
     -fx-border-color: #E5DFD8;
@@ -246,7 +228,7 @@
 }
 
 
-/* ─── TABLE VIEW ─── */
+
 .table-view {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -303,7 +285,7 @@
 }
 
 
-/* ─── SCROLL PANE ─── */
+
 .scroll-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -339,14 +321,15 @@
 }
 
 
-/* ─── SEPARATOR ─── */
+
 .separator>.line {
     -fx-border-color: #E5DFD8;
     -fx-border-width: 0.5 0 0 0;
 }
 
 
-/* ─── TOOLTIP ─── */
+
+
 .tooltip {
     -fx-background-color: #2C4A52;
     -fx-text-fill: #FFFFFF;
@@ -356,7 +339,8 @@
     -fx-font-family: "Segoe UI", sans-serif;
 }
 
-/* ─── STATUS BADGES ─── */
+
+
 .badge-paid {
     -fx-background-color: #E8F5E9;
     -fx-text-fill: #2E7D32;
@@ -374,7 +358,8 @@
 }
 
 
-/* ─── DATE PICKER ─── */
+
+
 .date-picker {
     -fx-background-color: #FFFFFF;
     -fx-border-color: #E5DFD8;

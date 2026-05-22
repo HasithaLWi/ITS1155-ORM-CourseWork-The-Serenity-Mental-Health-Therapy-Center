@@ -10,10 +10,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.util.SessionContext;
 
 import java.io.IOException;
@@ -67,7 +65,7 @@ public class AdminDashboardController implements Initializable {
         loadSubPage("AdminDashboardOverview.fxml");
     }
 
-    // ===== Navigation Handlers =====
+
     @FXML
     void showDashboard(ActionEvent event) {
         setActivePage("Dashboard Overview", "Welcome back, Administrator", btnDashboard, "AdminDashboardOverview.fxml");

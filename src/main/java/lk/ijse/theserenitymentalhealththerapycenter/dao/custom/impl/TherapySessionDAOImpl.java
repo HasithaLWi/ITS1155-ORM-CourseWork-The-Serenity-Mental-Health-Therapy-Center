@@ -98,8 +98,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
         }
     }
 
-
-
     @Override
     public void save(TherapySession entity, Session session) {
         session.persist(entity);
@@ -151,8 +149,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
                 .uniqueResult();
     }
 
-
-
     @Override
     public List<TherapySession> findByDate(LocalDate date) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
@@ -196,32 +192,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
     }
 
     @Override
-    public List<TherapySession> findByDateRange(LocalDate startDate, LocalDate endDate) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT DISTINCT s FROM TherapySession s " +
-                            "LEFT JOIN FETCH s.patient " +
-                            "LEFT JOIN FETCH s.therapist " +
-                            "LEFT JOIN FETCH s.program " +
-                            "WHERE s.sessionDate BETWEEN :startDate AND :endDate ORDER BY s.sessionDate, s.sessionTime",
-                    TherapySession.class)
-                    .setParameter("startDate", startDate)
-                    .setParameter("endDate", endDate)
-                    .list();
-        }
-    }
-
-    @Override
-    public long countByDate(LocalDate date) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT COUNT(s) FROM TherapySession s WHERE s.sessionDate = :date", Long.class)
-                    .setParameter("date", date)
-                    .uniqueResult();
-        }
-    }
-
-    @Override
     public List<TherapySession> getAllWithDetails() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
@@ -231,40 +201,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
                             "LEFT JOIN FETCH s.program " +
                             "ORDER BY s.sessionDate DESC, s.sessionTime",
                     TherapySession.class).list();
-        }
-    }
-
-    @Override
-    public List<TherapySession> findByPatientAndProgram(Long patientId, Long programId) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT DISTINCT s FROM TherapySession s " +
-                            "LEFT JOIN FETCH s.patient " +
-                            "LEFT JOIN FETCH s.therapist " +
-                            "LEFT JOIN FETCH s.program " +
-                            "WHERE s.patient.id = :patientId AND s.program.id = :programId " +
-                            "ORDER BY s.sequenceNumber",
-                    TherapySession.class)
-                    .setParameter("patientId", patientId)
-                    .setParameter("programId", programId)
-                    .list();
-        }
-    }
-
-    @Override
-    public List<TherapySession> findUnscheduledByPatient(Long patientId) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT DISTINCT s FROM TherapySession s " +
-                            "LEFT JOIN FETCH s.patient " +
-                            "LEFT JOIN FETCH s.therapist " +
-                            "LEFT JOIN FETCH s.program " +
-                            "WHERE s.patient.id = :patientId AND s.status = :status " +
-                            "ORDER BY s.program.id, s.sequenceNumber",
-                    TherapySession.class)
-                    .setParameter("patientId", patientId)
-                    .setParameter("status", TherapySession.SessionStatus.UNSCHEDULED)
-                    .list();
         }
     }
 
@@ -292,40 +228,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
                     .setParameter("patientId", patientId)
                     .setParameter("programId", programId)
                     .uniqueResult();
-        }
-    }
-
-    @Override
-    public List<TherapySession> findByTherapistAndDate(Long therapistId, LocalDate date) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT DISTINCT s FROM TherapySession s " +
-                            "LEFT JOIN FETCH s.patient " +
-                            "LEFT JOIN FETCH s.therapist " +
-                            "LEFT JOIN FETCH s.program " +
-                            "WHERE s.therapist.id = :therapistId AND s.sessionDate = :date " +
-                            "AND s.status = :status ORDER BY s.sessionTime",
-                    TherapySession.class)
-                    .setParameter("therapistId", therapistId)
-                    .setParameter("date", date)
-                    .setParameter("status", TherapySession.SessionStatus.SCHEDULED)
-                    .list();
-        }
-    }
-
-    @Override
-    public void bulkUpdatePaymentStatus(List<Long> sessionIds, TherapySession.PaymentStatus paymentStatus, Session session) {
-        session.createQuery(
-                "UPDATE TherapySession s SET s.paymentStatus = :status WHERE s.id IN :ids")
-                .setParameter("status", paymentStatus)
-                .setParameter("ids", sessionIds)
-                .executeUpdate();
-    }
-
-    @Override
-    public void saveAll(List<TherapySession> sessions, Session session) {
-        for (TherapySession ts : sessions) {
-            session.persist(ts);
         }
     }
 

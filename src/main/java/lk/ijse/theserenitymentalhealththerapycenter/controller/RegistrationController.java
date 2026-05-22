@@ -203,13 +203,11 @@ public class RegistrationController {
             e.printStackTrace();
         }
     }
-
     private void setErr(TextInputControl f, Label l, String m) {
         f.setStyle(INVALID_STYLE);
         l.setText(m);
         l.setStyle("-fx-text-fill: #C47171; -fx-font-size: 10px;");
     }
-
     private void setOk(TextInputControl f, Label l) {
         f.setStyle(VALID_STYLE);
         l.setText("\u2713");

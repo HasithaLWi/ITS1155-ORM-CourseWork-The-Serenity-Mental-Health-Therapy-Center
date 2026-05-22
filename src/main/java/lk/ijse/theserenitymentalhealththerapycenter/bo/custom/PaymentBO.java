@@ -19,10 +19,8 @@ public interface PaymentBO extends SuperBO {
     void updatePayment(PaymentDTO dto);
     void deletePayment(Long id);
     List<PaymentDTO> getAllPayments();
-    PaymentDTO getPaymentBySession(Long sessionId);
     BigDecimal getMonthlyRevenue();
     BigDecimal getTotalRevenue();
-    long getPaymentCount();
     void processExpense(PaymentDTO dto);
     List<PaymentDTO> getFilteredPayments(Long patientId, LocalDateTime start, LocalDateTime end, String paymentType);
     List<PaymentDTO> getPaymentsByPatient(Long patientId);

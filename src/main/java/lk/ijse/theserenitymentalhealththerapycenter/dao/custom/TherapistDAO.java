@@ -7,8 +7,7 @@ import java.util.List;
 
 public interface TherapistDAO extends CrudDAO<Therapist> {
     List<Therapist> searchByName(String name);
-    List<Therapist> findByStatus(Therapist.Status status);
-    List<Therapist> findBySpecialty(String specialty);
+    long countByStatus(Therapist.Status status);
     Therapist findByPhone(String phone);
     Therapist findByEmail(String email);
 }

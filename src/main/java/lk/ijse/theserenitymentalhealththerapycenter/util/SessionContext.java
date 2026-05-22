@@ -2,6 +2,8 @@ package lk.ijse.theserenitymentalhealththerapycenter.util;
 
 import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
 
+
+
 public class SessionContext {
     private static UserDTO currentUser;
 

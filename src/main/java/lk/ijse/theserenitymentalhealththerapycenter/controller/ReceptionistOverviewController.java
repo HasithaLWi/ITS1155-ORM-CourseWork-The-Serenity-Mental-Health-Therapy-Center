@@ -83,7 +83,6 @@ public class ReceptionistOverviewController implements Initializable {
     }
 
     private void setupTables() {
-        // Setup Scheduled Sessions columns
         colTodayDate.setCellValueFactory(d -> new SimpleStringProperty(
                 d.getValue().getSessionDate() != null ? d.getValue().getSessionDate().toString() : ""
         ));
@@ -96,7 +95,7 @@ public class ReceptionistOverviewController implements Initializable {
         colTodayProgram.setCellValueFactory(new PropertyValueFactory<>("programName"));
         colTodayStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Setup Unscheduled Patients columns
+
         colUnscheduledId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colUnscheduledName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colUnscheduledPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));

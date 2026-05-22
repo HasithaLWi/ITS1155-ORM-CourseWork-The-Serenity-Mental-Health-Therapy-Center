@@ -34,48 +34,80 @@ import java.util.function.Function;
 public class PaymentManagementController implements Initializable {
 
 
-    @FXML private ComboBox<String> cmbPaymentType;
+    @FXML
+    private ComboBox<String> cmbPaymentType;
 
 
-    @FXML private VBox paneSingleSessionPayment;
-    @FXML private ComboBox<TherapySessionDTO> cmbSessionId;
-    @FXML private TextField txtSessionCost;
-    @FXML private ComboBox<PaymentMethod> cmbPaymentMethod;
+    @FXML
+    private VBox paneSingleSessionPayment;
+    @FXML
+    private ComboBox<TherapySessionDTO> cmbSessionId;
+    @FXML
+    private TextField txtSessionCost;
+    @FXML
+    private ComboBox<PaymentMethod> cmbPaymentMethod;
 
 
-    @FXML private VBox paneMultipleSessionPayment;
-    @FXML private ComboBox<PatientDTO> cmbBulkPatient;
-    @FXML private ComboBox<PatientTherapyProgramDTO> cmbBulkProgram;
-    @FXML private TextField txtBulkAlreadyPaid;
-    @FXML private ComboBox<Integer> cmbBulkSessionCount;
-    @FXML private TextField txtBulkCost;
-    @FXML private ComboBox<PaymentMethod> cmbBulkPaymentMethod;
+    @FXML
+    private VBox paneMultipleSessionPayment;
+    @FXML
+    private ComboBox<PatientDTO> cmbBulkPatient;
+    @FXML
+    private ComboBox<PatientTherapyProgramDTO> cmbBulkProgram;
+    @FXML
+    private TextField txtBulkAlreadyPaid;
+    @FXML
+    private ComboBox<Integer> cmbBulkSessionCount;
+    @FXML
+    private TextField txtBulkCost;
+    @FXML
+    private ComboBox<PaymentMethod> cmbBulkPaymentMethod;
 
 
-    @FXML private VBox paneExpense;
-    @FXML private ComboBox<String> cmbExpenseType;
-    @FXML private ComboBox<PatientDTO> cmbExpensePatient;
-    @FXML private TextField txtExpenseAmount;
-    @FXML private ComboBox<PaymentMethod> cmbExpenseMethod;
-    @FXML private TextField txtExpenseDescription;
+    @FXML
+    private VBox paneExpense;
+    @FXML
+    private ComboBox<String> cmbExpenseType;
+    @FXML
+    private ComboBox<PatientDTO> cmbExpensePatient;
+    @FXML
+    private TextField txtExpenseAmount;
+    @FXML
+    private ComboBox<PaymentMethod> cmbExpenseMethod;
+    @FXML
+    private TextField txtExpenseDescription;
 
 
-    @FXML private ComboBox<PatientDTO> cmbFilterPatient;
-    @FXML private DatePicker dpFilterFrom;
-    @FXML private DatePicker dpFilterTo;
-    @FXML private ComboBox<String> cmbFilterType;
+    @FXML
+    private ComboBox<PatientDTO> cmbFilterPatient;
+    @FXML
+    private DatePicker dpFilterFrom;
+    @FXML
+    private DatePicker dpFilterTo;
+    @FXML
+    private ComboBox<String> cmbFilterType;
 
 
-    @FXML private TableView<PaymentTM> tblPayments;
-    @FXML private TableColumn<PaymentTM, String> colPaymentId;
-    @FXML private TableColumn<PaymentTM, String> colPaymentPatient;
-    @FXML private TableColumn<PaymentTM, BigDecimal> colPaymentAmount;
-    @FXML private TableColumn<PaymentTM, String> colPaymentMethod;
-    @FXML private TableColumn<PaymentTM, String> colPaymentType;
-    @FXML private TableColumn<PaymentTM, String> colPaymentDate;
-    @FXML private TableColumn<PaymentTM, String> colPaymentStatus;
-    @FXML private TableColumn<PaymentTM, String> colPaymentDesc;
-    @FXML private Label lblTotalRevenue;
+    @FXML
+    private TableView<PaymentTM> tblPayments;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentId;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentPatient;
+    @FXML
+    private TableColumn<PaymentTM, BigDecimal> colPaymentAmount;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentMethod;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentType;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentDate;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentStatus;
+    @FXML
+    private TableColumn<PaymentTM, String> colPaymentDesc;
+    @FXML
+    private Label lblTotalRevenue;
 
     private final PaymentBO paymentService = (PaymentBO) BOFactory.getInstance().getBO(BOFactory.BOType.PAYMENT);
     private final TherapySessionBO sessionService = (TherapySessionBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
@@ -95,7 +127,6 @@ public class PaymentManagementController implements Initializable {
     }
 
 
-
     private void loadBaseData() {
         try {
             allPatientsList = patientService.getAllPatients();
@@ -106,14 +137,13 @@ public class PaymentManagementController implements Initializable {
 
         try {
             unpaidSessionsList = sessionService.getAllSessionDTOs().stream()
-                .filter(s -> s.getPaymentStatus() == SessionPaymentStatus.PENDING)
-                .toList();
+                    .filter(s -> s.getPaymentStatus() == SessionPaymentStatus.PENDING)
+                    .toList();
         } catch (Exception e) {
             unpaidSessionsList = new ArrayList<>();
             System.err.println("Error loading unpaid sessions: " + e.getMessage());
         }
     }
-
 
 
     private void setupPaymentTypeSelector() {
@@ -149,14 +179,14 @@ public class PaymentManagementController implements Initializable {
         cmbFilterType.setItems(FXCollections.observableArrayList("ALL", "SINGLE", "UPFRONT", "EXPENSE"));
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbExpensePatient,
-            new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
+                new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbFilterPatient,
-            new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
+                new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
 
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbBulkPatient,
-            new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
+                new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
 
         cmbBulkPatient.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
@@ -239,14 +269,14 @@ public class PaymentManagementController implements Initializable {
     private void setupSessionIdCombo() {
         // Session ID combo with autocomplete
         Function<TherapySessionDTO, String> sessionDisplay = s ->
-            "#" + s.getId() + " - " + (s.getPatientName() != null ? s.getPatientName() : "N/A")
-                + " | " + (s.getProgramName() != null ? s.getProgramName() : "");
+                "#" + s.getId() + " - " + (s.getPatientName() != null ? s.getPatientName() : "N/A")
+                        + " | " + (s.getProgramName() != null ? s.getProgramName() : "");
         Function<TherapySessionDTO, String> sessionSearch = s ->
-            "#" + s.getId() + " " + (s.getPatientName() != null ? s.getPatientName() : "")
-                + " " + (s.getProgramName() != null ? s.getProgramName() : "");
+                "#" + s.getId() + " " + (s.getPatientName() != null ? s.getPatientName() : "")
+                        + " " + (s.getProgramName() != null ? s.getProgramName() : "");
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionId,
-            new ArrayList<>(unpaidSessionsList), sessionDisplay, sessionSearch);
+                new ArrayList<>(unpaidSessionsList), sessionDisplay, sessionSearch);
 
 
         cmbSessionId.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -287,10 +317,6 @@ public class PaymentManagementController implements Initializable {
     }
 
 
-
-
-
-
     private void setupTable() {
         colPaymentId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
         colPaymentPatient.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPatientName()));
@@ -298,11 +324,11 @@ public class PaymentManagementController implements Initializable {
         colPaymentMethod.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getMethod()));
         colPaymentType.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPaymentType()));
         colPaymentDate.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getPaymentDate() != null
-                ? d.getValue().getPaymentDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : ""));
+                d.getValue().getPaymentDate() != null
+                        ? d.getValue().getPaymentDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : ""));
         colPaymentStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus()));
         colPaymentDesc.setCellValueFactory(d -> new SimpleStringProperty(
-            d.getValue().getDescription() != null ? d.getValue().getDescription() : ""));
+                d.getValue().getDescription() != null ? d.getValue().getDescription() : ""));
     }
 
     private void loadData() {
@@ -320,16 +346,16 @@ public class PaymentManagementController implements Initializable {
 
     private List<PaymentTM> toTMList(List<PaymentDTO> dtos) {
         return dtos.stream().map(dto -> new PaymentTM(
-            String.format("PAY%03d", dto.getId()),
-            dto.getAmount(),
-            dto.getPaymentDate(),
-            dto.getMethod() != null ? dto.getMethod().name() : "",
-            dto.getStatus() != null ? dto.getStatus().name() : "",
-            dto.getPaymentType() != null ? dto.getPaymentType().name() : "",
-            dto.getPatientName() != null ? dto.getPatientName() : "N/A",
-            dto.getSessionId() != null ? String.format("S%03d", dto.getSessionId()) : "",
-            dto.getDescription(),
-            dto.getPatientId()
+                String.format("PAY%03d", dto.getId()),
+                dto.getAmount(),
+                dto.getPaymentDate(),
+                dto.getMethod() != null ? dto.getMethod().name() : "",
+                dto.getStatus() != null ? dto.getStatus().name() : "",
+                dto.getPaymentType() != null ? dto.getPaymentType().name() : "",
+                dto.getPatientName() != null ? dto.getPatientName() : "N/A",
+                dto.getSessionId() != null ? String.format("S%03d", dto.getSessionId()) : "",
+                dto.getDescription(),
+                dto.getPatientId()
         )).toList();
     }
 
@@ -367,7 +393,7 @@ public class PaymentManagementController implements Initializable {
 
         String costText = txtSessionCost.getText();
         BigDecimal amount = (costText != null && !costText.trim().isEmpty())
-            ? new BigDecimal(costText.trim()) : BigDecimal.ZERO;
+                ? new BigDecimal(costText.trim()) : BigDecimal.ZERO;
 
         if (amount.signum() <= 0) {
             throw new RuntimeException("Payment amount must be greater than zero.");
@@ -380,7 +406,6 @@ public class PaymentManagementController implements Initializable {
         paymentService.processPayment(dto);
         return dto.getId();
     }
-
 
 
     @FXML
@@ -418,7 +443,7 @@ public class PaymentManagementController implements Initializable {
             }
 
             BigDecimal amount = (costText != null && !costText.trim().isEmpty())
-                ? new BigDecimal(costText.trim()) : BigDecimal.ZERO;
+                    ? new BigDecimal(costText.trim()) : BigDecimal.ZERO;
             if (amount.signum() <= 0) {
                 AlertUtil.showWarning("Warning", "Amount must be greater than zero.");
                 return;
@@ -448,7 +473,6 @@ public class PaymentManagementController implements Initializable {
         txtBulkCost.clear();
         cmbBulkPaymentMethod.setValue(null);
     }
-
 
 
     @FXML
@@ -518,7 +542,6 @@ public class PaymentManagementController implements Initializable {
     }
 
 
-
     @FXML
     void handleFilterPayments(ActionEvent event) {
         try {
@@ -551,14 +574,12 @@ public class PaymentManagementController implements Initializable {
     }
 
 
-
     private void refreshAll() {
         loadData();
         try {
             unpaidSessionsList = sessionService.getAllSessionDTOs().stream()
-                .filter(s -> s.getPaymentStatus() == SessionPaymentStatus.PENDING)
-                .toList();
-            // Re-setup session combo with fresh data
+                    .filter(s -> s.getPaymentStatus() == SessionPaymentStatus.PENDING)
+                    .toList();
             setupSessionIdCombo();
         } catch (Exception e) {
             System.err.println("Error refreshing sessions: " + e.getMessage());

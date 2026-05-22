@@ -2,6 +2,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapyProgramDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.ProgramSummaryTM;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -127,8 +128,6 @@ public class TherapyProgramDAOImpl implements TherapyProgramDAO {
         return session.createQuery("SELECT COUNT(e) FROM TherapyProgram e", Long.class)
                 .uniqueResult();
     }
-
-
 
     @Override
     public List<TherapyProgram> searchByName(String name) {

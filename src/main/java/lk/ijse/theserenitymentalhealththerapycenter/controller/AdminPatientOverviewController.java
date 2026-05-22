@@ -3,7 +3,6 @@ package lk.ijse.theserenitymentalhealththerapycenter.controller;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -118,7 +117,7 @@ public class AdminPatientOverviewController implements Initializable {
                 d.getValue().getPaymentStatus() != null ? d.getValue().getPaymentStatus().name() : ""
         ));
 
-        // Format Payment Status & Session Status columns with badges in cell factory
+
         colPaymentStatus.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {

@@ -9,9 +9,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapyProgramTM;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.math.BigDecimal;
@@ -21,22 +27,40 @@ import java.util.ResourceBundle;
 
 public class ProgramManagementController implements Initializable {
 
-    @FXML private TextField txtProgramName;
-    @FXML private TextField txtProgramDuration;
-    @FXML private TextField txtProgramFee;
-    @FXML private TextField txtTotalSessions;
-    @FXML private TextArea txtProgramDescription;
-    @FXML private TextField txtSearchProgram;
+    @FXML
+    private TextField txtProgramName;
+    @FXML
+    private TextField txtProgramDuration;
+    @FXML
+    private TextField txtProgramFee;
+    @FXML
+    private TextField txtTotalSessions;
+    @FXML
+    private TextArea txtProgramDescription;
+    @FXML
+    private TextField txtSearchProgram;
 
-    @FXML private TableView<TherapyProgramTM> tblPrograms;
-    @FXML private TableColumn<TherapyProgramTM, String> colProgramId;
-    @FXML private TableColumn<TherapyProgramTM, String> colProgramName;
-    @FXML private TableColumn<TherapyProgramTM, String> colProgramDuration;
-    @FXML private TableColumn<TherapyProgramTM, BigDecimal> colProgramFee;
-    @FXML private TableColumn<TherapyProgramTM, Integer> colTotalSessions;
-    @FXML private TableColumn<TherapyProgramTM, String> colProgramDescription;
+    @FXML
+    private TableView<TherapyProgramTM> tblPrograms;
+    @FXML
+    private TableColumn<TherapyProgramTM, String> colProgramId;
+    @FXML
+    private TableColumn<TherapyProgramTM, String> colProgramName;
+    @FXML
+    private TableColumn<TherapyProgramTM, String> colProgramDuration;
+    @FXML
+    private TableColumn<TherapyProgramTM, BigDecimal> colProgramFee;
+    @FXML
+    private TableColumn<TherapyProgramTM, Integer> colTotalSessions;
+    @FXML
+    private TableColumn<TherapyProgramTM, String> colProgramDescription;
 
-    private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
+    private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance()
+            .getBO(BOFactory.BOType.THERAPY_PROGRAM);
+    private final TherapySessionBO therapySessionBO = (TherapySessionBO) BOFactory.getInstance()
+            .getBO(BOFactory.BOType.THERAPY_SESSION);
+    private final PatientBO patientBO = (PatientBO) BOFactory.getInstance()
+            .getBO(BOFactory.BOType.PATIENT);
     private FilteredList<TherapyProgramTM> filteredPrograms;
     private TherapyProgramTM selectedProgram;
 
@@ -66,8 +90,8 @@ public class ProgramManagementController implements Initializable {
     private void loadData() {
         try {
             List<TherapyProgramTM> list = programService.getAllPrograms().stream().map(dto -> new TherapyProgramTM(
-                    dto.getStringId(), dto.getName(), dto.getDuration(), dto.getFee(), dto.getTotalSessions(), dto.getSessionFee(), dto.getDescription()
-            )).toList();
+                    dto.getStringId(), dto.getName(), dto.getDuration(), dto.getFee(), dto.getTotalSessions(),
+                    dto.getSessionFee(), dto.getDescription())).toList();
 
             filteredPrograms = new FilteredList<>(FXCollections.observableArrayList(list), p -> true);
             tblPrograms.setItems(filteredPrograms);
@@ -80,8 +104,10 @@ public class ProgramManagementController implements Initializable {
         txtSearchProgram.textProperty().addListener((obs, oldVal, newVal) -> {
             if (filteredPrograms != null) {
                 filteredPrograms.setPredicate(p -> {
-                    if (newVal == null || newVal.isEmpty()) return true;
-                    return p.getName() != null && p.getName().toLowerCase().contains(newVal.toLowerCase());
+                    if (newVal == null || newVal.isEmpty())
+                        return true;
+                    return p.getName() != null && p.getName().toLowerCase().contains(newVal.toLowerCase())
+                            || p.getId() != null && p.getStringId().toLowerCase().contains(newVal.toLowerCase());
                 });
             }
         });
@@ -146,12 +172,35 @@ public class ProgramManagementController implements Initializable {
         }
         if (AlertUtil.showConfirmation("Confirm", "Delete program \"" + p.getName() + "\"?")) {
             try {
+                TherapySessionDTO session = therapySessionBO.getAllSessionDTOs().stream()
+                        .filter(s -> s.getProgramId() != null && s.getProgramId().equals(p.getId()))
+                        .filter(s -> !s.getStatus().equals(SessionStatus.CANCELLED))
+                        .findFirst().orElse(null);
+
+                PatientDTO patient = patientBO.getAllPatients().stream()
+                        .filter(pt -> pt.getPrograms() != null && pt.getPrograms().stream()
+                                .anyMatch(ep -> p.getId() != null && ep.getId() == p.getId()))
+                        .findFirst().orElse(null);
+
+                if (patient != null) {
+                    AlertUtil.showError("Error",
+                            "Cannot delete program. There are patients enrolled in this program.");
+                    return;
+                }
+                if (session != null) {
+                    AlertUtil.showError("Error",
+                            "Cannot delete program. There are active or scheduled sessions associated with this program.");
+                    return;
+                }
+
                 programService.deleteProgram(p.getId());
                 AlertUtil.showInfo("Deleted", "Program deleted.");
                 handleClearProgram(event);
                 loadData();
             } catch (Exception e) {
-                AlertUtil.showError("Error", e.getMessage());
+
+                AlertUtil.showError("Error", "Failed to delete program");
+
             }
         }
     }
@@ -169,13 +218,15 @@ public class ProgramManagementController implements Initializable {
 
     private BigDecimal parseFee() {
         String text = txtProgramFee.getText();
-        if (text == null || text.trim().isEmpty()) return null;
+        if (text == null || text.trim().isEmpty())
+            return null;
         return new BigDecimal(text.trim());
     }
 
     private Integer parseSessions() {
         String text = txtTotalSessions.getText();
-        if (text == null || text.trim().isEmpty()) return null;
+        if (text == null || text.trim().isEmpty())
+            return null;
         try {
             return Integer.parseInt(text.trim());
         } catch (NumberFormatException e) {

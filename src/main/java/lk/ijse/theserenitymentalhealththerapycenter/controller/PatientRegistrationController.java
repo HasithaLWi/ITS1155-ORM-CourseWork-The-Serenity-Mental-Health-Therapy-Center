@@ -236,7 +236,7 @@ public class PatientRegistrationController implements Initializable {
                 return;
             }
 
-            // 1. Build the PatientDTO with programs and upfront session counts
+
             PatientDTO p = new PatientDTO();
             p.setName(txtPatientName.getText());
             p.setEmail(txtPatientEmail.getText());

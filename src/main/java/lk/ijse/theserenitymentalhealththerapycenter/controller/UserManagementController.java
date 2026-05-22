@@ -88,7 +88,8 @@ public class UserManagementController implements Initializable {
                     String lower = newVal.toLowerCase();
                     return (u.getUsername() != null && u.getUsername().toLowerCase().contains(lower))
                             || (u.getFullName() != null && u.getFullName().toLowerCase().contains(lower))
-                            || (u.getEmail() != null && u.getEmail().toLowerCase().contains(lower));
+                            || (u.getEmail() != null && u.getEmail().toLowerCase().contains(lower))
+                            || (u.getId() != null && u.getId().toLowerCase().contains(lower));
                 });
             }
         });
@@ -98,7 +99,7 @@ public class UserManagementController implements Initializable {
         txtUsername.setText(u.getUsername());
         txtFullName.setText(u.getFullName());
         txtEmail.setText(u.getEmail());
-        txtPassword.clear(); // Never populate password
+        txtPassword.clear();
         if (u.getRole() != null && !u.getRole().isEmpty()) {
             cmbUserRole.setValue(UserRole.valueOf(u.getRole()));
         }
@@ -135,7 +136,6 @@ public class UserManagementController implements Initializable {
         }
         try {
             UserDTO dto = new UserDTO();
-            // Parse the Long ID from the formatted String ID (e.g., "U001" -> 1)
             String rawId = selectedUser.getId();
             if (rawId != null && rawId.startsWith("U")) {
                 dto.setId(Long.parseLong(rawId.substring(1)));
@@ -170,7 +170,7 @@ public class UserManagementController implements Initializable {
         }
         if (AlertUtil.showConfirmation("Confirm", "Delete user \"" + u.getUsername() + "\"?")) {
             try {
-                // Parse the Long ID from the formatted String ID
+
                 String rawId = u.getId();
                 long id = 0;
                 if (rawId != null && rawId.startsWith("U")) {

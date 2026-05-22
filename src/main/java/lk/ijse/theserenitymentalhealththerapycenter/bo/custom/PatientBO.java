@@ -13,13 +13,9 @@ public interface PatientBO extends SuperBO {
     void deletePatient(Long id);
     PatientDTO getPatientById(Long id);
     List<PatientDTO> getAllPatients();
-    List<PatientDTO> searchPatients(String name);
-    List<PatientDTO> getAllWithPrograms();
-    List<PatientDTO> findPatientsInAllPrograms();
     long getPatientCount();
     List<PatientTherapyProgramDTO> getPatientPrograms(Long patientId);
     PatientTherapyProgramDTO getPatientProgram(Long patientId, Long programId);
-    void deductUpfrontCredit(Long patientId, Long programId);
     void enrollPatientInProgram(Long patientId, Long programId, int upfrontSessions);
     PatientDeleteSummaryDTO getPatientDeleteSummary(Long patientId);
     List<PatientDTO> getPatientsWithNoScheduledSessions();

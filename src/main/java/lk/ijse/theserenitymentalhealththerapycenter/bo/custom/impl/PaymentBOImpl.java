@@ -34,12 +34,13 @@ public class PaymentBOImpl implements PaymentBO {
     private final PatientTherapyProgramDAO ptpDAO =
             (PatientTherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT_THERAPY_PROGRAM);
 
+    @Override
     public void processPayment(PaymentDTO dto) {
         if (dto.getSessionId() == null) throw new PaymentException("Session is required for payment.");
         if (dto.getAmount() == null || dto.getAmount().signum() <= 0) throw new PaymentException("Payment amount must be greater than zero.");
         if (dto.getMethod() == null) throw new PaymentException("Payment method is required.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             TherapySession ts = sessionDAO.getById(dto.getSessionId(), session);
@@ -56,7 +57,6 @@ public class PaymentBOImpl implements PaymentBO {
 
             ts.setPaymentStatus(TherapySession.PaymentStatus.PAID);
 
-            // Update credit count: increment sessionsPaid and sessionsUsed by 1
             if (ts.getPatient() != null && ts.getProgram() != null) {
                 PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(ts.getPatient().getId(), ts.getProgram().getId(), session);
                 if (ptp != null) {
@@ -71,18 +71,17 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void processUpfrontPayment(PaymentDTO dto, List<Long> sessionIds) {
         if (dto.getPatientId() == null) throw new PaymentException("Patient is required for upfront payment.");
         if (dto.getAmount() == null || dto.getAmount().signum() <= 0) throw new PaymentException("Payment amount must be greater than zero.");
         if (dto.getMethod() == null) throw new PaymentException("Payment method is required.");
         if (sessionIds == null || sessionIds.isEmpty()) throw new PaymentException("At least one session must be selected for upfront payment.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient patient = patientDAO.getById(dto.getPatientId(), session);
@@ -110,16 +109,15 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void processSessionPayment(PaymentDTO dto, Long sessionId) {
         if (dto.getAmount() == null || dto.getAmount().signum() <= 0) throw new PaymentException("Payment amount must be greater than zero.");
         if (dto.getMethod() == null) throw new PaymentException("Payment method is required.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             TherapySession ts = sessionDAO.getById(sessionId, session);
@@ -152,11 +150,10 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public Long processMultipleSessionPayment(Long patientId, Long programId, int sessionCount, BigDecimal amount, PaymentMethod method) {
         if (patientId == null) throw new PaymentException("Patient is required.");
         if (programId == null) throw new PaymentException("Program is required.");
@@ -164,7 +161,7 @@ public class PaymentBOImpl implements PaymentBO {
         if (amount == null || amount.signum() <= 0) throw new PaymentException("Payment amount must be greater than zero.");
         if (method == null) throw new PaymentException("Payment method is required.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient patient = patientDAO.getById(patientId, session);
@@ -191,15 +188,14 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void saveRegistrationPayment(PaymentDTO dto) {
         if (dto.getPatientId() == null) throw new PaymentException("Patient is required.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient patient = patientDAO.getById(dto.getPatientId(), session);
@@ -219,13 +215,12 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void updatePayment(PaymentDTO dto) {
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Payment entity = paymentDAO.getById(dto.getId(), session);
@@ -238,13 +233,12 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void deletePayment(Long id) {
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Payment entity = paymentDAO.getById(id, session);
@@ -254,36 +248,32 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public List<PaymentDTO> getAllPayments() {
         return paymentDAO.getAllWithDetails().stream().map(this::toDTO).toList();
     }
 
-    public PaymentDTO getPaymentBySession(Long sessionId) {
-        return null;
-    }
-
+    @Override
     public BigDecimal getMonthlyRevenue() {
         YearMonth cm = YearMonth.now();
         return paymentDAO.getTotalRevenue(cm.atDay(1).atStartOfDay(), cm.atEndOfMonth().atTime(23, 59, 59));
     }
 
+    @Override
     public BigDecimal getTotalRevenue() {
         return paymentDAO.getTotalRevenue(LocalDateTime.of(2000, 1, 1, 0, 0), LocalDateTime.now());
     }
 
-    public long getPaymentCount() { return paymentDAO.count(); }
-
+    @Override
     public void processExpense(PaymentDTO dto) {
         if (dto.getPatientId() == null) throw new PaymentException("Patient is required for expense.");
         if (dto.getAmount() == null || dto.getAmount().signum() <= 0) throw new PaymentException("Amount must be greater than zero.");
         if (dto.getMethod() == null) throw new PaymentException("Payment method is required.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient patient = patientDAO.getById(dto.getPatientId(), session);
@@ -302,11 +292,10 @@ public class PaymentBOImpl implements PaymentBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public List<PaymentDTO> getFilteredPayments(Long patientId, LocalDateTime start, LocalDateTime end, String paymentType) {
         Payment.PaymentType type = null;
         if (paymentType != null && !paymentType.isEmpty() && !paymentType.equals("ALL"))
@@ -314,6 +303,7 @@ public class PaymentBOImpl implements PaymentBO {
         return paymentDAO.findFiltered(patientId, start, end, type).stream().map(this::toDTO).toList();
     }
 
+    @Override
     public List<PaymentDTO> getPaymentsByPatient(Long patientId) {
         return paymentDAO.findByPatient(patientId).stream().map(this::toDTO).toList();
     }

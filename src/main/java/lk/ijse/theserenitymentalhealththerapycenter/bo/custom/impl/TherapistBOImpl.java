@@ -21,6 +21,7 @@ public class TherapistBOImpl implements TherapistBO {
     private final TherapistDAO therapistDAO =
             (TherapistDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPIST);
 
+    @Override
     public void saveTherapist(TherapistDTO dto) {
         validateTherapist(dto);
         if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
@@ -35,7 +36,7 @@ public class TherapistBOImpl implements TherapistBO {
                 throw new SerenityException("Phone number '" + dto.getPhone() + "' is already registered by another therapist.");
             }
         }
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             Therapist entity = toEntity(dto);
@@ -54,11 +55,10 @@ public class TherapistBOImpl implements TherapistBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void updateTherapist(TherapistDTO dto) {
         validateTherapist(dto);
         if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
@@ -73,7 +73,7 @@ public class TherapistBOImpl implements TherapistBO {
                 throw new SerenityException("Phone number '" + dto.getPhone() + "' is already registered by another therapist.");
             }
         }
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             Therapist entity = therapistDAO.getById(dto.getId(), session);
@@ -99,34 +99,12 @@ public class TherapistBOImpl implements TherapistBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
-    public boolean removeTherapistPrograms(Long id) {
-        Session session = FactoryConfiguration.getInstance().getSession();
-        Transaction tx = session.beginTransaction();
-        try{
-            Therapist entity = therapistDAO.getById(id, session);
-
-            if (entity != null) {
-                entity.setPrograms(new ArrayList<>());
-                tx.commit();
-                return true;
-            }
-            return false;
-        }catch(Exception e){
-            if (tx != null) tx.rollback();
-            return false;
-        }finally {
-            session.close();
-        }
-
-    }
-
+    @Override
     public void deleteTherapist(Long id) {
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             Therapist entity = therapistDAO.getById(id, session);
@@ -149,31 +127,30 @@ public class TherapistBOImpl implements TherapistBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public TherapistDTO getTherapistById(Long id) {
         Therapist entity = therapistDAO.getById(id);
         if (entity == null) throw new SerenityException("Therapist not found.");
         return toDTO(entity);
     }
 
+    @Override
     public List<TherapistDTO> getAllTherapists() {
         return therapistDAO.getAll().stream().map(this::toDTO).toList();
     }
 
-    public List<TherapistDTO> searchTherapists(String name) {
-        return therapistDAO.searchByName(name).stream().map(this::toDTO).toList();
-    }
 
-    public List<TherapistDTO> getActiveTherapists() {
-        return therapistDAO.findByStatus(Therapist.Status.ACTIVE).stream().map(this::toDTO).toList();
-    }
-
+    @Override
     public long getTherapistCount() {
         return therapistDAO.count();
+    }
+
+    @Override
+    public long getActiveTherapistCount() {
+        return therapistDAO.countByStatus(Therapist.Status.ACTIVE);
     }
 
 

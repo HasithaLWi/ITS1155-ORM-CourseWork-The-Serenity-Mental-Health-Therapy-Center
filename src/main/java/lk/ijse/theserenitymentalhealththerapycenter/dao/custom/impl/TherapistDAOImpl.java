@@ -138,23 +138,15 @@ public class TherapistDAOImpl implements TherapistDAO {
         }
     }
 
-    @Override
-    public List<Therapist> findByStatus(Therapist.Status status) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<Therapist> query = session.createQuery(
-                    "FROM Therapist t WHERE t.status = :status", Therapist.class);
-            query.setParameter("status", status);
-            return query.list();
-        }
-    }
 
     @Override
-    public List<Therapist> findBySpecialty(String specialty) {
+    public long countByStatus(Therapist.Status status) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<Therapist> query = session.createQuery(
-                    "FROM Therapist t WHERE LOWER(t.specialty) LIKE LOWER(:specialty)", Therapist.class);
-            query.setParameter("specialty", "%" + specialty + "%");
-            return query.list();
+            Long count = session.createQuery(
+                    "SELECT COUNT(t) FROM Therapist t WHERE t.status = :status", Long.class)
+                    .setParameter("status", status)
+                    .uniqueResult();
+            return count != null ? count : 0;
         }
     }
 

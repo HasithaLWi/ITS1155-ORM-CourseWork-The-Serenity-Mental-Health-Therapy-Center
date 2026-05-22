@@ -29,8 +29,8 @@ public class EmailService {
                 properties.put("email.smtp.port", "587");
                 properties.put("email.smtp.auth", "true");
                 properties.put("email.smtp.starttls.enable", "true");
-                properties.put("email.username", "your_email@gmail.com");
-                properties.put("email.password", "your_app_password");
+                properties.put("email.username", "eteccomputers38@gmail.com");
+                properties.put("email.password", "guyl ladz fcfk dpkw");
             } else {
                 properties.load(input);
             }

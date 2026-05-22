@@ -191,66 +191,6 @@ public class PaymentDAOImpl implements PaymentDAO {
     }
 
     @Override
-    public Payment findUpfrontByPatient(Long patientId) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "FROM Payment p WHERE p.patient.id = :patientId " +
-                            "AND p.paymentType = :paymentType AND p.status = :status " +
-                            "ORDER BY p.paymentDate DESC",
-                    Payment.class)
-                    .setParameter("patientId", patientId)
-                    .setParameter("paymentType", Payment.PaymentType.UPFRONT)
-                    .setParameter("status", Payment.PaymentStatus.COMPLETED)
-                    .setMaxResults(1)
-                    .uniqueResult();
-        }
-    }
-
-    @Override
-    public Payment findUpfrontByPatient(Long patientId, Session session) {
-        return session.createQuery(
-                "FROM Payment p WHERE p.patient.id = :patientId " +
-                        "AND p.paymentType = :paymentType AND p.status = :status " +
-                        "ORDER BY p.paymentDate DESC",
-                Payment.class)
-                .setParameter("patientId", patientId)
-                .setParameter("paymentType", Payment.PaymentType.UPFRONT)
-                .setParameter("status", Payment.PaymentStatus.COMPLETED)
-                .setMaxResults(1)
-                .uniqueResult();
-    }
-
-    @Override
-    public List<Payment> findByPatientAndDateRange(Long patientId, LocalDateTime start, LocalDateTime end) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient WHERE 1=1";
-            if (patientId != null) hql += " AND p.patient.id = :patientId";
-            if (start != null && end != null) hql += " AND p.paymentDate BETWEEN :start AND :end";
-            hql += " ORDER BY p.paymentDate DESC";
-
-            var query = session.createQuery(hql, Payment.class);
-            if (patientId != null) query.setParameter("patientId", patientId);
-            if (start != null && end != null) {
-                query.setParameter("start", start);
-                query.setParameter("end", end);
-            }
-            return query.list();
-        }
-    }
-
-    @Override
-    public List<Payment> findByType(Payment.PaymentType type) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient " +
-                            "WHERE p.paymentType = :type ORDER BY p.paymentDate DESC",
-                    Payment.class)
-                    .setParameter("type", type)
-                    .list();
-        }
-    }
-
-    @Override
     public List<Payment> findFiltered(Long patientId, LocalDateTime start, LocalDateTime end, Payment.PaymentType type) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient WHERE 1=1";

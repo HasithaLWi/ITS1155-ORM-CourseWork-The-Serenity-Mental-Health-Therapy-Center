@@ -17,8 +17,8 @@ public final class ComboBoxAutoCompleteUtil {
     }
 
     public static <T> void setupAutocomplete(ComboBox<T> comboBox, List<T> allItems,
-            Function<T, String> displayFunc,
-            Function<T, String> searchFunc) {
+                                             Function<T, String> displayFunc,
+                                             Function<T, String> searchFunc) {
 
         comboBox.setEditable(true);
         ObservableList<T> items = FXCollections.observableArrayList(allItems);
@@ -47,7 +47,7 @@ public final class ComboBoxAutoCompleteUtil {
             }
         });
 
-        final boolean[] isUpdating = { false };
+        final boolean[] isUpdating = {false};
 
         comboBox.getEditor().textProperty().addListener((obs, oldText, newText) -> {
             if (isUpdating[0])

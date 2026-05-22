@@ -21,6 +21,7 @@ public class UserBOImpl implements UserBO {
     private final UserDAO userDAO =
             (UserDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.USER);
 
+    @Override
     public void createUserForFirstTime() {
         User admin = new User();
         admin.setUsername("admin");
@@ -31,6 +32,7 @@ public class UserBOImpl implements UserBO {
         userDAO.createAdminUser(admin);
     }
 
+    @Override
     public UserDTO login(String username, String plainTextPassword) {
         if (!ValidationUtil.isNotEmpty(username) || !ValidationUtil.isNotEmpty(plainTextPassword)) {
             throw new LoginException("Username and password are required.");
@@ -43,6 +45,7 @@ public class UserBOImpl implements UserBO {
         return toDTO(user);
     }
 
+    @Override
     public void register(String username, String plainTextPassword, String fullName, String email, UserRole role) {
         if (!ValidationUtil.isNotEmpty(username)) throw new RegistrationException("Username is required.");
         if (!ValidationUtil.isNotEmpty(plainTextPassword) || plainTextPassword.length() < 6)
@@ -55,7 +58,7 @@ public class UserBOImpl implements UserBO {
         if (email != null && !email.isEmpty() && userDAO.emailExists(email))
             throw new RegistrationException("Email '" + email + "' is already registered.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             User user = new User();
@@ -69,11 +72,10 @@ public class UserBOImpl implements UserBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public UserDTO verifyIdentity(String username, String email) {
         if (!ValidationUtil.isNotEmpty(username) || !ValidationUtil.isNotEmpty(email))
             throw new PasswordResetException("Username and email are required.");
@@ -82,34 +84,38 @@ public class UserBOImpl implements UserBO {
         return toDTO(user);
     }
 
+    @Override
     public void resetPassword(String username, String newPassword) {
         if (!ValidationUtil.isNotEmpty(newPassword) || newPassword.length() < 6)
             throw new PasswordResetException("New password must be at least 6 characters.");
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             User user = userDAO.findByUsername(username);
             if (user == null) throw new PasswordResetException("User not found.");
-            // Re-attach and update via setters
+
             User managed = userDAO.getById(user.getId(), session);
             managed.setPassword(PasswordUtil.hashPassword(newPassword));
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public boolean emailExists(String email) { return userDAO.emailExists(email); }
+
+    @Override
     public boolean usernameExists(String username) { return userDAO.usernameExists(username); }
 
+    @Override
     public List<UserDTO> getAllUsers() {
         return userDAO.getAll().stream().map(this::toDTO).toList();
     }
 
+    @Override
     public void updateUser(UserDTO dto) {
         if (!ValidationUtil.isNotEmpty(dto.getUsername())) {
             throw new RegistrationException("Username is required.");
@@ -133,7 +139,7 @@ public class UserBOImpl implements UserBO {
             }
         }
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             User entity = userDAO.getById(dto.getId(), session);
@@ -146,11 +152,10 @@ public class UserBOImpl implements UserBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void updateUserWithPassword(UserDTO dto, String newPlainPassword) {
         if (!ValidationUtil.isNotEmpty(dto.getUsername())) {
             throw new RegistrationException("Username is required.");
@@ -177,7 +182,7 @@ public class UserBOImpl implements UserBO {
             }
         }
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             User entity = userDAO.getById(dto.getId(), session);
@@ -191,11 +196,10 @@ public class UserBOImpl implements UserBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void updateProfile(UserDTO dto, String currentPassword, String newPlainPassword) {
         if (!ValidationUtil.isNotEmpty(currentPassword)) {
             throw new RegistrationException("Current password is required to verify changes.");
@@ -210,24 +214,24 @@ public class UserBOImpl implements UserBO {
             throw new RegistrationException("Invalid email format.");
         }
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             User entity = userDAO.getById(dto.getId(), session);
             if (entity == null) throw new RegistrationException("User not found.");
 
-            // Verify current password
+
             if (!PasswordUtil.verifyPassword(currentPassword, entity.getPassword())) {
                 throw new RegistrationException("Incorrect current password.");
             }
 
-            // Check if updated username is already taken by another user
+
             User otherByUsername = userDAO.findByUsername(dto.getUsername());
             if (otherByUsername != null && !otherByUsername.getId().equals(entity.getId())) {
                 throw new RegistrationException("Username '" + dto.getUsername() + "' is already taken.");
             }
 
-            // Check if updated email is already taken by another user
+
             if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
                 User otherByEmail = userDAO.findByEmail(dto.getEmail());
                 if (otherByEmail != null && !otherByEmail.getId().equals(entity.getId())) {
@@ -250,13 +254,12 @@ public class UserBOImpl implements UserBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void deleteUser(Long id) {
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             User entity = userDAO.getById(id, session);
@@ -266,11 +269,10 @@ public class UserBOImpl implements UserBO {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public List<String> getAdminEmail() {
         List<User> admin = userDAO.getAll().stream()
                 .filter(u -> u.getRole() == User.Role.ADMIN)
@@ -280,6 +282,7 @@ public class UserBOImpl implements UserBO {
         }
         return null;
     }
+
 
     private UserDTO toDTO(User entity) {
         UserDTO dto = new UserDTO();

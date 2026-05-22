@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,14 +14,14 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "therapy_sessions")
 @Data
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // Enable second-level caching for this entity
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TherapySession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "sequence_number")

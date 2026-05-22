@@ -121,7 +121,9 @@ public class TherapistManagementController implements Initializable {
                     if (newVal == null || newVal.isEmpty()) return true;
                     String lower = newVal.toLowerCase();
                     return (t.getName() != null && t.getName().toLowerCase().contains(lower))
-                            || (t.getSpecialty() != null && t.getSpecialty().toLowerCase().contains(lower));
+                            || (t.getSpecialty() != null && t.getSpecialty().toLowerCase().contains(lower))
+                            || (t.getId() != null && t.getId().toLowerCase().contains(lower));
+
                 });
             }
         });

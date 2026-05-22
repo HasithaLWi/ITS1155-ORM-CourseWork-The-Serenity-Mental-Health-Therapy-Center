@@ -14,9 +14,5 @@ public interface PaymentDAO extends CrudDAO<Payment> {
     BigDecimal getTotalRevenue(LocalDateTime startDate, LocalDateTime endDate);
     List<Payment> getAllWithDetails();
     List<Payment> findByPatient(Long patientId);
-    Payment findUpfrontByPatient(Long patientId);
-    Payment findUpfrontByPatient(Long patientId, Session session);
-    List<Payment> findByPatientAndDateRange(Long patientId, LocalDateTime start, LocalDateTime end);
-    List<Payment> findByType(Payment.PaymentType type);
     List<Payment> findFiltered(Long patientId, LocalDateTime start, LocalDateTime end, Payment.PaymentType type);
 }

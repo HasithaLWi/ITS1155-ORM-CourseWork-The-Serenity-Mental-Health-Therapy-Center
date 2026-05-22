@@ -32,6 +32,7 @@ public class PatientBOImpl implements PatientBO {
     private final PaymentDAO paymentDAO =
             (PaymentDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PAYMENT);
 
+    @Override
     public Long registerPatient(PatientDTO patient) {
         if (!ValidationUtil.isValidName(patient.getName())) {
             throw new RegistrationException("Valid patient name is required.");
@@ -58,7 +59,7 @@ public class PatientBOImpl implements PatientBO {
             }
         }
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient p = new Patient();
@@ -121,11 +122,10 @@ public class PatientBOImpl implements PatientBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw new RegistrationException("Failed to register patient: " + e.getMessage());
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void updatePatient(PatientDTO dto) {
         if (!ValidationUtil.isValidName(dto.getName())) {
             throw new RegistrationException("Valid patient name is required.");
@@ -152,7 +152,7 @@ public class PatientBOImpl implements PatientBO {
             }
         }
 
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient entity = patientDAO.getById(dto.getId(), session);
@@ -166,13 +166,12 @@ public class PatientBOImpl implements PatientBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public void deletePatient(Long id) {
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient entity = patientDAO.getById(id, session);
@@ -182,63 +181,40 @@ public class PatientBOImpl implements PatientBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
 
+    @Override
     public PatientDTO getPatientById(Long id) {
         Patient entity = patientDAO.getById(id);
         if (entity == null) throw new RegistrationException("Patient not found.");
         return toDTO(entity);
     }
 
+    @Override
     public List<PatientDTO> getAllPatients() {
         return patientDAO.getAll().stream().map(this::toDTO).toList();
     }
 
-    public List<PatientDTO> searchPatients(String name) {
-        return patientDAO.searchByName(name).stream().map(this::toDTO).toList();
-    }
-
-    public List<PatientDTO> getAllWithPrograms() {
-        return patientDAO.getAllWithPrograms().stream().map(this::toDTO).toList();
-    }
-
-    public List<PatientDTO> findPatientsInAllPrograms() {
-        return patientDAO.findPatientsInAllPrograms().stream().map(this::toDTO).toList();
-    }
-
+    @Override
     public long getPatientCount() {
         return patientDAO.count();
     }
 
+    @Override
     public List<PatientTherapyProgramDTO> getPatientPrograms(Long patientId) {
         return ptpDAO.findByPatient(patientId).stream().map(this::toPtpDTO).toList();
     }
 
+    @Override
     public PatientTherapyProgramDTO getPatientProgram(Long patientId, Long programId) {
         PatientTherapyProgram entity = ptpDAO.findByPatientAndProgram(patientId, programId);
         return entity != null ? toPtpDTO(entity) : null;
     }
 
-    public void deductUpfrontCredit(Long patientId, Long programId) {
-        Session session = FactoryConfiguration.getInstance().getSession();
-        Transaction transaction = session.beginTransaction();
-        try {
-            ptpDAO.deductCredit(patientId, programId, session);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
-            throw e;
-        } finally {
-            session.close();
-        }
-    }
-
-
+    @Override
     public void enrollPatientInProgram(Long patientId, Long programId, int upfrontSessions) {
-        Session session = FactoryConfiguration.getInstance().getSession();
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient patient = patientDAO.getById(patientId, session);
@@ -251,10 +227,47 @@ public class PatientBOImpl implements PatientBO {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
-        } finally {
-            session.close();
         }
     }
+
+
+    @Override
+    public PatientDeleteSummaryDTO getPatientDeleteSummary(Long patientId) {
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            Patient p = patientDAO.getById(patientId, session);
+            if (p == null) throw new RegistrationException("Patient not found.");
+
+            int programCount = p.getPatientTherapyPrograms() != null ? p.getPatientTherapyPrograms().size() : 0;
+            int sessionCount = p.getSessions() != null ? p.getSessions().size() : 0;
+            int paymentCount = p.getPayments() != null ? p.getPayments().size() : 0;
+            double totalPaidAmount = 0.0;
+            if (p.getPayments() != null) {
+                totalPaidAmount = p.getPayments().stream()
+                        .mapToDouble(pay -> pay.getAmount() != null ? pay.getAmount().doubleValue() : 0.0)
+                        .sum();
+            }
+
+            transaction.commit();
+            return new PatientDeleteSummaryDTO(
+                    p.getName(),
+                    programCount,
+                    sessionCount,
+                    paymentCount,
+                    totalPaidAmount
+            );
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw new RuntimeException("Failed to retrieve patient summary: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<PatientDTO> getPatientsWithNoScheduledSessions() {
+        return patientDAO.getPatientsWithNoScheduledSessions().stream().map(this::toDTO).toList();
+    }
+
 
 
 
@@ -299,39 +312,5 @@ public class PatientBOImpl implements PatientBO {
         return dto;
     }
 
-    @Override
-    public PatientDeleteSummaryDTO getPatientDeleteSummary(Long patientId) {
-        Session session = FactoryConfiguration.getInstance().getSession();
-        try {
-            Patient p = patientDAO.getById(patientId, session);
-            if (p == null) throw new RegistrationException("Patient not found.");
 
-            int programCount = p.getPatientTherapyPrograms() != null ? p.getPatientTherapyPrograms().size() : 0;
-            int sessionCount = p.getSessions() != null ? p.getSessions().size() : 0;
-            int paymentCount = p.getPayments() != null ? p.getPayments().size() : 0;
-            double totalPaidAmount = 0.0;
-            if (p.getPayments() != null) {
-                totalPaidAmount = p.getPayments().stream()
-                        .mapToDouble(pay -> pay.getAmount() != null ? pay.getAmount().doubleValue() : 0.0)
-                        .sum();
-            }
-
-            return new PatientDeleteSummaryDTO(
-                p.getName(),
-                programCount,
-                sessionCount,
-                paymentCount,
-                totalPaidAmount
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve patient summary: " + e.getMessage(), e);
-        } finally {
-            session.close();
-        }
-    }
-
-    @Override
-    public List<PatientDTO> getPatientsWithNoScheduledSessions() {
-        return patientDAO.getPatientsWithNoScheduledSessions().stream().map(this::toDTO).toList();
-    }
 }

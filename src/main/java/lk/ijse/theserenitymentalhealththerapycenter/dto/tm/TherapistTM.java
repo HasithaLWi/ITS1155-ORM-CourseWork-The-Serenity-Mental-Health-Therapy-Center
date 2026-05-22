@@ -35,4 +35,9 @@ public class TherapistTM {
         this.status = status;
         this.programIds = programIds;
     }
+
+    public Long getLongId(){
+        String pId = this.id.substring(1); // Remove 'T' prefix
+        return Long.parseLong(pId);
+    }
 }

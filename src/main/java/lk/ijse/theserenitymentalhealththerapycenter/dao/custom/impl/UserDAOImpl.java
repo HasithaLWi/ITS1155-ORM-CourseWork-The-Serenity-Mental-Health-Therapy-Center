@@ -130,7 +130,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void createAdminUser(User adminUser) {
-        if (findByUsername("admin") == null) {
+        if (getAll() != null && getAll().isEmpty()) {
             save(adminUser);
         }
     }

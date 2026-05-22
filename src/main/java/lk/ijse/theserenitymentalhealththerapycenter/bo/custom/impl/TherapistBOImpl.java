@@ -8,6 +8,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SerenityException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 import org.hibernate.Session;
@@ -103,12 +104,46 @@ public class TherapistBOImpl implements TherapistBO {
         }
     }
 
+    public boolean removeTherapistPrograms(Long id) {
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try{
+            Therapist entity = therapistDAO.getById(id, session);
+
+            if (entity != null) {
+                entity.setPrograms(new ArrayList<>());
+                tx.commit();
+                return true;
+            }
+            return false;
+        }catch(Exception e){
+            if (tx != null) tx.rollback();
+            return false;
+        }finally {
+            session.close();
+        }
+
+    }
+
     public void deleteTherapist(Long id) {
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction tx = session.beginTransaction();
         try {
             Therapist entity = therapistDAO.getById(id, session);
             if (entity == null) throw new SerenityException("Therapist not found.");
+
+            // remove all program links within the same session
+            entity.getPrograms().clear();
+
+            // detach therapist from any sessions that reference it
+            if (entity.getSessions() != null) {
+                for (TherapySession ts : entity.getSessions()) {
+                    ts.setTherapist(null);
+                }
+                entity.getSessions().clear();
+            }
+
+            //then delete
             therapistDAO.delete(entity, session);
             tx.commit();
         } catch (Exception e) {

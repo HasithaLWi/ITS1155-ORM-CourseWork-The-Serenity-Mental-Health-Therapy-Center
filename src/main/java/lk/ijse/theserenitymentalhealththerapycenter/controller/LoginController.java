@@ -45,12 +45,14 @@ public class LoginController {
     @FXML
     public void initialize() {
 
+        userService.createUserForFirstTime();
+
+
         txtPasswordVisible.textProperty().bindBidirectional(txtPassword.textProperty());
         txtPasswordVisible.setVisible(false);
         txtPasswordVisible.setManaged(false);
 
 
-        userService.createUserForFirstTime();
     }
 
     @FXML

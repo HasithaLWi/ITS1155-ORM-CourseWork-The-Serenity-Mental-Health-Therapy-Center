@@ -48,7 +48,7 @@ public class TherapyProgram {
     @ToString.Exclude
     private List<PatientTherapyProgram> patientTherapyPrograms = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "programs",  fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "programs",  fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<Therapist> therapists = new ArrayList<>();
 }

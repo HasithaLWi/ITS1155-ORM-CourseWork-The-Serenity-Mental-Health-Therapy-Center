@@ -7,15 +7,20 @@ import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapistTM;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.net.URL;
@@ -43,6 +48,7 @@ public class TherapistManagementController implements Initializable {
 
     private final TherapistBO therapistService = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
     private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
+    private  final TherapySessionBO therapySessionBO = (TherapySessionBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
     private FilteredList<TherapistTM> filteredTherapists;
     private TherapistTM selectedTherapist;
 
@@ -184,7 +190,7 @@ public class TherapistManagementController implements Initializable {
             dto.setStatus(cmbTherapistStatus.getValue());
 
             List<Long> progIds = new ArrayList<>();
-            for (javafx.scene.Node node : flowPrograms.getChildren()) {
+            for (Node node : flowPrograms.getChildren()) {
                 if (node instanceof CheckBox cb && cb.isSelected()) {
                     progIds.add((Long) cb.getUserData());
                 }
@@ -209,18 +215,35 @@ public class TherapistManagementController implements Initializable {
         }
         if (AlertUtil.showConfirmation("Confirm", "Delete therapist \"" + t.getName() + "\"?")) {
             try {
-                // Parse the Long ID from the formatted String ID
                 String rawId = t.getId();
                 long id = 0;
                 if (rawId != null && rawId.startsWith("T")) {
                     id = Long.parseLong(rawId.substring(1));
                 }
-                therapistService.deleteTherapist(id);
-                AlertUtil.showInfo("Deleted", "Therapist deleted.");
-                handleClearTherapist(event);
-                loadData();
+
+                // Check if therapist has any active/scheduled/pending sessions
+                TherapySessionDTO session = therapySessionBO.getAllSessionDTOs().stream()
+                        .filter(s -> s.getTherapistId() != null && s.getTherapistId().equals(t.getLongId()))
+                        .filter(s -> !s.getStatus().equals(SessionStatus.CANCELLED))
+                        .findFirst().orElse(null);
+                if (session != null) {
+                    AlertUtil.showError("Error", "Cannot delete therapist with active or scheduled sessions.");
+                    return;
+                }else {
+                    // If no active sessions, we can proceed to delete
+                    therapistService.deleteTherapist(id);
+                    AlertUtil.showInfo("Success", "Therapist deleted successfully.");
+                    handleClearTherapist(event);
+                    loadData();
+                }
+
             } catch (Exception e) {
-                AlertUtil.showError("Error", e.getMessage());
+                if(e instanceof SecurityException){
+                    AlertUtil.showWarning("Error", e.getMessage());
+                    return;
+                }
+                AlertUtil.showError("Error", "Failed to delete therapist: ");
+                e.printStackTrace();
             }
         }
     }

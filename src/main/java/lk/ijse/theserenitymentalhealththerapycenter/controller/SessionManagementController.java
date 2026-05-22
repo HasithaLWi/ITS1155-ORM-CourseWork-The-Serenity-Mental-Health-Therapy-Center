@@ -24,6 +24,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapySessionTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ComboBoxAutoCompleteUtil;
+import lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -765,6 +766,10 @@ public class SessionManagementController implements Initializable {
             sessionService.updateSession(selectedSession);
 
             AlertUtil.showInfo("Success", "Payment processed. Session is now SCHEDULED.");
+
+            if (p.getId() != 0) {
+                JasperReportUtil.printInvoice(p.getId());
+            }
 
             hboxInlinePayment.setVisible(false);
             hboxInlinePayment.setManaged(false);

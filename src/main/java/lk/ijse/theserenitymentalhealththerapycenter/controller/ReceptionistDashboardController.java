@@ -95,7 +95,7 @@ public class ReceptionistDashboardController implements Initializable {
                     "/lk/ijse/theserenitymentalhealththerapycenter/view/Login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDashboard.getScene().getWindow();
-            Scene scene = new Scene(root, 600, 500);
+            Scene scene = new Scene(root, 1280, 720);
             stage.setScene(scene);
             stage.setTitle("Serenity - Login");
             stage.centerOnScreen();

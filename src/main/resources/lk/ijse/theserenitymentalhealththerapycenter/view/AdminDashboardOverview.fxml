@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.AdminDashboardOverviewController"
             fitToWidth="true" style="-fx-background-color: transparent;">
     <VBox spacing="24" style="-fx-padding: 28;">
         <!-- Stats Cards Row -->
@@ -47,23 +48,24 @@
             </VBox>
         </HBox>
 
-        <!-- Today's Sessions -->
+        <!-- Scheduled Sessions -->
         <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
             <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
-                <Label text="📅  Today's Sessions" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Label text="📅  Scheduled Sessions (Sorted by Date)" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="lblTodayCount" text="0 sessions" style="-fx-text-fill: #95A5A6; -fx-font-size: 12px;"/>
             </HBox>
             <Separator/>
             <TableView fx:id="tblTodaySessions" prefHeight="220">
                 <columns>
+                    <TableColumn fx:id="colTodayDate" text="Date" prefWidth="110"/>
                     <TableColumn fx:id="colTodayTime" text="Time" prefWidth="100"/>
                     <TableColumn fx:id="colTodayPatient" text="Patient" prefWidth="180"/>
                     <TableColumn fx:id="colTodayTherapist" text="Therapist" prefWidth="180"/>
                     <TableColumn fx:id="colTodayProgram" text="Program" prefWidth="200"/>
                     <TableColumn fx:id="colTodayStatus" text="Status" prefWidth="120"/>
                 </columns>
-                <placeholder><Label text="No sessions scheduled for today." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+                <placeholder><Label text="No active scheduled sessions." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
             </TableView>
         </VBox>
     </VBox>

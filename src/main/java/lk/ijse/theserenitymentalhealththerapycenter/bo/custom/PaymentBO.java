@@ -14,7 +14,7 @@ public interface PaymentBO extends SuperBO {
     void processPayment(PaymentDTO dto);
     void processUpfrontPayment(PaymentDTO dto, List<Long> sessionIds);
     void processSessionPayment(PaymentDTO dto, Long sessionId);
-    void processMultipleSessionPayment(Long patientId, Long programId, int sessionCount, BigDecimal amount, PaymentMethod method);
+    Long processMultipleSessionPayment(Long patientId, Long programId, int sessionCount, BigDecimal amount, PaymentMethod method);
     void saveRegistrationPayment(PaymentDTO dto);
     void updatePayment(PaymentDTO dto);
     void deletePayment(Long id);

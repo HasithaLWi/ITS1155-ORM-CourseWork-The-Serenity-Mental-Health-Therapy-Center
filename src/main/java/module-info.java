@@ -18,12 +18,14 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires jakarta.mail;
     requires jakarta.activation;
     requires org.eclipse.angus.activation;
+    requires jasperreports;
+    requires java.desktop;
 
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml, javafx.base;
-    opens lk.ijse.theserenitymentalhealththerapycenter.entity to org.hibernate.orm.core, javafx.base;
-    opens lk.ijse.theserenitymentalhealththerapycenter.dto to javafx.base;
-    opens lk.ijse.theserenitymentalhealththerapycenter.dto.tm to javafx.base;
+    opens lk.ijse.theserenitymentalhealththerapycenter.entity to org.hibernate.orm.core, javafx.base, jasperreports;
+    opens lk.ijse.theserenitymentalhealththerapycenter.dto to javafx.base, jasperreports;
+    opens lk.ijse.theserenitymentalhealththerapycenter.dto.tm to javafx.base, jasperreports;
 
     exports lk.ijse.theserenitymentalhealththerapycenter;
     exports lk.ijse.theserenitymentalhealththerapycenter.controller;

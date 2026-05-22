@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapySessionDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import org.hibernate.Session;
@@ -17,7 +16,16 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
 
     @Override
     public void save(TherapySession entity) {
-        CrudUtil.save(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                session.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -47,7 +55,17 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
 
     @Override
     public void delete(TherapySession entity) {
-        CrudUtil.delete(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                TherapySession merged = session.merge(entity);
+                session.remove(merged);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -68,14 +86,15 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
     @Override
     public List<TherapySession> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getAll(TherapySession.class, session);
+            return session.createQuery("FROM TherapySession", TherapySession.class).list();
         }
     }
 
     @Override
     public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.count(TherapySession.class, session);
+            return session.createQuery("SELECT COUNT(e) FROM TherapySession e", Long.class)
+                    .uniqueResult();
         }
     }
 
@@ -83,7 +102,7 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
 
     @Override
     public void save(TherapySession entity, Session session) {
-        CrudUtil.save(entity, session);
+        session.persist(entity);
     }
 
     @Override
@@ -104,7 +123,8 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
 
     @Override
     public void delete(TherapySession entity, Session session) {
-        CrudUtil.delete(entity, session);
+        TherapySession merged = session.merge(entity);
+        session.remove(merged);
     }
 
     @Override
@@ -122,12 +142,13 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
 
     @Override
     public List<TherapySession> getAll(Session session) {
-        return CrudUtil.getAll(TherapySession.class, session);
+        return session.createQuery("FROM TherapySession", TherapySession.class).list();
     }
 
     @Override
     public long count(Session session) {
-        return CrudUtil.count(TherapySession.class, session);
+        return session.createQuery("SELECT COUNT(e) FROM TherapySession e", Long.class)
+                .uniqueResult();
     }
 
 
@@ -304,7 +325,23 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
     @Override
     public void saveAll(List<TherapySession> sessions, Session session) {
         for (TherapySession ts : sessions) {
-            CrudUtil.save(ts, session);
+            session.persist(ts);
+        }
+    }
+
+    @Override
+    public List<TherapySession> getScheduledSessionsSortedByDate() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return session.createQuery(
+                    "SELECT DISTINCT s FROM TherapySession s " +
+                            "LEFT JOIN FETCH s.patient " +
+                            "LEFT JOIN FETCH s.therapist " +
+                            "LEFT JOIN FETCH s.program " +
+                            "WHERE s.status = :status " +
+                            "ORDER BY s.sessionDate ASC, s.sessionTime ASC",
+                    TherapySession.class)
+                    .setParameter("status", TherapySession.SessionStatus.SCHEDULED)
+                    .list();
         }
     }
 }

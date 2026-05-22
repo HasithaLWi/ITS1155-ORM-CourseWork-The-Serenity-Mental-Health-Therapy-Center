@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientTherapyProgramDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
 import org.hibernate.Session;
@@ -15,7 +14,16 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
 
     @Override
     public void save(PatientTherapyProgram entity) {
-        CrudUtil.save(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                session.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -40,27 +48,38 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
 
     @Override
     public void delete(PatientTherapyProgram entity) {
-        CrudUtil.delete(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                PatientTherapyProgram merged = session.merge(entity);
+                session.remove(merged);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
     public PatientTherapyProgram getById(Object id) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getById(PatientTherapyProgram.class, id, session);
+            return session.get(PatientTherapyProgram.class, id);
         }
     }
 
     @Override
     public List<PatientTherapyProgram> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getAll(PatientTherapyProgram.class, session);
+            return session.createQuery("FROM PatientTherapyProgram", PatientTherapyProgram.class).list();
         }
     }
 
     @Override
     public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.count(PatientTherapyProgram.class, session);
+            return session.createQuery("SELECT COUNT(e) FROM PatientTherapyProgram e", Long.class)
+                    .uniqueResult();
         }
     }
 
@@ -68,7 +87,7 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
 
     @Override
     public void save(PatientTherapyProgram entity, Session session) {
-        CrudUtil.save(entity, session);
+        session.persist(entity);
     }
 
     @Override
@@ -84,22 +103,24 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
 
     @Override
     public void delete(PatientTherapyProgram entity, Session session) {
-        CrudUtil.delete(entity, session);
+        PatientTherapyProgram merged = session.merge(entity);
+        session.remove(merged);
     }
 
     @Override
     public PatientTherapyProgram getById(Object id, Session session) {
-        return CrudUtil.getById(PatientTherapyProgram.class, id, session);
+        return session.get(PatientTherapyProgram.class, id);
     }
 
     @Override
     public List<PatientTherapyProgram> getAll(Session session) {
-        return CrudUtil.getAll(PatientTherapyProgram.class, session);
+        return session.createQuery("FROM PatientTherapyProgram", PatientTherapyProgram.class).list();
     }
 
     @Override
     public long count(Session session) {
-        return CrudUtil.count(PatientTherapyProgram.class, session);
+        return session.createQuery("SELECT COUNT(e) FROM PatientTherapyProgram e", Long.class)
+                .uniqueResult();
     }
 
 
@@ -152,7 +173,7 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
     @Override
     public void saveAll(List<PatientTherapyProgram> enrollments, Session session) {
         for (PatientTherapyProgram ptp : enrollments) {
-            CrudUtil.save(ptp, session);
+            session.persist(ptp);
         }
     }
 }

@@ -47,5 +47,5 @@ public interface TherapySessionBO extends SuperBO {
 
     long getSessionCount();
 
-
+    List<TherapySessionDTO> getScheduledSessionsSortedByDate();
 }

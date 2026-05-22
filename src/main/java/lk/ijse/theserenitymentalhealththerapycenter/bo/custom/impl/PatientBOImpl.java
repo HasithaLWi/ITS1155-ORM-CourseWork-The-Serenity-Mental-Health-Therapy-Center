@@ -113,6 +113,7 @@ public class PatientBOImpl implements PatientBO {
                 payment.setDescription(patient.getUpfrontPayment().getDescription());
 
                 paymentDAO.save(payment, session);
+                patient.getUpfrontPayment().setId(payment.getId());
             }
 
             transaction.commit();
@@ -327,5 +328,10 @@ public class PatientBOImpl implements PatientBO {
         } finally {
             session.close();
         }
+    }
+
+    @Override
+    public List<PatientDTO> getPatientsWithNoScheduledSessions() {
+        return patientDAO.getPatientsWithNoScheduledSessions().stream().map(this::toDTO).toList();
     }
 }

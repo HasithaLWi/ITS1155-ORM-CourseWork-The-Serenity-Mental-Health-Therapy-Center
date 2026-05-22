@@ -338,17 +338,19 @@ public class PaymentManagementController implements Initializable {
     void handleProcessPayment(ActionEvent event) {
         try {
             TherapySessionDTO selectedSession = cmbSessionId.getValue();
+            Long paymentId = null;
 
             if (selectedSession != null) {
-
-                processSessionIdPayment(selectedSession);
-
+                paymentId = processSessionIdPayment(selectedSession);
             } else {
                 AlertUtil.showWarning("Warning", "Select a session OR choose patient \u2192 program \u2192 session count.");
                 return;
             }
 
             AlertUtil.showInfo("Success", "Payment processed successfully.");
+            if (paymentId != null) {
+                lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil.printInvoice(paymentId);
+            }
             handleClearPayment(event);
             refreshAll();
         } catch (Exception e) {
@@ -357,7 +359,7 @@ public class PaymentManagementController implements Initializable {
         }
     }
 
-    private void processSessionIdPayment(TherapySessionDTO selectedSession) {
+    private Long processSessionIdPayment(TherapySessionDTO selectedSession) {
         PaymentMethod method = cmbPaymentMethod.getValue();
         if (method == null) {
             throw new RuntimeException("Please select a payment method.");
@@ -376,6 +378,7 @@ public class PaymentManagementController implements Initializable {
         dto.setAmount(amount);
         dto.setMethod(method);
         paymentService.processPayment(dto);
+        return dto.getId();
     }
 
 
@@ -421,9 +424,12 @@ public class PaymentManagementController implements Initializable {
                 return;
             }
 
-            paymentService.processMultipleSessionPayment(patient.getId(), ptp.getProgramId(), count, amount, method);
+            Long paymentId = paymentService.processMultipleSessionPayment(patient.getId(), ptp.getProgramId(), count, amount, method);
 
             AlertUtil.showInfo("Success", "Bulk payment processed successfully.");
+            if (paymentId != null) {
+                lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil.printInvoice(paymentId);
+            }
             handleClearBulkPayment(event);
             refreshAll();
         } catch (Exception e) {

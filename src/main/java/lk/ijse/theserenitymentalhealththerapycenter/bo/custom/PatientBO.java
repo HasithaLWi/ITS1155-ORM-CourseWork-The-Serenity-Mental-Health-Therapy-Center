@@ -22,4 +22,5 @@ public interface PatientBO extends SuperBO {
     void deductUpfrontCredit(Long patientId, Long programId);
     void enrollPatientInProgram(Long patientId, Long programId, int upfrontSessions);
     PatientDeleteSummaryDTO getPatientDeleteSummary(Long patientId);
+    List<PatientDTO> getPatientsWithNoScheduledSessions();
 }

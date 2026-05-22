@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="800" prefWidth="1280" style="-fx-background-color: #FAF8F5;" stylesheets="@calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.ReceptionistDashboardController">
+<BorderPane prefHeight="800" prefWidth="1280" style="-fx-background-color: #FAF8F5;" stylesheets="@../style/calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.ReceptionistDashboardController">
 
     <!-- ===== LEFT SIDEBAR ===== -->
     <left>

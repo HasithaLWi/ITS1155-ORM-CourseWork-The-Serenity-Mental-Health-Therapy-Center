@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.PaymentManagementController">
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@../style/calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.PaymentManagementController">
     <VBox spacing="20" style="-fx-padding: 28;">
 
         <!-- ═══════════════════ MAKE PAYMENT CARD ═══════════════════ -->

@@ -11,4 +11,5 @@ public interface PatientDAO extends CrudDAO<Patient> {
     List<Patient> getAllWithPrograms();
     Patient findByPhone(String phone);
     Patient findByEmail(String email);
+    List<Patient> getPatientsWithNoScheduledSessions();
 }

@@ -16,7 +16,7 @@
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.LoginController"
-      stylesheets="@calm-clarity.css"
+      stylesheets="@../style/calm-clarity.css"
       style="-fx-background-color: linear-gradient(to bottom right, #FAF8F5, #F0ECE6);"
       prefWidth="1280" prefHeight="800">
 

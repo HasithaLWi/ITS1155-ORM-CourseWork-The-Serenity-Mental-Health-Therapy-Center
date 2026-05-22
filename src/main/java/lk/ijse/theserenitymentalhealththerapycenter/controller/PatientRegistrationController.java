@@ -279,6 +279,10 @@ public class PatientRegistrationController implements Initializable {
             lblRegMessage.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 12px;");
             AlertUtil.showInfo("Success",
                     "Patient registered successfully. Sessions will be created on-demand in Session Management.");
+
+            if (p.getUpfrontPayment() != null && p.getUpfrontPayment().getId() != 0) {
+                lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil.printInvoice(p.getUpfrontPayment().getId());
+            }
             handleClearPatientForm(event);
 
         } catch (Exception e) {

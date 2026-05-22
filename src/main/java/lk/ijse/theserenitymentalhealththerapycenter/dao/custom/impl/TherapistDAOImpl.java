@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import org.hibernate.Session;
@@ -16,7 +15,16 @@ public class TherapistDAOImpl implements TherapistDAO {
 
     @Override
     public void save(Therapist entity) {
-        CrudUtil.save(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                session.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -42,27 +50,38 @@ public class TherapistDAOImpl implements TherapistDAO {
 
     @Override
     public void delete(Therapist entity) {
-        CrudUtil.delete(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                Therapist merged = session.merge(entity);
+                session.remove(merged);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
     public Therapist getById(Object id) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getById(Therapist.class, id, session);
+            return session.get(Therapist.class, id);
         }
     }
 
     @Override
     public List<Therapist> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getAll(Therapist.class, session);
+            return session.createQuery("FROM Therapist", Therapist.class).list();
         }
     }
 
     @Override
     public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.count(Therapist.class, session);
+            return session.createQuery("SELECT COUNT(e) FROM Therapist e", Long.class)
+                    .uniqueResult();
         }
     }
 
@@ -70,7 +89,7 @@ public class TherapistDAOImpl implements TherapistDAO {
 
     @Override
     public void save(Therapist entity, Session session) {
-        CrudUtil.save(entity, session);
+        session.persist(entity);
     }
 
     @Override
@@ -87,22 +106,24 @@ public class TherapistDAOImpl implements TherapistDAO {
 
     @Override
     public void delete(Therapist entity, Session session) {
-        CrudUtil.delete(entity, session);
+        Therapist merged = session.merge(entity);
+        session.remove(merged);
     }
 
     @Override
     public Therapist getById(Object id, Session session) {
-        return CrudUtil.getById(Therapist.class, id, session);
+        return session.get(Therapist.class, id);
     }
 
     @Override
     public List<Therapist> getAll(Session session) {
-        return CrudUtil.getAll(Therapist.class, session);
+        return session.createQuery("FROM Therapist", Therapist.class).list();
     }
 
     @Override
     public long count(Session session) {
-        return CrudUtil.count(Therapist.class, session);
+        return session.createQuery("SELECT COUNT(e) FROM Therapist e", Long.class)
+                .uniqueResult();
     }
 
 

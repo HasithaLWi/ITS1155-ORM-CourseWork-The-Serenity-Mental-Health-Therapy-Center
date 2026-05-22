@@ -19,6 +19,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.ProgramPaymentTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
+import lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -209,6 +210,10 @@ public class UpfrontPaymentDialogController implements Initializable {
             paymentService.processUpfrontPayment(paymentDTO, sessionIdsToPayFor);
             
             AlertUtil.showInfo("Success", "Upfront payment processed successfully.");
+
+            if (paymentDTO.getId() != 0) {
+                JasperReportUtil.printInvoice(paymentDTO.getId());
+            }
             
             if (onSuccessCallback != null) {
                 onSuccessCallback.run();

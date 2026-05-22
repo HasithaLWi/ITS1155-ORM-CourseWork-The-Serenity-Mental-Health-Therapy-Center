@@ -29,6 +29,7 @@ public class TherapySessionDTO {
     private String patientName;
     private String therapistName;
     private String programName;
+    private String patientPhone;
 
     public TherapySessionDTO(long id, Integer sequenceNumber, LocalDate sessionDate, LocalTime sessionTime, SessionStatus status, SessionPaymentStatus paymentStatus, String notes, Long patientId, Long therapistId, Long programId) {
         this.setId(id);

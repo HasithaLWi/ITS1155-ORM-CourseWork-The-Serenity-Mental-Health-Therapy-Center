@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.UserDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import org.hibernate.Session;
@@ -16,7 +15,16 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void save(User entity) {
-        CrudUtil.save(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                session.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -42,27 +50,38 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void delete(User entity) {
-        CrudUtil.delete(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                User merged = session.merge(entity);
+                session.remove(merged);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
     public User getById(Object id) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getById(User.class, id, session);
+            return session.get(User.class, id);
         }
     }
 
     @Override
     public List<User> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getAll(User.class, session);
+            return session.createQuery("FROM User", User.class).list();
         }
     }
 
     @Override
     public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.count(User.class, session);
+            return session.createQuery("SELECT COUNT(e) FROM User e", Long.class)
+                    .uniqueResult();
         }
     }
 
@@ -70,7 +89,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void save(User entity, Session session) {
-        CrudUtil.save(entity, session);
+        session.persist(entity);
     }
 
     @Override
@@ -87,22 +106,24 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void delete(User entity, Session session) {
-        CrudUtil.delete(entity, session);
+        User merged = session.merge(entity);
+        session.remove(merged);
     }
 
     @Override
     public User getById(Object id, Session session) {
-        return CrudUtil.getById(User.class, id, session);
+        return session.get(User.class, id);
     }
 
     @Override
     public List<User> getAll(Session session) {
-        return CrudUtil.getAll(User.class, session);
+        return session.createQuery("FROM User", User.class).list();
     }
 
     @Override
     public long count(Session session) {
-        return CrudUtil.count(User.class, session);
+        return session.createQuery("SELECT COUNT(e) FROM User e", Long.class)
+                .uniqueResult();
     }
 
 

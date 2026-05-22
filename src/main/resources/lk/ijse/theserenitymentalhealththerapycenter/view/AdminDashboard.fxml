@@ -7,7 +7,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.AdminDashboardController"
-            stylesheets="@calm-clarity.css"
+            stylesheets="@../style/calm-clarity.css"
             prefWidth="1280" prefHeight="800"
             style="-fx-background-color: #FAF8F5;">
 

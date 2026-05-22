@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import org.hibernate.Session;
@@ -15,7 +14,16 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public void save(Patient entity) {
-        CrudUtil.save(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                session.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -41,7 +49,17 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public void delete(Patient entity) {
-        CrudUtil.delete(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                Patient existing = session.get(Patient.class, entity.getId());
+                session.remove(existing);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -63,7 +81,8 @@ public class PatientDAOImpl implements PatientDAO {
     @Override
     public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.count(Patient.class, session);
+            return session.createQuery("SELECT COUNT(e) FROM " + Patient.class.getSimpleName() + " e", Long.class)
+                    .uniqueResult();
         }
     }
 
@@ -71,7 +90,7 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public void save(Patient entity, Session session) {
-        CrudUtil.save(entity, session);
+        session.persist(entity);
     }
 
     @Override
@@ -88,7 +107,8 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public void delete(Patient entity, Session session) {
-        CrudUtil.delete(entity, session);
+        Patient merged = session.merge(entity);
+        session.remove(merged);
     }
 
     @Override
@@ -98,12 +118,13 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public List<Patient> getAll(Session session) {
-        return CrudUtil.getAll(Patient.class, session);
+        return session.createQuery("FROM Patient", Patient.class).list();
     }
 
     @Override
     public long count(Session session) {
-        return CrudUtil.count(Patient.class, session);
+        return session.createQuery("SELECT COUNT(e) FROM Patient e", Long.class)
+                .uniqueResult();
     }
 
 
@@ -158,6 +179,18 @@ public class PatientDAOImpl implements PatientDAO {
                     "FROM Patient p WHERE p.email = :email", Patient.class);
             query.setParameter("email", email);
             return query.uniqueResult();
+        }
+    }
+
+    @Override
+    public List<Patient> getPatientsWithNoScheduledSessions() {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            return session.createQuery(
+                    "SELECT DISTINCT p FROM Patient p WHERE p.id NOT IN (" +
+                    "  SELECT DISTINCT s.patient.id FROM TherapySession s WHERE s.status = :status" +
+                    ")", Patient.class)
+                    .setParameter("status", lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.SessionStatus.SCHEDULED)
+                    .list();
         }
     }
 }

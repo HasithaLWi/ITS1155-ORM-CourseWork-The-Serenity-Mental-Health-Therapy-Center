@@ -1,7 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PaymentDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import org.hibernate.Session;
@@ -18,7 +17,16 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void save(Payment entity) {
-        CrudUtil.save(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                session.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -47,27 +55,38 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void delete(Payment entity) {
-        CrudUtil.delete(entity);
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Transaction tx = session.beginTransaction();
+            try {
+                Payment merged = session.merge(entity);
+                session.remove(merged);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                throw e;
+            }
+        }
     }
 
     @Override
     public Payment getById(Object id) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getById(Payment.class, id, session);
+            return session.get(Payment.class, id);
         }
     }
 
     @Override
     public List<Payment> getAll() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.getAll(Payment.class, session);
+            return session.createQuery("FROM Payment", Payment.class).list();
         }
     }
 
     @Override
     public long count() {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return CrudUtil.count(Payment.class, session);
+            return session.createQuery("SELECT COUNT(e) FROM Payment e", Long.class)
+                    .uniqueResult();
         }
     }
 
@@ -75,7 +94,7 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void save(Payment entity, Session session) {
-        CrudUtil.save(entity, session);
+        session.persist(entity);
     }
 
     @Override
@@ -95,22 +114,24 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void delete(Payment entity, Session session) {
-        CrudUtil.delete(entity, session);
+        Payment merged = session.merge(entity);
+        session.remove(merged);
     }
 
     @Override
     public Payment getById(Object id, Session session) {
-        return CrudUtil.getById(Payment.class, id, session);
+        return session.get(Payment.class, id);
     }
 
     @Override
     public List<Payment> getAll(Session session) {
-        return CrudUtil.getAll(Payment.class, session);
+        return session.createQuery("FROM Payment", Payment.class).list();
     }
 
     @Override
     public long count(Session session) {
-        return CrudUtil.count(Payment.class, session);
+        return session.createQuery("SELECT COUNT(e) FROM Payment e", Long.class)
+                .uniqueResult();
     }
 
 

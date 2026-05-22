@@ -3,9 +3,18 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<ScrollPane stylesheets="@../style/calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.ReportsController"
             fitToWidth="true" style="-fx-background-color: transparent;">
     <VBox spacing="20" style="-fx-padding: 28;">
+        <!-- Header Section -->
+        <HBox alignment="CENTER_LEFT" spacing="20">
+            <VBox HBox.hgrow="ALWAYS">
+                <Label text="Reports &amp; Analytics" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2C4A52;"/>
+                <Label text="View center insights and print official financial summaries" style="-fx-font-size: 13px; -fx-text-fill: #95A5A6;"/>
+            </VBox>
+            <Button fx:id="btnPrintFinancialReport" text="🖨️ Print Financial Report" styleClass="btn-primary" onAction="#handlePrintFinancialReport"/>
+        </HBox>
         <!-- Summary Stats -->
         <HBox spacing="16">
             <VBox spacing="8" HBox.hgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">

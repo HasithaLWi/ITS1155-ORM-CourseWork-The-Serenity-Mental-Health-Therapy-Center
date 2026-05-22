@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<HBox prefHeight="800" prefWidth="1280" style="-fx-background-color: linear-gradient(to bottom right, #FAF8F5, #F0ECE6);" stylesheets="@calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.RegistrationController">
+<HBox prefHeight="800" prefWidth="1280" style="-fx-background-color: linear-gradient(to bottom right, #FAF8F5, #F0ECE6);" stylesheets="@../style/calm-clarity.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.RegistrationController">
 
     <!-- ═══════════ LEFT BRANDING PANEL ═══════════ -->
     <VBox alignment="CENTER" spacing="12" style="-fx-background-color: rgba(139,175,158,0.08); -fx-min-width: 480;" HBox.hgrow="ALWAYS">

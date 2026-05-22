@@ -274,6 +274,11 @@ public class TherapySessionBOImpl implements TherapySessionBO {
     public long getTodaySessionCount() { return sessionDAO.countByDate(LocalDate.now()); }
     public long getSessionCount() { return sessionDAO.count(); }
 
+    @Override
+    public List<TherapySessionDTO> getScheduledSessionsSortedByDate() {
+        return sessionDAO.getScheduledSessionsSortedByDate().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
     // ==================== Validation Helpers ====================
 
     private void validateSessionDate(LocalDate sessionDate) {
@@ -311,6 +316,7 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : null);
         dto.setTherapistName(entity.getTherapist() != null ? entity.getTherapist().getName() : null);
         dto.setProgramName(entity.getProgram() != null ? entity.getProgram().getName() : null);
+        dto.setPatientPhone(entity.getPatient() != null ? entity.getPatient().getPhone() : null);
         return dto;
     }
 }

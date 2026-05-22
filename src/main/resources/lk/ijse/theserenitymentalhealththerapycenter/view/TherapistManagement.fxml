@@ -36,6 +36,12 @@
                     <ComboBox fx:id="cmbTherapistStatus" promptText="Select status" prefWidth="160"/>
                 </VBox>
             </HBox>
+            <VBox spacing="4">
+                <Label text="ASSIGNED THERAPY PROGRAMS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <ScrollPane prefHeight="80" fitToWidth="true" style="-fx-background-color: transparent;">
+                    <FlowPane fx:id="flowPrograms" hgap="16" vgap="8" style="-fx-padding: 8; -fx-background-color: #FAF8F5; -fx-border-color: #E5DFD8; -fx-border-radius: 8; -fx-background-radius: 8;"/>
+                </ScrollPane>
+            </VBox>
             <HBox spacing="10" alignment="CENTER_RIGHT">
                 <Button fx:id="btnSaveTherapist" text="💾  Save" onAction="#handleSaveTherapist" styleClass="btn-primary" style="-fx-padding: 10 24;"/>
                 <Button fx:id="btnUpdateTherapist" text="✏️  Update" onAction="#handleUpdateTherapist" styleClass="btn-secondary"/>

@@ -84,7 +84,7 @@ public class LoginController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource(finalFxmlPath));
                 Parent root = loader.load();
                 Stage stage = (Stage) txtUsername.getScene().getWindow();
-                Scene scene = new Scene(root, 1280, 800);
+                Scene scene = new Scene(root, 1280, 720);
                 stage.setScene(scene);
                 stage.setTitle(finalTitle);
                 stage.centerOnScreen();

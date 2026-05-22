@@ -19,11 +19,11 @@ public class AppInitializer extends Application {
 
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource(
-                "/lk/ijse/theserenitymentalhealththerapycenter/view/ReceptionistDashboard.fxml"));
+                "/lk/ijse/theserenitymentalhealththerapycenter/view/Login.fxml"));
         Parent root = loader.load();
-        Scene scene = new Scene(root, 1280, 800);
+        Scene scene = new Scene(root, 1280, 720);
         scene.getStylesheets().add(getClass().getResource(
-                "/lk/ijse/theserenitymentalhealththerapycenter/view/calm-clarity.css").toExternalForm());
+                "/lk/ijse/theserenitymentalhealththerapycenter/style/calm-clarity.css").toExternalForm());
 
         stage.setTitle("Serenity Mental Health Therapy Center - Login");
         stage.setScene(scene);

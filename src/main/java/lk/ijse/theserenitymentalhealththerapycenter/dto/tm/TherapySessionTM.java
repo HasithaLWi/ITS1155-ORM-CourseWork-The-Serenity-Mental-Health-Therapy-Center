@@ -20,4 +20,18 @@ public class TherapySessionTM {
     private String patientName;
     private String therapistName;
     private String programName;
+    private String patientPhone;
+
+    public TherapySessionTM(String id, Integer sequenceNumber, LocalDate sessionDate, LocalTime sessionTime, String status, String paymentStatus, String patientName, String therapistName, String programName) {
+        this.id = id;
+        this.sequenceNumber = sequenceNumber;
+        this.sessionDate = sessionDate;
+        this.sessionTime = sessionTime;
+        this.status = status;
+        this.paymentStatus = paymentStatus;
+        this.patientName = patientName;
+        this.therapistName = therapistName;
+        this.programName = programName;
+        this.patientPhone = null;
+    }
 }

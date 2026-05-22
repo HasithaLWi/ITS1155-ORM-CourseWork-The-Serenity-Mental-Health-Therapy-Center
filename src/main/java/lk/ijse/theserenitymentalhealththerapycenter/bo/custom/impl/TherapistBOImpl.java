@@ -7,11 +7,13 @@ import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SerenityException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ValidationUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TherapistBOImpl implements TherapistBO {
@@ -35,7 +37,18 @@ public class TherapistBOImpl implements TherapistBO {
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction tx = session.beginTransaction();
         try {
-            therapistDAO.save(toEntity(dto), session);
+            Therapist entity = toEntity(dto);
+            if (dto.getProgramIds() != null && !dto.getProgramIds().isEmpty()) {
+                List<TherapyProgram> programs = new ArrayList<>();
+                for (Long pId : dto.getProgramIds()) {
+                    TherapyProgram prog = session.get(TherapyProgram.class, pId);
+                    if (prog != null) {
+                        programs.add(prog);
+                    }
+                }
+                entity.setPrograms(programs);
+            }
+            therapistDAO.save(entity, session);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -69,6 +82,18 @@ public class TherapistBOImpl implements TherapistBO {
             entity.setPhone(dto.getPhone());
             entity.setEmail(dto.getEmail());
             entity.setStatus(dto.getStatus() != null ? Therapist.Status.valueOf(dto.getStatus().name()) : Therapist.Status.ACTIVE);
+            
+            List<TherapyProgram> programs = new ArrayList<>();
+            if (dto.getProgramIds() != null && !dto.getProgramIds().isEmpty()) {
+                for (Long pId : dto.getProgramIds()) {
+                    TherapyProgram prog = session.get(TherapyProgram.class, pId);
+                    if (prog != null) {
+                        programs.add(prog);
+                    }
+                }
+            }
+            entity.setPrograms(programs);
+            
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -126,6 +151,9 @@ public class TherapistBOImpl implements TherapistBO {
         dto.setPhone(entity.getPhone());
         dto.setEmail(entity.getEmail());
         dto.setStatus(entity.getStatus() != null ? TherapistStatus.valueOf(entity.getStatus().name()) : null);
+        if (entity.getPrograms() != null) {
+            dto.setProgramIds(entity.getPrograms().stream().map(TherapyProgram::getId).toList());
+        }
         return dto;
     }
 

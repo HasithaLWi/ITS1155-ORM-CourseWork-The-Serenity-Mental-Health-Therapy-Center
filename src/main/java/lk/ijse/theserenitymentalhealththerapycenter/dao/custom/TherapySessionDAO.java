@@ -22,4 +22,5 @@ public interface TherapySessionDAO extends CrudDAO<TherapySession> {
     List<TherapySession> findByTherapistAndDate(Long therapistId, LocalDate date);
     void bulkUpdatePaymentStatus(List<Long> sessionIds, TherapySession.PaymentStatus paymentStatus, Session session);
     void saveAll(List<TherapySession> sessions, Session session);
+    List<TherapySession> getScheduledSessionsSortedByDate();
 }

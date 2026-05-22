@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.3.final -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="financial_report" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="30" bottomMargin="30" uuid="7cf445ea-271d-4074-b52e-9df3b64c61cd">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="MySQL Serial"/>
+	<parameter name="totalRevenue" class="java.lang.String"/>
+	<parameter name="totalPatients" class="java.lang.String"/>
+	<parameter name="totalSessions" class="java.lang.String"/>
+	<parameter name="activeTherapists" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT 
+    tp.id AS program_id,
+    tp.name AS program_name,
+    tp.duration AS program_duration,
+    tp.fee AS program_fee,
+    COUNT(ptp.id) AS enrolled_count
+FROM therapy_programs tp
+LEFT JOIN patient_therapy_programs ptp ON tp.id = ptp.program_id
+GROUP BY tp.id, tp.name, tp.duration, tp.fee
+ORDER BY enrolled_count DESC]]>
+	</queryString>
+	<field name="program_id" class="java.lang.Long"/>
+	<field name="program_name" class="java.lang.String"/>
+	<field name="program_duration" class="java.lang.String"/>
+	<field name="program_fee" class="java.math.BigDecimal"/>
+	<field name="enrolled_count" class="java.lang.Long"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="85" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="310" height="35" forecolor="#2C4A52" uuid="9323bf7a-6b2a-43c2-bfbe-cc1a21cf81ba"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[The Serenity Center]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="35" width="310" height="20" forecolor="#7AB88F" uuid="88a3cf8d-cdb8-4c8d-8a6e-355b214df8d4"/>
+				<textElement>
+					<font fontName="SansSerif" size="12" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Mental Health Therapy Center, Sri Lanka]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="320" y="0" width="215" height="35" forecolor="#2C4A52" uuid="55157835-f0ea-44d4-9d62-97216630f9a2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="18" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FINANCIAL REPORT]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="320" y="35" width="215" height="20" forecolor="#7F8C8D" uuid="7cf5ef14-ff4f-4d4b-9d6f-236b3fcf81aa"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Generated on: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="70" width="535" height="1" forecolor="#E5DFD8" uuid="8df442fa-13f1-4db5-9e6a-db2583f7da21"/>
+				<graphicElement>
+					<pen lineWidth="1.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="90" splitType="Stretch">
+			<!-- KPI 1: Revenue -->
+			<rectangle>
+				<reportElement x="0" y="5" width="125" height="70" backcolor="#FAF8F5" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5ba"/>
+				<graphicElement>
+					<pen lineColor="#E5DFD8"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="5" y="10" width="115" height="15" forecolor="#7F8C8D" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5bb"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Revenue]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="5" y="30" width="115" height="35" forecolor="#2C4A52" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81cd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["LKR " + $P{totalRevenue}]]></textFieldExpression>
+			</textField>
+
+			<!-- KPI 2: Patients -->
+			<rectangle>
+				<reportElement x="135" y="5" width="125" height="70" backcolor="#FAF8F5" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5bc"/>
+				<graphicElement>
+					<pen lineColor="#E5DFD8"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="140" y="10" width="115" height="15" forecolor="#7F8C8D" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5bd"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Patients]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="140" y="30" width="115" height="35" forecolor="#2C4A52" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81ce"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{totalPatients}]]></textFieldExpression>
+			</textField>
+
+			<!-- KPI 3: Sessions -->
+			<rectangle>
+				<reportElement x="270" y="5" width="125" height="70" backcolor="#FAF8F5" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5be"/>
+				<graphicElement>
+					<pen lineColor="#E5DFD8"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="275" y="10" width="115" height="15" forecolor="#7F8C8D" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5bf"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Sessions]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="275" y="30" width="115" height="35" forecolor="#2C4A52" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81cf"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{totalSessions}]]></textFieldExpression>
+			</textField>
+
+			<!-- KPI 4: Therapists -->
+			<rectangle>
+				<reportElement x="405" y="5" width="130" height="70" backcolor="#FAF8F5" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5b0"/>
+				<graphicElement>
+					<pen lineColor="#E5DFD8"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="410" y="10" width="120" height="15" forecolor="#7F8C8D" uuid="e0594f86-d245-4ea5-a7b3-827d04fef5b1"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Active Therapists]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="410" y="30" width="120" height="35" forecolor="#2C4A52" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81c0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{activeTherapists}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="35" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="5" width="220" height="30" backcolor="#FAF8F5" forecolor="#2C4A52" uuid="d65ef84b-014f-4d4b-9d0d-236b3fcf81aa"/>
+				<box>
+					<topPen lineWidth="1.0" lineColor="#E5DFD8"/>
+					<bottomPen lineWidth="1.0" lineColor="#E5DFD8"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Program Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="220" y="5" width="100" height="30" backcolor="#FAF8F5" forecolor="#2C4A52" uuid="d65ef84b-014f-4d4b-9d0d-236b3fcf81ab"/>
+				<box>
+					<topPen lineWidth="1.0" lineColor="#E5DFD8"/>
+					<bottomPen lineWidth="1.0" lineColor="#E5DFD8"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Duration]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="320" y="5" width="110" height="30" backcolor="#FAF8F5" forecolor="#2C4A52" uuid="d65ef84b-014f-4d4b-9d0d-236b3fcf81ac"/>
+				<box>
+					<topPen lineWidth="1.0" lineColor="#E5DFD8"/>
+					<bottomPen lineWidth="1.0" lineColor="#E5DFD8"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+					<paragraph rightIndent="10"/>
+				</textElement>
+				<text><![CDATA[Fee (LKR)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="430" y="5" width="105" height="30" backcolor="#FAF8F5" forecolor="#2C4A52" uuid="d65ef84b-014f-4d4b-9d0d-236b3fcf81ad"/>
+				<box>
+					<topPen lineWidth="1.0" lineColor="#E5DFD8"/>
+					<bottomPen lineWidth="1.0" lineColor="#E5DFD8"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Enrolled Count]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="35" splitType="Stretch">
+			<textField textAdjust="StretchHeight">
+				<reportElement x="0" y="5" width="220" height="25" forecolor="#2D3436" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81d0"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{program_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="5" width="100" height="25" forecolor="#2D3436" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81d1"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{program_duration} != null ? $F{program_duration} : "N/A"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="320" y="5" width="110" height="25" forecolor="#2D3436" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81d2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10"/>
+					<paragraph rightIndent="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{program_fee}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="430" y="5" width="105" height="25" forecolor="#2D3436" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81d3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{enrolled_count}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="50" splitType="Stretch">
+			<textField>
+				<reportElement x="350" y="20" width="185" height="20" forecolor="#95A5A6" uuid="fa8cb54c-12f5-4ba5-a8cf-bb25bfcf81d4"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="250" height="20" forecolor="#95A5A6" uuid="d65ef84b-014f-4d4b-9d0d-236b3fcf81ae"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="9" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[The Serenity Center - Confidential Financial Analysis]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="10" width="535" height="1" forecolor="#E5DFD8" uuid="8df442fa-13f1-4db5-9e6a-db2583f7da22"/>
+			</line>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="60" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="5" width="535" height="1" forecolor="#E5DFD8" uuid="8df442fa-13f1-4db5-9e6a-db2583f7da23"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="15" width="535" height="40" forecolor="#95A5A6" uuid="d65ef84b-014f-4d4b-9d0d-236b3fcf81af"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="SansSerif" size="9" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[End of Report.
+This document contains confidential mental health center operations analysis and financial metrics.
+Any unauthorized copying or distribution is strictly prohibited.]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

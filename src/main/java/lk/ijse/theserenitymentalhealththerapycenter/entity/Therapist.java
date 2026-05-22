@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -39,18 +41,18 @@ public class Therapist {
     @Column(nullable = false, length = 20)
     private Status status = Status.ACTIVE;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "therapist_program",
             joinColumns = @JoinColumn(name = "therapist_id"),
             inverseJoinColumns = @JoinColumn(name = "program_id")
     )
     @ToString.Exclude
-    private Set<TherapyProgram> programs = new HashSet<>();
+    private List<TherapyProgram> programs = new ArrayList<>();
 
     @OneToMany(mappedBy = "therapist", cascade = CascadeType.ALL)
     @ToString.Exclude
-    private Set<TherapySession> sessions = new HashSet<>();
+    private List<TherapySession> sessions = new ArrayList<>();
 
     public enum Status {
         ACTIVE, INACTIVE, ON_LEAVE

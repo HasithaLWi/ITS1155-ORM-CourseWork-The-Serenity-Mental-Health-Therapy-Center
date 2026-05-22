@@ -8,14 +8,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.FlowPane;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapistTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -27,6 +31,7 @@ public class TherapistManagementController implements Initializable {
     @FXML private TextField txtTherapistEmail;
     @FXML private ComboBox<TherapistStatus> cmbTherapistStatus;
     @FXML private TextField txtSearchTherapist;
+    @FXML private FlowPane flowPrograms;
 
     @FXML private TableView<TherapistTM> tblTherapists;
     @FXML private TableColumn<TherapistTM, String> colTherapistId;
@@ -37,6 +42,7 @@ public class TherapistManagementController implements Initializable {
     @FXML private TableColumn<TherapistTM, String> colTherapistStatus;
 
     private final TherapistBO therapistService = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
+    private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
     private FilteredList<TherapistTM> filteredTherapists;
     private TherapistTM selectedTherapist;
 
@@ -46,6 +52,7 @@ public class TherapistManagementController implements Initializable {
         cmbTherapistStatus.setValue(TherapistStatus.ACTIVE);
 
         setupTable();
+        loadProgramsCheckboxList();
         loadData();
         setupSearch();
 
@@ -55,6 +62,21 @@ public class TherapistManagementController implements Initializable {
                 populateForm(newVal);
             }
         });
+    }
+
+    private void loadProgramsCheckboxList() {
+        try {
+            flowPrograms.getChildren().clear();
+            List<TherapyProgramDTO> programs = programService.getAllPrograms();
+            for (TherapyProgramDTO p : programs) {
+                CheckBox cb = new CheckBox(p.getName());
+                cb.setUserData(p.getId());
+                cb.setStyle("-fx-text-fill: #2D3436; -fx-font-size: 13px; -fx-cursor: hand;");
+                flowPrograms.getChildren().add(cb);
+            }
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to load therapy programs: " + e.getMessage());
+        }
     }
 
     private void setupTable() {
@@ -76,7 +98,8 @@ public class TherapistManagementController implements Initializable {
                     dto.getSpecialty(),
                     dto.getPhone(),
                     dto.getEmail(),
-                    dto.getStatus()
+                    dto.getStatus(),
+                    dto.getProgramIds()
             )).toList();
             filteredTherapists = new FilteredList<>(FXCollections.observableArrayList(tms), p -> true);
             tblTherapists.setItems(filteredTherapists);
@@ -104,6 +127,14 @@ public class TherapistManagementController implements Initializable {
         txtTherapistPhone.setText(t.getPhone());
         txtTherapistEmail.setText(t.getEmail());
         cmbTherapistStatus.setValue(t.getStatus());
+
+        List<Long> assignedIds = t.getProgramIds();
+        for (javafx.scene.Node node : flowPrograms.getChildren()) {
+            if (node instanceof CheckBox cb) {
+                Long progId = (Long) cb.getUserData();
+                cb.setSelected(assignedIds != null && assignedIds.contains(progId));
+            }
+        }
     }
 
     @FXML
@@ -115,6 +146,15 @@ public class TherapistManagementController implements Initializable {
             dto.setPhone(txtTherapistPhone.getText());
             dto.setEmail(txtTherapistEmail.getText());
             dto.setStatus(cmbTherapistStatus.getValue());
+
+            List<Long> progIds = new ArrayList<>();
+            for (javafx.scene.Node node : flowPrograms.getChildren()) {
+                if (node instanceof CheckBox cb && cb.isSelected()) {
+                    progIds.add((Long) cb.getUserData());
+                }
+            }
+            dto.setProgramIds(progIds);
+
             therapistService.saveTherapist(dto);
             AlertUtil.showInfo("Success", "Therapist saved successfully.");
             handleClearTherapist(event);
@@ -142,6 +182,15 @@ public class TherapistManagementController implements Initializable {
             dto.setPhone(txtTherapistPhone.getText());
             dto.setEmail(txtTherapistEmail.getText());
             dto.setStatus(cmbTherapistStatus.getValue());
+
+            List<Long> progIds = new ArrayList<>();
+            for (javafx.scene.Node node : flowPrograms.getChildren()) {
+                if (node instanceof CheckBox cb && cb.isSelected()) {
+                    progIds.add((Long) cb.getUserData());
+                }
+            }
+            dto.setProgramIds(progIds);
+
             therapistService.updateTherapist(dto);
             AlertUtil.showInfo("Success", "Therapist updated successfully.");
             handleClearTherapist(event);
@@ -185,5 +234,11 @@ public class TherapistManagementController implements Initializable {
         cmbTherapistStatus.setValue(TherapistStatus.ACTIVE);
         selectedTherapist = null;
         tblTherapists.getSelectionModel().clearSelection();
+
+        for (javafx.scene.Node node : flowPrograms.getChildren()) {
+            if (node instanceof CheckBox cb) {
+                cb.setSelected(false);
+            }
+        }
     }
 }

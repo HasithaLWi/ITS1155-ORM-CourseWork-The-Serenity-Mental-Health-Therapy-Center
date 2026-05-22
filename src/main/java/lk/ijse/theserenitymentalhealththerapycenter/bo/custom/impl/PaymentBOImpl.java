@@ -67,6 +67,7 @@ public class PaymentBOImpl implements PaymentBO {
             }
 
             transaction.commit();
+            dto.setId(payment.getId());
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
@@ -105,6 +106,7 @@ public class PaymentBOImpl implements PaymentBO {
                 }
             }
             transaction.commit();
+            dto.setId(payment.getId());
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
@@ -146,6 +148,7 @@ public class PaymentBOImpl implements PaymentBO {
             }
 
             transaction.commit();
+            dto.setId(payment.getId());
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
@@ -154,7 +157,7 @@ public class PaymentBOImpl implements PaymentBO {
         }
     }
 
-    public void processMultipleSessionPayment(Long patientId, Long programId, int sessionCount, BigDecimal amount, PaymentMethod method) {
+    public Long processMultipleSessionPayment(Long patientId, Long programId, int sessionCount, BigDecimal amount, PaymentMethod method) {
         if (patientId == null) throw new PaymentException("Patient is required.");
         if (programId == null) throw new PaymentException("Program is required.");
         if (sessionCount <= 0) throw new PaymentException("Session count must be greater than zero.");
@@ -184,6 +187,7 @@ public class PaymentBOImpl implements PaymentBO {
             ptpDAO.update(ptp, session);
 
             transaction.commit();
+            return payment.getId();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;

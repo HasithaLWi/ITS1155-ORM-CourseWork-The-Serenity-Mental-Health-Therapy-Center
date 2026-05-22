@@ -1,8 +1,9 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
-
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @Data
@@ -13,6 +14,7 @@ public class TherapistDTO {
     private String phone;
     private String email;
     private TherapistStatus status;
+    private List<Long> programIds = new ArrayList<>();
 
     public TherapistDTO(long id, String name, String specialty, String phone, String email, TherapistStatus status) {
         this.setId(id);

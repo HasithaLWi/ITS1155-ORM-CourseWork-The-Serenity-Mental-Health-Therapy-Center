@@ -11,13 +11,13 @@ public class AppInitializer extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        // Initialize Hibernate on startup
+
         System.out.println("Initializing Hibernate SessionFactory...");
         FactoryConfiguration.getInstance();
         System.out.println("Hibernate initialized successfully!");
 
 
-        // Load Login screen
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource(
                 "/lk/ijse/theserenitymentalhealththerapycenter/view/ReceptionistDashboard.fxml"));
         Parent root = loader.load();
@@ -33,7 +33,10 @@ public class AppInitializer extends Application {
 
     @Override
     public void stop() throws Exception {
-        // Hibernate SessionFactory cleanup handled by JVM shutdown
+        System.out.println("Stopping application resources...");
+        lk.ijse.theserenitymentalhealththerapycenter.util.EmailService.shutdown();
+        FactoryConfiguration.getInstance().close();
+        System.out.println("Application resources cleaned up successfully.");
         super.stop();
     }
 

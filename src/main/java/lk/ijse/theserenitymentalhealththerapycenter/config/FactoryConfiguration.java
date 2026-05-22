@@ -49,4 +49,10 @@ public class FactoryConfiguration {
     public Session getCurrentSession() {
         return sessionFactory.getCurrentSession();
     }
+
+    public void close() {
+        if (sessionFactory != null && !sessionFactory.isClosed()) {
+            sessionFactory.close();
+        }
+    }
 }

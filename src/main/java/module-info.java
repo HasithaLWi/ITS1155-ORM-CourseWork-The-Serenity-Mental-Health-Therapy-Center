@@ -15,6 +15,9 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires javafx.graphics;
     requires java.base;
     requires javafx.base;
+    requires jakarta.mail;
+    requires jakarta.activation;
+    requires org.eclipse.angus.activation;
 
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml, javafx.base;

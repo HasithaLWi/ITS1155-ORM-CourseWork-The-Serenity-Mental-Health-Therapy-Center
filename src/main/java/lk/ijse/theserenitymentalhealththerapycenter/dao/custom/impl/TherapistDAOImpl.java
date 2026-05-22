@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TherapistDAOImpl implements TherapistDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
+
 
     @Override
     public void save(Therapist entity) {
@@ -66,7 +66,7 @@ public class TherapistDAOImpl implements TherapistDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(Therapist entity, Session session) {
@@ -105,7 +105,7 @@ public class TherapistDAOImpl implements TherapistDAO {
         return CrudUtil.count(Therapist.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public List<Therapist> searchByName(String name) {
@@ -134,6 +134,26 @@ public class TherapistDAOImpl implements TherapistDAO {
                     "FROM Therapist t WHERE LOWER(t.specialty) LIKE LOWER(:specialty)", Therapist.class);
             query.setParameter("specialty", "%" + specialty + "%");
             return query.list();
+        }
+    }
+
+    @Override
+    public Therapist findByPhone(String phone) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Query<Therapist> query = session.createQuery(
+                    "FROM Therapist t WHERE t.phone = :phone", Therapist.class);
+            query.setParameter("phone", phone);
+            return query.uniqueResult();
+        }
+    }
+
+    @Override
+    public Therapist findByEmail(String email) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Query<Therapist> query = session.createQuery(
+                    "FROM Therapist t WHERE t.email = :email", Therapist.class);
+            query.setParameter("email", email);
+            return query.uniqueResult();
         }
     }
 }

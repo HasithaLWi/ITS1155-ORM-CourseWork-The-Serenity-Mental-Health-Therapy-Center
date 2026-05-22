@@ -5,7 +5,4 @@ public class SerenityException extends RuntimeException {
         super(message);
     }
 
-    public SerenityException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

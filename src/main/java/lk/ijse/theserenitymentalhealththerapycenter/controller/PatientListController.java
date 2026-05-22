@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
@@ -20,7 +21,9 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.EnrolledProgramTM;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.PatientTM;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDeleteSummaryDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.math.BigDecimal;
@@ -34,39 +37,64 @@ import java.util.stream.Collectors;
 
 public class PatientListController implements Initializable {
 
-    // --- Edit form fields ---
-    @FXML private TextField txtEditName;
-    @FXML private TextField txtEditEmail;
-    @FXML private TextField txtEditPhone;
-    @FXML private TextField txtEditAddress;
-    @FXML private TextArea txtEditInterviewNote;
-    @FXML private TextField txtSearchPatient;
+    @FXML
+    private TextField txtEditName;
+    @FXML
+    private TextField txtEditEmail;
+    @FXML
+    private TextField txtEditPhone;
+    @FXML
+    private TextField txtEditAddress;
+    @FXML
+    private TextArea txtEditInterviewNote;
+    @FXML
+    private TextField txtSearchPatient;
 
-    // --- Patient table ---
-    @FXML private TableView<PatientTM> tblPatients;
-    @FXML private TableColumn<PatientTM, String> colPatientId;
-    @FXML private TableColumn<PatientTM, String> colPatientName;
-    @FXML private TableColumn<PatientTM, String> colPatientEmail;
-    @FXML private TableColumn<PatientTM, String> colPatientPhone;
-    @FXML private TableColumn<PatientTM, String> colPatientAddress;
-    @FXML private TableColumn<PatientTM, String> colPatientDate;
 
-    // --- Enrolled programs section ---
-    @FXML private VBox vboxEnrolledPrograms;
-    @FXML private TableView<EnrolledProgramRow> tblEnrolledPrograms;
-    @FXML private TableColumn<EnrolledProgramRow, String> colEnrProgramName;
-    @FXML private TableColumn<EnrolledProgramRow, Integer> colEnrTotalSessions;
-    @FXML private TableColumn<EnrolledProgramRow, Integer> colEnrUpfrontPaid;
-    @FXML private TableColumn<EnrolledProgramRow, Integer> colEnrUsed;
-    @FXML private TableColumn<EnrolledProgramRow, Integer> colEnrRemaining;
-    @FXML private TableColumn<EnrolledProgramRow, Integer> colEnrCompleted;
-    @FXML private TableColumn<EnrolledProgramRow, String> colEnrStatus;
+    @FXML
+    private TableView<PatientTM> tblPatients;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientId;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientName;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientEmail;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientPhone;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientAddress;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientDate;
 
-    // --- Enroll new program controls ---
-    @FXML private ComboBox<TherapyProgramDTO> cmbNewProgram;
-    @FXML private ComboBox<Integer> cmbNewProgramSessions;
-    @FXML private Label lblNewProgramCost;
-    @FXML private ComboBox<PaymentMethod> cmbNewProgramPayMethod;
+
+    @FXML
+    private VBox vboxEnrolledPrograms;
+    @FXML
+    private TableView<EnrolledProgramTM> tblEnrolledPrograms;
+    @FXML
+    private TableColumn<EnrolledProgramTM, String> colEnrProgramName;
+    @FXML
+    private TableColumn<EnrolledProgramTM, Integer> colEnrTotalSessions;
+    @FXML
+    private TableColumn<EnrolledProgramTM, Integer> colEnrUpfrontPaid;
+    @FXML
+    private TableColumn<EnrolledProgramTM, Integer> colEnrUsed;
+    @FXML
+    private TableColumn<EnrolledProgramTM, Integer> colEnrRemaining;
+    @FXML
+    private TableColumn<EnrolledProgramTM, Integer> colEnrCompleted;
+    @FXML
+    private TableColumn<EnrolledProgramTM, String> colEnrStatus;
+
+
+    @FXML
+    private ComboBox<TherapyProgramDTO> cmbNewProgram;
+    @FXML
+    private ComboBox<Integer> cmbNewProgramSessions;
+    @FXML
+    private Label lblNewProgramCost;
+    @FXML
+    private ComboBox<PaymentMethod> cmbNewProgramPayMethod;
 
     private final PatientBO patientService = (PatientBO) BOFactory.getInstance().getBO(BOFactory.BOType.PATIENT);
     private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
@@ -83,13 +111,13 @@ public class PatientListController implements Initializable {
         loadData();
         setupSearch();
 
-        // Payment method combo
+
         cmbNewProgramPayMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
 
-        // Program combo cell factory
+
         setComboCellFactory(cmbNewProgram, TherapyProgramDTO::getName);
 
-        // When program combo changes, populate session count options
+
         cmbNewProgram.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 int total = newVal.getTotalSessions() != null ? newVal.getTotalSessions() : 1;
@@ -104,10 +132,10 @@ public class PatientListController implements Initializable {
             }
         });
 
-        // When session count changes, update cost
+
         cmbNewProgramSessions.valueProperty().addListener((obs, o, n) -> updateNewProgramCost());
 
-        // Patient selection listener
+
         tblPatients.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
             if (n != null) {
                 selectedPatient = n;
@@ -123,27 +151,25 @@ public class PatientListController implements Initializable {
         });
     }
 
-    // ===================== TABLE SETUP =====================
 
     private void setupTable() {
-        colPatientId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
-        colPatientName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getName()));
-        colPatientEmail.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEmail()));
-        colPatientPhone.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPhone()));
-        colPatientAddress.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getAddress()));
-        colPatientDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getRegisteredDate()));
+        colPatientId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colPatientName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colPatientEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colPatientPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        colPatientAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colPatientDate.setCellValueFactory(new PropertyValueFactory<>("registeredDate"));
     }
 
     private void setupEnrolledProgramsTable() {
-        colEnrProgramName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().programName));
-        colEnrTotalSessions.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().totalSessions));
-        colEnrUpfrontPaid.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().upfrontPaid));
-        colEnrUsed.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().sessionsUsed));
-        colEnrRemaining.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().creditRemaining));
-        colEnrCompleted.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().completedSessions));
-        colEnrStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().status));
+        colEnrProgramName.setCellValueFactory(new PropertyValueFactory<>("programName"));
+        colEnrTotalSessions.setCellValueFactory(new PropertyValueFactory<>("totalSessions"));
+        colEnrUpfrontPaid.setCellValueFactory(new PropertyValueFactory<>("upfrontPaid"));
+        colEnrUsed.setCellValueFactory(new PropertyValueFactory<>("sessionsUsed"));
+        colEnrRemaining.setCellValueFactory(new PropertyValueFactory<>("creditRemaining"));
+        colEnrCompleted.setCellValueFactory(new PropertyValueFactory<>("completedSessions"));
+        colEnrStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Status badge styling
         colEnrStatus.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -165,7 +191,6 @@ public class PatientListController implements Initializable {
         });
     }
 
-    // ===================== DATA LOADING =====================
 
     private void loadData() {
         try {
@@ -183,7 +208,9 @@ public class PatientListController implements Initializable {
             }).toList();
             filteredPatients = new FilteredList<>(FXCollections.observableArrayList(tms), p -> true);
             tblPatients.setItems(filteredPatients);
-        } catch (Exception e) { AlertUtil.showError("Error", "Failed to load patients: " + e.getMessage()); }
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to load patients: " + e.getMessage());
+        }
     }
 
     private void setupSearch() {
@@ -193,20 +220,20 @@ public class PatientListController implements Initializable {
                     if (n == null || n.isEmpty()) return true;
                     String lower = n.toLowerCase();
                     return (p.getName() != null && p.getName().toLowerCase().contains(lower))
-                        || (p.getPhone() != null && p.getPhone().contains(lower));
+                            || (p.getPhone() != null && p.getPhone().contains(lower))
+                            || (p.getId() != null && p.getId().toLowerCase().contains(lower))
+                            || (p.getEmail() != null && p.getEmail().toLowerCase().contains(lower));
                 });
             }
         });
     }
 
-    /**
-     * Load enrolled programs for the selected patient into the programs table.
-     */
+
     private void loadEnrolledPrograms(PatientTM patient) {
         try {
             long patientId = parsePatientId(patient.getId());
             List<PatientTherapyProgramDTO> enrollments = patientService.getPatientPrograms(patientId);
-            ObservableList<EnrolledProgramRow> rows = FXCollections.observableArrayList();
+            ObservableList<EnrolledProgramTM> rows = FXCollections.observableArrayList();
 
             for (PatientTherapyProgramDTO ptp : enrollments) {
                 int totalSessions = ptp.getTotalSessions();
@@ -219,14 +246,14 @@ public class PatientListController implements Initializable {
                     status = "ACTIVE";
                 }
 
-                rows.add(new EnrolledProgramRow(
-                    ptp.getProgramName(),
-                    totalSessions,
-                    ptp.getUpfrontSessionsPaid(),
-                    ptp.getSessionsUsed(),
-                    ptp.getRemainingCredit(),
-                    (int) completed,
-                    status
+                rows.add(new EnrolledProgramTM(
+                        ptp.getProgramName(),
+                        totalSessions,
+                        ptp.getSessionsPaid(),
+                        ptp.getSessionsUsed(),
+                        ptp.getRemainingCredit(),
+                        (int) completed,
+                        status
                 ));
             }
             tblEnrolledPrograms.setItems(rows);
@@ -235,10 +262,7 @@ public class PatientListController implements Initializable {
         }
     }
 
-    /**
-     * Populate the "Enroll in New Program" combo with programs that the patient
-     * is NOT currently enrolled in, or has fully completed (all sessions done).
-     */
+
     private void loadAvailablePrograms(PatientTM patient) {
         try {
             long patientId = parsePatientId(patient.getId());
@@ -251,11 +275,10 @@ public class PatientListController implements Initializable {
                         .findFirst().orElse(null);
 
                 if (existing == null) {
-                    // Not enrolled at all — available
+
                     return true;
                 }
 
-                // Enrolled — only available if all sessions are completed
                 int totalSessions = prog.getTotalSessions() != null ? prog.getTotalSessions() : 0;
                 if (totalSessions > 0) {
                     long completed = sessionService.countCompletedByPatientAndProgram(patientId, prog.getId());
@@ -273,15 +296,14 @@ public class PatientListController implements Initializable {
         }
     }
 
-    // ===================== FORM POPULATION =====================
 
     private void populateForm(PatientTM p) {
         txtEditName.setText(p.getName());
         txtEditEmail.setText(p.getEmail());
         txtEditPhone.setText(p.getPhone());
         txtEditAddress.setText(p.getAddress());
-        // Interview note would need to be fetched from full DTO if needed
-        // For now we clear it since TM doesn't carry it
+
+        //clear
         txtEditInterviewNote.clear();
     }
 
@@ -305,10 +327,13 @@ public class PatientListController implements Initializable {
         lblNewProgramCost.setText(cost.toPlainString() + " LKR");
     }
 
-    // ===================== EVENT HANDLERS =====================
 
-    @FXML void handleUpdatePatient(ActionEvent event) {
-        if (selectedPatient == null) { AlertUtil.showWarning("Warning", "Select a patient first."); return; }
+    @FXML
+    void handleUpdatePatient(ActionEvent event) {
+        if (selectedPatient == null) {
+            AlertUtil.showWarning("Warning", "Select a patient first.");
+            return;
+        }
         try {
             long patientId = parsePatientId(selectedPatient.getId());
             PatientDTO dto = new PatientDTO();
@@ -322,23 +347,43 @@ public class PatientListController implements Initializable {
             AlertUtil.showInfo("Success", "Patient updated.");
             handleClearEditForm(event);
             loadData();
-        } catch (Exception e) { AlertUtil.showError("Error", e.getMessage()); }
-    }
-
-    @FXML void handleDeletePatient(ActionEvent event) {
-        PatientTM p = tblPatients.getSelectionModel().getSelectedItem();
-        if (p == null) { AlertUtil.showWarning("Warning", "Select a patient to delete."); return; }
-        if (AlertUtil.showConfirmation("Confirm", "Delete patient \"" + p.getName() + "\"?")) {
-            try {
-                long patientId = parsePatientId(p.getId());
-                patientService.deletePatient(patientId);
-                handleClearEditForm(event);
-                loadData();
-            } catch (Exception e) { AlertUtil.showError("Error", e.getMessage()); }
+        } catch (Exception e) {
+            AlertUtil.showError("Error", e.getMessage());
         }
     }
 
-    @FXML void handleEnrollNewProgram(ActionEvent event) {
+    @FXML
+    void handleDeletePatient(ActionEvent event) {
+        PatientTM p = tblPatients.getSelectionModel().getSelectedItem();
+        if (p == null) {
+            AlertUtil.showWarning("Warning", "Select a patient to delete.");
+            return;
+        }
+
+        try {
+            long patientId = parsePatientId(p.getId());
+            PatientDeleteSummaryDTO summary = patientService.getPatientDeleteSummary(patientId);
+
+            String warningMessage = "Are you sure you want to delete patient \"" + p.getName() + "\"?\n\n"
+                    + "This patient has:\n"
+                    + " - Enrolled Programs: " + summary.getProgramCount() + "\n"
+                    + " - Sessions (Scheduled/Completed): " + summary.getSessionCount() + "\n"
+                    + " - Payments recorded: " + summary.getPaymentCount() + " (Total Paid: Rs. " + String.format("%.2f", summary.getTotalPaidAmount()) + ")\n\n"
+                    + "WARNING: Deleting this record will permanently delete ALL associated session records, program enrollments, and payment details! This action cannot be undone.";
+
+            if (AlertUtil.showConfirmation("Confirm Patient Deletion", warningMessage)) {
+                patientService.deletePatient(patientId);
+                handleClearEditForm(event);
+                loadData();
+                AlertUtil.showInfo("Success", "Patient and all associated records deleted successfully.");
+            }
+        } catch (Exception e) {
+            AlertUtil.showError("Error", e.getMessage());
+        }
+    }
+
+    @FXML
+    void handleEnrollNewProgram(ActionEvent event) {
         if (selectedPatient == null) {
             AlertUtil.showWarning("Warning", "Select a patient first.");
             return;
@@ -365,7 +410,7 @@ public class PatientListController implements Initializable {
             }
         }
 
-        // Require payment method if cost > 0
+
         PaymentMethod method = cmbNewProgramPayMethod.getValue();
         if (cost.compareTo(BigDecimal.ZERO) > 0 && method == null) {
             AlertUtil.showWarning("Warning", "Please select a payment method.");
@@ -375,10 +420,10 @@ public class PatientListController implements Initializable {
         try {
             long patientId = parsePatientId(selectedPatient.getId());
 
-            // 1. Enroll via BO
+
             patientService.enrollPatientInProgram(patientId, program.getId(), sessionsToPay);
 
-            // 2. If cost > 0, record the upfront payment via PaymentBO
+
             if (cost.compareTo(BigDecimal.ZERO) > 0) {
                 PaymentDTO paymentDTO = new PaymentDTO();
                 paymentDTO.setPatientId(patientId);
@@ -402,9 +447,12 @@ public class PatientListController implements Initializable {
         }
     }
 
-    @FXML void handleClearEditForm(ActionEvent event) {
-        txtEditName.clear(); txtEditEmail.clear();
-        txtEditPhone.clear(); txtEditAddress.clear();
+    @FXML
+    void handleClearEditForm(ActionEvent event) {
+        txtEditName.clear();
+        txtEditEmail.clear();
+        txtEditPhone.clear();
+        txtEditAddress.clear();
         txtEditInterviewNote.clear();
         selectedPatient = null;
         tblPatients.getSelectionModel().clearSelection();
@@ -412,26 +460,25 @@ public class PatientListController implements Initializable {
         vboxEnrolledPrograms.setManaged(false);
     }
 
-    // ===================== HELPERS =====================
 
     private <T> void setComboCellFactory(ComboBox<T> combo, Function<T, String> nameFunc) {
         combo.setButtonCell(new ListCell<>() {
-            @Override protected void updateItem(T item, boolean empty) {
+            @Override
+            protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? "" : nameFunc.apply(item));
             }
         });
         combo.setCellFactory(lv -> new ListCell<>() {
-            @Override protected void updateItem(T item, boolean empty) {
+            @Override
+            protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? "" : nameFunc.apply(item));
             }
         });
     }
 
-    /**
-     * Parse patient ID from formatted string (e.g., "P001" -> 1)
-     */
+
     private long parsePatientId(String formattedId) {
         if (formattedId != null && formattedId.startsWith("P")) {
             return Long.parseLong(formattedId.substring(1));
@@ -439,27 +486,4 @@ public class PatientListController implements Initializable {
         return 0;
     }
 
-    /**
-     * Simple row model for the enrolled programs table.
-     */
-    public static class EnrolledProgramRow {
-        public final String programName;
-        public final int totalSessions;
-        public final int upfrontPaid;
-        public final int sessionsUsed;
-        public final int creditRemaining;
-        public final int completedSessions;
-        public final String status;
-
-        public EnrolledProgramRow(String programName, int totalSessions, int upfrontPaid,
-                                  int sessionsUsed, int creditRemaining, int completedSessions, String status) {
-            this.programName = programName;
-            this.totalSessions = totalSessions;
-            this.upfrontPaid = upfrontPaid;
-            this.sessionsUsed = sessionsUsed;
-            this.creditRemaining = creditRemaining;
-            this.completedSessions = completedSessions;
-            this.status = status;
-        }
-    }
 }

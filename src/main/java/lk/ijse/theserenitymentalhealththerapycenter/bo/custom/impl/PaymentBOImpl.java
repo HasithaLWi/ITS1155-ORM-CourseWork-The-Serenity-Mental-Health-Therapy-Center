@@ -10,6 +10,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.*;
+import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientTherapyProgramDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
@@ -29,6 +31,8 @@ public class PaymentBOImpl implements PaymentBO {
             (TherapySessionDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPY_SESSION);
     private final PatientDAO patientDAO =
             (PatientDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT);
+    private final PatientTherapyProgramDAO ptpDAO =
+            (PatientTherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PATIENT_THERAPY_PROGRAM);
 
     public void processPayment(PaymentDTO dto) {
         if (dto.getSessionId() == null) throw new PaymentException("Session is required for payment.");
@@ -50,8 +54,18 @@ public class PaymentBOImpl implements PaymentBO {
             payment.setPaymentDate(LocalDateTime.now());
             paymentDAO.save(payment, session);
 
-            ts.setPayment(payment);
             ts.setPaymentStatus(TherapySession.PaymentStatus.PAID);
+
+            // Update credit count: increment sessionsPaid and sessionsUsed by 1
+            if (ts.getPatient() != null && ts.getProgram() != null) {
+                PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(ts.getPatient().getId(), ts.getProgram().getId(), session);
+                if (ptp != null) {
+                    ptp.setSessionsPaid(ptp.getSessionsPaid() + 1);
+                    ptp.setSessionsUsed(ptp.getSessionsUsed() + 1);
+                    ptpDAO.update(ptp, session);
+                }
+            }
+
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -87,7 +101,6 @@ public class PaymentBOImpl implements PaymentBO {
             for (Long sessionId : sessionIds) {
                 TherapySession ts = sessionDAO.getById(sessionId, session);
                 if (ts != null) {
-                    ts.setPayment(payment);
                     ts.setPaymentStatus(TherapySession.PaymentStatus.PAID);
                 }
             }
@@ -120,8 +133,56 @@ public class PaymentBOImpl implements PaymentBO {
             payment.setDescription("Session payment for session #" + ts.getId());
             paymentDAO.save(payment, session);
 
-            ts.setPayment(payment);
             ts.setPaymentStatus(TherapySession.PaymentStatus.PAID);
+
+
+            if (ts.getPatient() != null && ts.getProgram() != null) {
+                PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(ts.getPatient().getId(), ts.getProgram().getId(), session);
+                if (ptp != null) {
+                    ptp.setSessionsPaid(ptp.getSessionsPaid() + 1);
+                    ptp.setSessionsUsed(ptp.getSessionsUsed() + 1);
+                    ptpDAO.update(ptp, session);
+                }
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    public void processMultipleSessionPayment(Long patientId, Long programId, int sessionCount, BigDecimal amount, PaymentMethod method) {
+        if (patientId == null) throw new PaymentException("Patient is required.");
+        if (programId == null) throw new PaymentException("Program is required.");
+        if (sessionCount <= 0) throw new PaymentException("Session count must be greater than zero.");
+        if (amount == null || amount.signum() <= 0) throw new PaymentException("Payment amount must be greater than zero.");
+        if (method == null) throw new PaymentException("Payment method is required.");
+
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            Patient patient = patientDAO.getById(patientId, session);
+            if (patient == null) throw new PaymentException("Patient not found.");
+
+            PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(patientId, programId, session);
+            if (ptp == null) throw new PaymentException("Patient is not enrolled in the selected program.");
+
+            Payment payment = new Payment();
+            payment.setPatient(patient);
+            payment.setAmount(amount);
+            payment.setMethod(Payment.PaymentMethod.valueOf(method.name()));
+            payment.setStatus(Payment.PaymentStatus.COMPLETED);
+            payment.setPaymentType(Payment.PaymentType.UPFRONT);
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setDescription("Paid for " + sessionCount + " sessions of " + ptp.getProgram().getName());
+            paymentDAO.save(payment, session);
+
+            ptp.setSessionsPaid(ptp.getSessionsPaid() + sessionCount);
+            ptpDAO.update(ptp, session);
+
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -199,8 +260,7 @@ public class PaymentBOImpl implements PaymentBO {
     }
 
     public PaymentDTO getPaymentBySession(Long sessionId) {
-        Payment entity = paymentDAO.findBySession(sessionId);
-        return entity != null ? toDTO(entity) : null;
+        return null;
     }
 
     public BigDecimal getMonthlyRevenue() {
@@ -254,7 +314,7 @@ public class PaymentBOImpl implements PaymentBO {
         return paymentDAO.findByPatient(patientId).stream().map(this::toDTO).toList();
     }
 
-    // ==================== Conversion Helpers ====================
+
 
     private PaymentDTO toDTO(Payment entity) {
         PaymentDTO dto = new PaymentDTO();
@@ -269,8 +329,6 @@ public class PaymentBOImpl implements PaymentBO {
         dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
         dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : "N/A");
         dto.setPatient(toDTO(entity.getPatient()));
-        if (entity.getCoveredSessions() != null && !entity.getCoveredSessions().isEmpty())
-            dto.setSessionId(entity.getCoveredSessions().get(0).getId());
         return dto;
     }
 

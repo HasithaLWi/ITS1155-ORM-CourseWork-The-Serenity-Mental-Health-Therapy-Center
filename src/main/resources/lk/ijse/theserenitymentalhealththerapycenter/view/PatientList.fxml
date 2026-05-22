@@ -53,7 +53,7 @@
                 <columns>
                     <TableColumn fx:id="colEnrProgramName" text="Program" prefWidth="200"/>
                     <TableColumn fx:id="colEnrTotalSessions" text="Total Sessions" prefWidth="100"/>
-                    <TableColumn fx:id="colEnrUpfrontPaid" text="Upfront Paid" prefWidth="100"/>
+                    <TableColumn fx:id="colEnrUpfrontPaid" text="Sessions Paid" prefWidth="100"/>
                     <TableColumn fx:id="colEnrUsed" text="Used" prefWidth="70"/>
                     <TableColumn fx:id="colEnrRemaining" text="Credit Left" prefWidth="90"/>
                     <TableColumn fx:id="colEnrCompleted" text="Completed" prefWidth="90"/>

@@ -91,7 +91,7 @@ public class TherapyProgramBOImpl implements TherapyProgramBO {
         return programDAO.count();
     }
 
-    // ==================== Conversion Helpers ====================
+
 
     public TherapyProgramDTO toDTO(TherapyProgram entity) {
         TherapyProgramDTO dto = new TherapyProgramDTO();

@@ -3,6 +3,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.SuperBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDeleteSummaryDTO;
 
 import java.util.List;
 
@@ -20,4 +21,5 @@ public interface PatientBO extends SuperBO {
     PatientTherapyProgramDTO getPatientProgram(Long patientId, Long programId);
     void deductUpfrontCredit(Long patientId, Long programId);
     void enrollPatientInProgram(Long patientId, Long programId, int upfrontSessions);
+    PatientDeleteSummaryDTO getPatientDeleteSummary(Long patientId);
 }

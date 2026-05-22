@@ -19,14 +19,13 @@ public class TherapySessionDTO {
     private SessionPaymentStatus paymentStatus;
     private String notes;
     
-    // Relationships represented by IDs
+
     private Long patientId;
     private Long therapistId;
     private Long programId;
-    private Long paymentId;
-    private Long upfrontPaymentId;
 
-    // Display helpers (for TM/table use)
+
+
     private String patientName;
     private String therapistName;
     private String programName;

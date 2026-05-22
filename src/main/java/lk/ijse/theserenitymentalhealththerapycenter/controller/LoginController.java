@@ -15,6 +15,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
+import lk.ijse.theserenitymentalhealththerapycenter.util.SessionContext;
 
 import java.io.IOException;
 
@@ -43,7 +44,7 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        // Sync visible and hidden password fields
+
         txtPasswordVisible.textProperty().bindBidirectional(txtPassword.textProperty());
         txtPasswordVisible.setVisible(false);
         txtPasswordVisible.setManaged(false);
@@ -59,6 +60,7 @@ public class LoginController {
 
         try {
             UserDTO user = userService.login(username, password);
+            SessionContext.setCurrentUser(user);
             lblError.setText("");
             lblError.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px;");
             lblError.setText("Login successful! Loading dashboard...");
@@ -74,35 +76,28 @@ public class LoginController {
                 title = "Serenity - Receptionist Dashboard";
             }
 
-            // Fade out transition
+
             String finalTitle = title;
             String finalFxmlPath = fxmlPath;
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(400), txtUsername.getScene().getRoot());
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(e -> {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource(finalFxmlPath));
-                    Parent root = loader.load();
-                    Stage stage = (Stage) txtUsername.getScene().getWindow();
-                    Scene scene = new Scene(root, 1280, 800);
-                    stage.setScene(scene);
-                    stage.setTitle(finalTitle);
-                    stage.centerOnScreen();
-                } catch (IOException ex) {
-                    lblError.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px;");
-                    lblError.setText("Failed to load dashboard.");
-                    ex.printStackTrace();
-                }
-            });
-            fadeOut.play();
+
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(finalFxmlPath));
+                Parent root = loader.load();
+                Stage stage = (Stage) txtUsername.getScene().getWindow();
+                Scene scene = new Scene(root, 1280, 800);
+                stage.setScene(scene);
+                stage.setTitle(finalTitle);
+                stage.centerOnScreen();
+            } catch (IOException ex) {
+                lblError.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px;");
+                lblError.setText("Failed to load dashboard.");
+                ex.printStackTrace();
+            }
+
 
         } catch (LoginException e) {
             lblError.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px;");
             lblError.setText(e.getMessage());
-
-            // Shake animation for error
-            shakeNode(lblError);
         }
     }
 
@@ -142,23 +137,11 @@ public class LoginController {
             Parent root = loader.load();
             Stage stage = (Stage) txtUsername.getScene().getWindow();
 
-            // Fade transition
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(300), txtUsername.getScene().getRoot());
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(e -> {
-                Scene scene = new Scene(root, 1280, 800);
-                stage.setScene(scene);
-                stage.setTitle(title);
-                stage.centerOnScreen();
+            Scene scene = new Scene(root, 1280, 800);
+            stage.setScene(scene);
+            stage.setTitle(title);
+            stage.centerOnScreen();
 
-                // Fade in
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(300), root);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.play();
-            });
-            fadeOut.play();
 
         } catch (IOException e) {
             lblError.setText("Failed to load page.");
@@ -166,13 +149,4 @@ public class LoginController {
         }
     }
 
-    private void shakeNode(javafx.scene.Node node) {
-        javafx.animation.TranslateTransition shake = new javafx.animation.TranslateTransition(Duration.millis(50), node);
-        shake.setFromX(0);
-        shake.setByX(10);
-        shake.setCycleCount(6);
-        shake.setAutoReverse(true);
-        shake.setOnFinished(e -> node.setTranslateX(0));
-        shake.play();
-    }
 }

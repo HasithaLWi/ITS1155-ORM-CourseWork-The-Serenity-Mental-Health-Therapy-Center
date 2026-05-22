@@ -14,7 +14,7 @@ import java.util.List;
 
 public class PaymentDAOImpl implements PaymentDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
+
 
     @Override
     public void save(Payment entity) {
@@ -71,7 +71,7 @@ public class PaymentDAOImpl implements PaymentDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(Payment entity, Session session) {
@@ -113,16 +113,11 @@ public class PaymentDAOImpl implements PaymentDAO {
         return CrudUtil.count(Payment.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public Payment findBySession(Long sessionId) {
-        try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            Query<Payment> query = session.createQuery(
-                    "SELECT ts.payment FROM TherapySession ts WHERE ts.id = :sessionId AND ts.payment IS NOT NULL", Payment.class);
-            query.setParameter("sessionId", sessionId);
-            return query.uniqueResult();
-        }
+        return null;
     }
 
     @Override
@@ -158,7 +153,6 @@ public class PaymentDAOImpl implements PaymentDAO {
             return session.createQuery(
                     "SELECT DISTINCT p FROM Payment p " +
                             "LEFT JOIN FETCH p.patient " +
-                            "LEFT JOIN FETCH p.coveredSessions " +
                             "ORDER BY p.paymentDate DESC",
                     Payment.class).list();
         }
@@ -208,7 +202,7 @@ public class PaymentDAOImpl implements PaymentDAO {
     @Override
     public List<Payment> findByPatientAndDateRange(Long patientId, LocalDateTime start, LocalDateTime end) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient LEFT JOIN FETCH p.coveredSessions WHERE 1=1";
+            String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient WHERE 1=1";
             if (patientId != null) hql += " AND p.patient.id = :patientId";
             if (start != null && end != null) hql += " AND p.paymentDate BETWEEN :start AND :end";
             hql += " ORDER BY p.paymentDate DESC";
@@ -227,7 +221,7 @@ public class PaymentDAOImpl implements PaymentDAO {
     public List<Payment> findByType(Payment.PaymentType type) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             return session.createQuery(
-                    "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient LEFT JOIN FETCH p.coveredSessions " +
+                    "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient " +
                             "WHERE p.paymentType = :type ORDER BY p.paymentDate DESC",
                     Payment.class)
                     .setParameter("type", type)
@@ -238,7 +232,7 @@ public class PaymentDAOImpl implements PaymentDAO {
     @Override
     public List<Payment> findFiltered(Long patientId, LocalDateTime start, LocalDateTime end, Payment.PaymentType type) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient LEFT JOIN FETCH p.coveredSessions WHERE 1=1";
+            String hql = "SELECT DISTINCT p FROM Payment p LEFT JOIN FETCH p.patient WHERE 1=1";
             if (patientId != null) hql += " AND p.patient.id = :patientId";
             if (start != null && end != null) hql += " AND p.paymentDate BETWEEN :start AND :end";
             if (type != null) hql += " AND p.paymentType = :type";

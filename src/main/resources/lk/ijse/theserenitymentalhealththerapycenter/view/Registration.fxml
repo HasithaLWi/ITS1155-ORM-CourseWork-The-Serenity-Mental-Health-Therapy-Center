@@ -104,8 +104,11 @@
                     <Label fx:id="lblSecurityQuestionError" style="-fx-font-size: 10px;" text="" />
 
                     <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="AUTHENTICATION CODE" />
-                    <TextField fx:id="textAuthentication" promptText="Enter Youer Authentication Code" />
-                    <Label fx:id="lblAuthenticationInfo" style="-fx-font-size: 11px; -fx-text-fill: #8BAF9E;" text="Contact Admin to get Code" />
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="textAuthentication" promptText="Enter Authentication Code" HBox.hgrow="ALWAYS" />
+                        <Button text="Send Code" onAction="#handleSendCodeToAdmin" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 8 12;" />
+                    </HBox>
+                    <Label fx:id="lblAuthenticationInfo" style="-fx-font-size: 11px; -fx-text-fill: #8BAF9E;" text="Click 'Send Code' to email the code to the Admin." />
                <Label fx:id="lblAuthenticationError" layoutX="14.0" layoutY="410.0" style="-fx-font-size: 10px;" text="" />
                 </VBox>
             </ScrollPane>

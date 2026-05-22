@@ -64,8 +64,7 @@ public class UpfrontPaymentDialogController implements Initializable {
         colProgramName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProgramName()));
         colTotalSessions.setCellValueFactory(d -> new SimpleObjectProperty<>(
                 d.getValue().getProgram().getTotalSessions() != null ? d.getValue().getProgram().getTotalSessions() : 1));
-        
-        // Custom cell factory for the sessions-to-pay ComboBox
+
         colSessionsToPay.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getSessionsToPay()));
         colSessionsToPay.setCellFactory(column -> new TableCell<>() {
             private final ComboBox<Integer> comboBox = new ComboBox<>();

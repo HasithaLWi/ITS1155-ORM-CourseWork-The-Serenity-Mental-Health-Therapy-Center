@@ -16,5 +16,8 @@ public interface UserBO extends SuperBO {
     boolean usernameExists(String username);
     List<UserDTO> getAllUsers();
     void updateUser(UserDTO dto);
+    void updateUserWithPassword(UserDTO dto, String newPlainPassword);
+    void updateProfile(UserDTO dto, String currentPassword, String newPlainPassword);
     void deleteUser(Long id);
+    List<String> getAdminEmail();
 }

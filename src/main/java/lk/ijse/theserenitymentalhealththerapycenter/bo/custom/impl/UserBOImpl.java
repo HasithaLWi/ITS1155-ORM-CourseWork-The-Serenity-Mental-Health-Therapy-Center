@@ -111,15 +111,141 @@ public class UserBOImpl implements UserBO {
     }
 
     public void updateUser(UserDTO dto) {
+        if (!ValidationUtil.isNotEmpty(dto.getUsername())) {
+            throw new RegistrationException("Username is required.");
+        }
+        if (!ValidationUtil.isNotEmpty(dto.getFullName())) {
+            throw new RegistrationException("Full name is required.");
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty() && !ValidationUtil.isValidEmail(dto.getEmail())) {
+            throw new RegistrationException("Invalid email format.");
+        }
+
+        User otherByUsername = userDAO.findByUsername(dto.getUsername().trim());
+        if (otherByUsername != null && !otherByUsername.getId().equals(dto.getId())) {
+            throw new RegistrationException("Username '" + dto.getUsername() + "' is already taken.");
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+            User otherByEmail = userDAO.findByEmail(dto.getEmail().trim());
+            if (otherByEmail != null && !otherByEmail.getId().equals(dto.getId())) {
+                throw new RegistrationException("Email '" + dto.getEmail() + "' is already taken.");
+            }
+        }
+
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction tx = session.beginTransaction();
         try {
             User entity = userDAO.getById(dto.getId(), session);
             if (entity == null) throw new RegistrationException("User not found.");
+            entity.setUsername(dto.getUsername().trim());
+            entity.setFullName(dto.getFullName().trim());
+            entity.setEmail(dto.getEmail() != null ? dto.getEmail().trim() : null);
+            if (dto.getRole() != null) entity.setRole(User.Role.valueOf(dto.getRole().name()));
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    public void updateUserWithPassword(UserDTO dto, String newPlainPassword) {
+        if (!ValidationUtil.isNotEmpty(dto.getUsername())) {
+            throw new RegistrationException("Username is required.");
+        }
+        if (!ValidationUtil.isNotEmpty(dto.getFullName())) {
+            throw new RegistrationException("Full name is required.");
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty() && !ValidationUtil.isValidEmail(dto.getEmail())) {
+            throw new RegistrationException("Invalid email format.");
+        }
+        if (!ValidationUtil.isNotEmpty(newPlainPassword) || newPlainPassword.length() < 6) {
+            throw new RegistrationException("Password must be at least 6 characters.");
+        }
+
+        User otherByUsername = userDAO.findByUsername(dto.getUsername().trim());
+        if (otherByUsername != null && !otherByUsername.getId().equals(dto.getId())) {
+            throw new RegistrationException("Username '" + dto.getUsername() + "' is already taken.");
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+            User otherByEmail = userDAO.findByEmail(dto.getEmail().trim());
+            if (otherByEmail != null && !otherByEmail.getId().equals(dto.getId())) {
+                throw new RegistrationException("Email '" + dto.getEmail() + "' is already taken.");
+            }
+        }
+
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            User entity = userDAO.getById(dto.getId(), session);
+            if (entity == null) throw new RegistrationException("User not found.");
+            entity.setUsername(dto.getUsername().trim());
+            entity.setFullName(dto.getFullName().trim());
+            entity.setEmail(dto.getEmail() != null ? dto.getEmail().trim() : null);
+            entity.setPassword(PasswordUtil.hashPassword(newPlainPassword));
+            if (dto.getRole() != null) entity.setRole(User.Role.valueOf(dto.getRole().name()));
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    public void updateProfile(UserDTO dto, String currentPassword, String newPlainPassword) {
+        if (!ValidationUtil.isNotEmpty(currentPassword)) {
+            throw new RegistrationException("Current password is required to verify changes.");
+        }
+        if (!ValidationUtil.isNotEmpty(dto.getUsername())) {
+            throw new RegistrationException("Username is required.");
+        }
+        if (!ValidationUtil.isNotEmpty(dto.getFullName())) {
+            throw new RegistrationException("Full name is required.");
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty() && !ValidationUtil.isValidEmail(dto.getEmail())) {
+            throw new RegistrationException("Invalid email format.");
+        }
+
+        Session session = FactoryConfiguration.getInstance().getSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            User entity = userDAO.getById(dto.getId(), session);
+            if (entity == null) throw new RegistrationException("User not found.");
+
+            // Verify current password
+            if (!PasswordUtil.verifyPassword(currentPassword, entity.getPassword())) {
+                throw new RegistrationException("Incorrect current password.");
+            }
+
+            // Check if updated username is already taken by another user
+            User otherByUsername = userDAO.findByUsername(dto.getUsername());
+            if (otherByUsername != null && !otherByUsername.getId().equals(entity.getId())) {
+                throw new RegistrationException("Username '" + dto.getUsername() + "' is already taken.");
+            }
+
+            // Check if updated email is already taken by another user
+            if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+                User otherByEmail = userDAO.findByEmail(dto.getEmail());
+                if (otherByEmail != null && !otherByEmail.getId().equals(entity.getId())) {
+                    throw new RegistrationException("Email '" + dto.getEmail() + "' is already taken.");
+                }
+            }
+
             entity.setUsername(dto.getUsername());
             entity.setFullName(dto.getFullName());
             entity.setEmail(dto.getEmail());
-            if (dto.getRole() != null) entity.setRole(User.Role.valueOf(dto.getRole().name()));
+
+            if (newPlainPassword != null && !newPlainPassword.trim().isEmpty()) {
+                if (newPlainPassword.length() < 6) {
+                    throw new RegistrationException("New password must be at least 6 characters.");
+                }
+                entity.setPassword(PasswordUtil.hashPassword(newPlainPassword));
+            }
+
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -143,6 +269,16 @@ public class UserBOImpl implements UserBO {
         } finally {
             session.close();
         }
+    }
+
+    public List<String> getAdminEmail() {
+        List<User> admin = userDAO.getAll().stream()
+                .filter(u -> u.getRole() == User.Role.ADMIN)
+                .toList();
+        if (!admin.isEmpty()) {
+            return admin.stream().map(User::getEmail).toList();
+        }
+        return null;
     }
 
     private UserDTO toDTO(User entity) {

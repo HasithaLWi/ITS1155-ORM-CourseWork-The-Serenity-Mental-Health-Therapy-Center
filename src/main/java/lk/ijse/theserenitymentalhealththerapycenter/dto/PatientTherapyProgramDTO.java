@@ -11,18 +11,18 @@ public class PatientTherapyProgramDTO {
     private String id;
     private Long patientId;
     private Long programId;
-    private String programName; // display helper
-    private int upfrontSessionsPaid;
+    private String programName;
+    private int sessionsPaid;
     private int sessionsUsed;
     private int totalSessions; // from program
     private TherapyProgramDTO program;
     private PatientDTO patient;
 
-    public PatientTherapyProgramDTO(Long id, Long patientId, Long programId, int upfrontSessionsPaid, int sessionsUsed) {
+    public PatientTherapyProgramDTO(Long id, Long patientId, Long programId, int sessionsPaid, int sessionsUsed) {
         this.setId(id);
         this.patientId = patientId;
         this.programId = programId;
-        this.upfrontSessionsPaid = upfrontSessionsPaid;
+        this.sessionsPaid = sessionsPaid;
         this.sessionsUsed = sessionsUsed;
     }
 
@@ -38,6 +38,6 @@ public class PatientTherapyProgramDTO {
     }
 
     public int getRemainingCredit() {
-        return upfrontSessionsPaid - sessionsUsed;
+        return sessionsPaid - sessionsUsed;
     }
 }

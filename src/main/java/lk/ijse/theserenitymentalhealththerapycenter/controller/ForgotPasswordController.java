@@ -19,25 +19,25 @@ import java.io.IOException;
 
 public class ForgotPasswordController {
 
-    // Step 1 - Identity
+
     @FXML private VBox step1Pane;
     @FXML private TextField txtUsername;
     @FXML private TextField txtEmail;
     @FXML private Label lblStep1Error;
 
-    // Step 2 - Security Question
+
     @FXML private VBox step2Pane;
     @FXML private Label lblSecurityQuestion;
     @FXML private TextField txtSecurityAnswer;
     @FXML private Label lblStep2Error;
 
-    // Step 3 - New Password
+
     @FXML private VBox step3Pane;
     @FXML private PasswordField txtNewPassword;
     @FXML private PasswordField txtConfirmNewPassword;
     @FXML private Label lblStep3Error;
 
-    // Step indicators
+
     @FXML private Label step1Indicator;
     @FXML private Label step2Indicator;
     @FXML private Label step3Indicator;
@@ -81,8 +81,25 @@ public class ForgotPasswordController {
 
         try {
             verifiedUser = userService.verifyIdentity(username, email);
-            // Skip step 2 (security question not yet implemented) and go to password reset
-            showStep(3);
+            
+
+            String otp = lk.ijse.theserenitymentalhealththerapycenter.util.OtpManager.generateOtp(verifiedUser.getUsername());
+            
+
+            String subject = "Serenity Therapy - Password Reset OTP";
+            String body = "Dear " + verifiedUser.getFullName() + ",\n\n"
+                    + "We received a request to reset your password.\n"
+                    + "Please use the following One-Time Password (OTP) to proceed with your password reset:\n\n"
+                    + "OTP Code: " + otp + "\n\n"
+                    + "This code is valid for 5 minutes. If you did not request a password reset, please ignore this email.\n\n"
+                    + "Best regards,\n"
+                    + "Serenity Mental Health Therapy Center Team";
+            
+            lk.ijse.theserenitymentalhealththerapycenter.util.EmailService.sendEmailAsync(email, subject, body);
+            
+            lblStep2Error.setText("");
+            txtSecurityAnswer.clear();
+            showStep(2);
         } catch (Exception e) {
             lblStep1Error.setText(e.getMessage());
         }
@@ -90,8 +107,23 @@ public class ForgotPasswordController {
 
     @FXML
     void handleVerifyAnswer(ActionEvent event) {
-        // Security question not yet implemented — placeholder
-        showStep(3);
+        if (verifiedUser == null) {
+            lblStep2Error.setText("Session invalid. Please go back and verify identity.");
+            return;
+        }
+        
+        String enteredOtp = txtSecurityAnswer.getText().trim();
+        if (enteredOtp.isEmpty()) {
+            lblStep2Error.setText("Please enter the OTP.");
+            return;
+        }
+
+        if (lk.ijse.theserenitymentalhealththerapycenter.util.OtpManager.validateOtp(verifiedUser.getUsername(), enteredOtp)) {
+            lblStep3Error.setText("");
+            showStep(3);
+        } else {
+            lblStep2Error.setText("Invalid or expired OTP. Please try again.");
+        }
     }
 
     @FXML

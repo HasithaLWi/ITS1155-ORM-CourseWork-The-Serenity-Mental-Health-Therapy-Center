@@ -9,4 +9,6 @@ public interface TherapistDAO extends CrudDAO<Therapist> {
     List<Therapist> searchByName(String name);
     List<Therapist> findByStatus(Therapist.Status status);
     List<Therapist> findBySpecialty(String specialty);
+    Therapist findByPhone(String phone);
+    Therapist findByEmail(String email);
 }

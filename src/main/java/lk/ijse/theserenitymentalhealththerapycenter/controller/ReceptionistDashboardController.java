@@ -12,6 +12,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.util.SessionContext;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,20 +23,21 @@ import java.util.ResourceBundle;
 
 public class ReceptionistDashboardController implements Initializable {
 
-    // ===== Sidebar =====
+
     @FXML private Button btnDashboard;
     @FXML private Button btnRegisterPatient;
     @FXML private Button btnPatientList;
+    @FXML private Button btnPatientOverview;
     @FXML private Button btnScheduleSession;
     @FXML private Button btnPayments;
+    @FXML private Button btnSettings;
 
-    // ===== Header =====
     @FXML private Label lblPageTitle;
     @FXML private Label lblPageSubtitle;
     @FXML private Label lblCurrentDate;
     @FXML private Label lblReceptionistName;
 
-    // ===== Dynamic Content Area =====
+
     @FXML private StackPane contentArea;
 
     private Button activeNavButton;
@@ -43,10 +46,13 @@ public class ReceptionistDashboardController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         lblCurrentDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy")));
         activeNavButton = btnDashboard;
+        if (SessionContext.getCurrentUser() != null) {
+            lblReceptionistName.setText(SessionContext.getCurrentUser().getFullName());
+        }
         loadSubPage("ReceptionistOverview.fxml");
     }
 
-    // ===== Navigation =====
+
     @FXML
     void showDashboard(ActionEvent event) {
         setActivePage("Dashboard", "Welcome back", btnDashboard, "ReceptionistOverview.fxml");
@@ -63,6 +69,11 @@ public class ReceptionistDashboardController implements Initializable {
     }
 
     @FXML
+    void showPatientOverview(ActionEvent event) {
+        setActivePage("Patient Overview", "View all patient records", btnPatientOverview, "AdminPatientOverview.fxml");
+    }
+
+    @FXML
     void showScheduleSession(ActionEvent event) {
         setActivePage("Schedule Session", "Book a therapy session", btnScheduleSession, "SessionManagement.fxml");
     }
@@ -70,6 +81,11 @@ public class ReceptionistDashboardController implements Initializable {
     @FXML
     void showPayments(ActionEvent event) {
         setActivePage("Payments", "Process payments", btnPayments, "PaymentManagement.fxml");
+    }
+
+    @FXML
+    void showSettings(ActionEvent event) {
+        setActivePage("Account Settings", "Manage and update your personal credentials", btnSettings, "ProfileUpdate.fxml");
     }
 
     @FXML
@@ -89,7 +105,7 @@ public class ReceptionistDashboardController implements Initializable {
         }
     }
 
-    // ===== Helper Methods =====
+
     private void setActivePage(String title, String subtitle, Button navButton, String fxmlFile) {
         lblPageTitle.setText(title);
         lblPageSubtitle.setText(subtitle);

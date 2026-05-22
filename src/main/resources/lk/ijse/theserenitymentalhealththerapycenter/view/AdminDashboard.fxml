@@ -27,12 +27,14 @@
                 <Label text="MANAGEMENT" style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;"/>
                 <Button fx:id="btnTherapists" text="  👨‍⚕️   Therapists" maxWidth="Infinity" onAction="#showTherapistManagement" styleClass="nav-btn"/>
                 <Button fx:id="btnPrograms" text="  📋   Therapy Programs" maxWidth="Infinity" onAction="#showProgramManagement" styleClass="nav-btn"/>
+                <Button fx:id="btnUsers" text="  👤   User Management" maxWidth="Infinity" onAction="#showUserManagement" styleClass="nav-btn"/>
                 <Label text="OPERATIONS" style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;"/>
                 <Button fx:id="btnPatients" text="  🧑‍🤝‍🧑   Patient Overview" maxWidth="Infinity" onAction="#showPatientOverview" styleClass="nav-btn"/>
                 <Button fx:id="btnScheduling" text="  📅   Session Scheduling" maxWidth="Infinity" onAction="#showScheduling" styleClass="nav-btn"/>
                 <Label text="FINANCE &amp; REPORTS" style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;"/>
                 <Button fx:id="btnPayments" text="  💳   Payments" maxWidth="Infinity" onAction="#showPayments" styleClass="nav-btn"/>
                 <Button fx:id="btnReports" text="  📈   Reports" maxWidth="Infinity" onAction="#showReports" styleClass="nav-btn"/>
+                <Button fx:id="btnSettings" text="  ⚙️   Settings" maxWidth="Infinity" onAction="#showSettings" styleClass="nav-btn"/>
                 <Region VBox.vgrow="ALWAYS"/>
                 <Separator style="-fx-background-color: rgba(200,221,210,0.2);"/>
                 <Button text="  🚪   Logout" maxWidth="Infinity" onAction="#handleLogout"

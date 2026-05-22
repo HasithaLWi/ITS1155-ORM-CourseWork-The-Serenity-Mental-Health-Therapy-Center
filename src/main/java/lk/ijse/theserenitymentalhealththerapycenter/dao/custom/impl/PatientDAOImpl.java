@@ -12,7 +12,6 @@ import java.util.List;
 
 public class PatientDAOImpl implements PatientDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
 
     @Override
     public void save(Patient entity) {
@@ -68,7 +67,7 @@ public class PatientDAOImpl implements PatientDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(Patient entity, Session session) {
@@ -107,7 +106,7 @@ public class PatientDAOImpl implements PatientDAO {
         return CrudUtil.count(Patient.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public List<Patient> searchByName(String name) {
@@ -148,6 +147,16 @@ public class PatientDAOImpl implements PatientDAO {
             Query<Patient> query = session.createQuery(
                     "FROM Patient p WHERE p.phone = :phone", Patient.class);
             query.setParameter("phone", phone);
+            return query.uniqueResult();
+        }
+    }
+
+    @Override
+    public Patient findByEmail(String email) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Query<Patient> query = session.createQuery(
+                    "FROM Patient p WHERE p.email = :email", Patient.class);
+            query.setParameter("email", email);
             return query.uniqueResult();
         }
     }

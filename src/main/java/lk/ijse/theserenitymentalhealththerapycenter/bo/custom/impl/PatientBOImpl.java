@@ -9,6 +9,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PaymentDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDeleteSummaryDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
@@ -31,11 +32,6 @@ public class PatientBOImpl implements PatientBO {
     private final PaymentDAO paymentDAO =
             (PaymentDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PAYMENT);
 
-    /**
-     * Register a new patient with validation.
-     * Creates PatientTherapyProgram records with upfront credit — NO sessions are generated.
-     * Returns the generated patient ID.
-     */
     public Long registerPatient(PatientDTO patient) {
         if (!ValidationUtil.isValidName(patient.getName())) {
             throw new RegistrationException("Valid patient name is required.");
@@ -49,6 +45,19 @@ public class PatientBOImpl implements PatientBO {
             throw new RegistrationException("Invalid phone number format.");
         }
 
+        if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
+            Patient existing = patientDAO.findByEmail(patient.getEmail().trim());
+            if (existing != null) {
+                throw new RegistrationException("Email '" + patient.getEmail() + "' is already registered by another patient.");
+            }
+        }
+        if (patient.getPhone() != null && !patient.getPhone().trim().isEmpty()) {
+            Patient existing = patientDAO.findByPhone(patient.getPhone().trim());
+            if (existing != null) {
+                throw new RegistrationException("Phone number '" + patient.getPhone() + "' is already registered by another patient.");
+            }
+        }
+
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction transaction = session.beginTransaction();
         try {
@@ -59,10 +68,10 @@ public class PatientBOImpl implements PatientBO {
             p.setPhone(patient.getPhone());
             p.setInterviewNote(patient.getInterviewNote());
 
-            // Save patient first to get the generated ID
+
             patientDAO.save(p, session);
 
-            // Create PatientTherapyProgram records with upfront credit (NO sessions generated)
+
             List<PatientTherapyProgram> enrollments = new ArrayList<>();
             Map<Long, Integer> upfrontMap = patient.getUpfrontSessionsPerProgram();
 
@@ -91,7 +100,7 @@ public class PatientBOImpl implements PatientBO {
                 }
             }
 
-            // Save payment if upfront payment data is provided
+
             if (patient.getUpfrontPayment() != null && patient.getUpfrontPayment().getAmount() != null) {
                 Payment payment = new Payment();
                 payment.setPatient(p);
@@ -117,6 +126,31 @@ public class PatientBOImpl implements PatientBO {
     }
 
     public void updatePatient(PatientDTO dto) {
+        if (!ValidationUtil.isValidName(dto.getName())) {
+            throw new RegistrationException("Valid patient name is required.");
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty()
+                && !ValidationUtil.isValidEmail(dto.getEmail())) {
+            throw new RegistrationException("Invalid email format.");
+        }
+        if (dto.getPhone() != null && !dto.getPhone().isEmpty()
+                && !ValidationUtil.isValidPhone(dto.getPhone())) {
+            throw new RegistrationException("Invalid phone number format.");
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            Patient existing = patientDAO.findByEmail(dto.getEmail().trim());
+            if (existing != null && !existing.getId().equals(dto.getId())) {
+                throw new RegistrationException("Email '" + dto.getEmail() + "' is already registered by another patient.");
+            }
+        }
+        if (dto.getPhone() != null && !dto.getPhone().trim().isEmpty()) {
+            Patient existing = patientDAO.findByPhone(dto.getPhone().trim());
+            if (existing != null && !existing.getId().equals(dto.getId())) {
+                throw new RegistrationException("Phone number '" + dto.getPhone() + "' is already registered by another patient.");
+            }
+        }
+
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction transaction = session.beginTransaction();
         try {
@@ -178,24 +212,15 @@ public class PatientBOImpl implements PatientBO {
         return patientDAO.count();
     }
 
-    /**
-     * Get all program enrollments for a patient (with credit info).
-     */
     public List<PatientTherapyProgramDTO> getPatientPrograms(Long patientId) {
         return ptpDAO.findByPatient(patientId).stream().map(this::toPtpDTO).toList();
     }
 
-    /**
-     * Get specific patient-program enrollment.
-     */
     public PatientTherapyProgramDTO getPatientProgram(Long patientId, Long programId) {
         PatientTherapyProgram entity = ptpDAO.findByPatientAndProgram(patientId, programId);
         return entity != null ? toPtpDTO(entity) : null;
     }
 
-    /**
-     * Deduct one upfront credit for a patient-program enrollment.
-     */
     public void deductUpfrontCredit(Long patientId, Long programId) {
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction transaction = session.beginTransaction();
@@ -210,9 +235,7 @@ public class PatientBOImpl implements PatientBO {
         }
     }
 
-    /**
-     * Enroll a patient in a new program with optional upfront sessions.
-     */
+
     public void enrollPatientInProgram(Long patientId, Long programId, int upfrontSessions) {
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction transaction = session.beginTransaction();
@@ -232,7 +255,7 @@ public class PatientBOImpl implements PatientBO {
         }
     }
 
-    // ==================== Conversion Helpers ====================
+
 
     private PatientDTO toDTO(Patient entity) {
         PatientDTO dto = new PatientDTO();
@@ -263,7 +286,7 @@ public class PatientBOImpl implements PatientBO {
         dto.setId(entity.getId());
         dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
         dto.setProgramId(entity.getProgram() != null ? entity.getProgram().getId() : null);
-        dto.setUpfrontSessionsPaid(entity.getUpfrontSessionsPaid());
+        dto.setSessionsPaid(entity.getSessionsPaid());
         dto.setSessionsUsed(entity.getSessionsUsed());
         dto.setProgram(entity.getProgram() != null ? toDTO(entity.getProgram()) : null);
         dto.setPatient(entity.getPatient() != null ? toDTO(entity.getPatient()) : null);
@@ -273,5 +296,36 @@ public class PatientBOImpl implements PatientBO {
             dto.setTotalSessions(entity.getProgram().getTotalSessions() != null ? entity.getProgram().getTotalSessions() : 0);
         }
         return dto;
+    }
+
+    @Override
+    public PatientDeleteSummaryDTO getPatientDeleteSummary(Long patientId) {
+        Session session = FactoryConfiguration.getInstance().getSession();
+        try {
+            Patient p = patientDAO.getById(patientId, session);
+            if (p == null) throw new RegistrationException("Patient not found.");
+
+            int programCount = p.getPatientTherapyPrograms() != null ? p.getPatientTherapyPrograms().size() : 0;
+            int sessionCount = p.getSessions() != null ? p.getSessions().size() : 0;
+            int paymentCount = p.getPayments() != null ? p.getPayments().size() : 0;
+            double totalPaidAmount = 0.0;
+            if (p.getPayments() != null) {
+                totalPaidAmount = p.getPayments().stream()
+                        .mapToDouble(pay -> pay.getAmount() != null ? pay.getAmount().doubleValue() : 0.0)
+                        .sum();
+            }
+
+            return new PatientDeleteSummaryDTO(
+                p.getName(),
+                programCount,
+                sessionCount,
+                paymentCount,
+                totalPaidAmount
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve patient summary: " + e.getMessage(), e);
+        } finally {
+            session.close();
+        }
     }
 }

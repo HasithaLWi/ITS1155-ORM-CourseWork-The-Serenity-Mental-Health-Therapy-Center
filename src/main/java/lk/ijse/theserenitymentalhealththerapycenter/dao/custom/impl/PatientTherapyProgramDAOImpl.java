@@ -11,7 +11,7 @@ import java.util.List;
 
 public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
+
 
     @Override
     public void save(PatientTherapyProgram entity) {
@@ -27,7 +27,7 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
                 if (existing != null) {
                     existing.setPatient(entity.getPatient());
                     existing.setProgram(entity.getProgram());
-                    existing.setUpfrontSessionsPaid(entity.getUpfrontSessionsPaid());
+                    existing.setSessionsPaid(entity.getSessionsPaid());
                     existing.setSessionsUsed(entity.getSessionsUsed());
                 }
                 tx.commit();
@@ -64,7 +64,7 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(PatientTherapyProgram entity, Session session) {
@@ -77,7 +77,7 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
         if (existing != null) {
             existing.setPatient(entity.getPatient());
             existing.setProgram(entity.getProgram());
-            existing.setUpfrontSessionsPaid(entity.getUpfrontSessionsPaid());
+            existing.setSessionsPaid(entity.getSessionsPaid());
             existing.setSessionsUsed(entity.getSessionsUsed());
         }
     }
@@ -102,7 +102,7 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
         return CrudUtil.count(PatientTherapyProgram.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public List<PatientTherapyProgram> findByPatient(Long patientId) {
@@ -121,16 +121,21 @@ public class PatientTherapyProgramDAOImpl implements PatientTherapyProgramDAO {
     @Override
     public PatientTherapyProgram findByPatientAndProgram(Long patientId, Long programId) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
-            return session.createQuery(
-                    "SELECT DISTINCT ptp FROM PatientTherapyProgram ptp " +
-                            "LEFT JOIN FETCH ptp.patient " +
-                            "LEFT JOIN FETCH ptp.program " +
-                            "WHERE ptp.patient.id = :patientId AND ptp.program.id = :programId",
-                    PatientTherapyProgram.class)
-                    .setParameter("patientId", patientId)
-                    .setParameter("programId", programId)
-                    .uniqueResult();
+            return findByPatientAndProgram(patientId, programId, session);
         }
+    }
+
+    @Override
+    public PatientTherapyProgram findByPatientAndProgram(Long patientId, Long programId, Session session) {
+        return session.createQuery(
+                "SELECT DISTINCT ptp FROM PatientTherapyProgram ptp " +
+                        "LEFT JOIN FETCH ptp.patient " +
+                        "LEFT JOIN FETCH ptp.program " +
+                        "WHERE ptp.patient.id = :patientId AND ptp.program.id = :programId",
+                PatientTherapyProgram.class)
+                .setParameter("patientId", patientId)
+                .setParameter("programId", programId)
+                .uniqueResult();
     }
 
     @Override

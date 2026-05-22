@@ -20,6 +20,18 @@ public class TherapistBOImpl implements TherapistBO {
 
     public void saveTherapist(TherapistDTO dto) {
         validateTherapist(dto);
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            Therapist existing = therapistDAO.findByEmail(dto.getEmail().trim());
+            if (existing != null) {
+                throw new SerenityException("Email '" + dto.getEmail() + "' is already registered by another therapist.");
+            }
+        }
+        if (dto.getPhone() != null && !dto.getPhone().trim().isEmpty()) {
+            Therapist existing = therapistDAO.findByPhone(dto.getPhone().trim());
+            if (existing != null) {
+                throw new SerenityException("Phone number '" + dto.getPhone() + "' is already registered by another therapist.");
+            }
+        }
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction tx = session.beginTransaction();
         try {
@@ -35,6 +47,18 @@ public class TherapistBOImpl implements TherapistBO {
 
     public void updateTherapist(TherapistDTO dto) {
         validateTherapist(dto);
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            Therapist existing = therapistDAO.findByEmail(dto.getEmail().trim());
+            if (existing != null && !existing.getId().equals(dto.getId())) {
+                throw new SerenityException("Email '" + dto.getEmail() + "' is already registered by another therapist.");
+            }
+        }
+        if (dto.getPhone() != null && !dto.getPhone().trim().isEmpty()) {
+            Therapist existing = therapistDAO.findByPhone(dto.getPhone().trim());
+            if (existing != null && !existing.getId().equals(dto.getId())) {
+                throw new SerenityException("Phone number '" + dto.getPhone() + "' is already registered by another therapist.");
+            }
+        }
         Session session = FactoryConfiguration.getInstance().getSession();
         Transaction tx = session.beginTransaction();
         try {
@@ -92,7 +116,7 @@ public class TherapistBOImpl implements TherapistBO {
         return therapistDAO.count();
     }
 
-    // ==================== Conversion Helpers ====================
+
 
     private TherapistDTO toDTO(Therapist entity) {
         TherapistDTO dto = new TherapistDTO();

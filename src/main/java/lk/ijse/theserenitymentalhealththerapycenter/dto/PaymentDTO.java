@@ -26,15 +26,12 @@ public class PaymentDTO {
     private String description;
 
     private PatientDTO patient;
-    private TherapySessionDTO session;
-    
-    // Relationships
+
     private Long sessionId;
     private Long patientId;
     
-    // Display helpers (for TM/table use)
+
     private String patientName;
-    private String sessionInfo;
 
     public PaymentDTO(long id, BigDecimal amount, LocalDateTime paymentDate, PaymentMethod method, PaymentStatus status, PaymentType paymentType, BigDecimal discount, String description, Long sessionId, Long patientId) {
         this.setId(id);

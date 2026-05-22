@@ -12,7 +12,7 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
+
 
     @Override
     public void save(User entity) {
@@ -66,7 +66,7 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(User entity, Session session) {
@@ -105,7 +105,7 @@ public class UserDAOImpl implements UserDAO {
         return CrudUtil.count(User.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public void createAdminUser(User adminUser) {

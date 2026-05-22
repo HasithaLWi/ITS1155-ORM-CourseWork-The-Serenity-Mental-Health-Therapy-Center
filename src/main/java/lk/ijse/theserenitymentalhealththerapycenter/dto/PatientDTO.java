@@ -16,7 +16,7 @@ public class PatientDTO {
     private String address;
     private LocalDate registeredDate;
     private ArrayList<TherapyProgramDTO> programs;
-    private Map<Long, Integer> upfrontSessionsPerProgram = new HashMap<>(); // programId -> sessions paid upfront
+    private Map<Long, Integer> upfrontSessionsPerProgram = new HashMap<>();
     private String interviewNote;
 
     private PaymentDTO upfrontPayment;

@@ -26,9 +26,11 @@
                 <Label style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;" text="PATIENT MANAGEMENT" />
                 <Button fx:id="btnRegisterPatient" maxWidth="Infinity" onAction="#showRegisterPatient" styleClass="nav-btn" text="  ➕   Register Patient" />
                 <Button fx:id="btnPatientList" maxWidth="Infinity" onAction="#showPatientList" styleClass="nav-btn" text="  🧑‍🤝‍🧑   Patient List" />
+                <Button fx:id="btnPatientOverview" maxWidth="Infinity" onAction="#showPatientOverview" styleClass="nav-btn" text="  🔎   Patient Overview" />
                 <Label style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;" text="SCHEDULING" />
                 <Button fx:id="btnScheduleSession" maxWidth="Infinity" onAction="#showScheduleSession" styleClass="nav-btn" text="  📅   Schedule Session" />
                 <Button fx:id="btnPayments" maxWidth="Infinity" onAction="#showPayments" styleClass="nav-btn" text="  💳   Payments" />
+                <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#showSettings" styleClass="nav-btn" text="  ⚙️   Settings" />
                 <Region VBox.vgrow="ALWAYS" />
                 <Separator style="-fx-background-color: rgba(200,221,210,0.2);" />
                 <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #C47171; -fx-font-size: 13px; -fx-alignment: CENTER_LEFT; -fx-padding: 12 16; -fx-background-radius: 10; -fx-cursor: hand;" text="  🚪   Logout" />

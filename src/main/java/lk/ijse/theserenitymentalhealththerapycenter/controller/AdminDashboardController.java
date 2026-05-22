@@ -13,6 +13,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.util.SessionContext;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,7 +24,6 @@ import java.util.ResourceBundle;
 
 public class AdminDashboardController implements Initializable {
 
-    // ===== Sidebar Buttons =====
     @FXML
     private Button btnDashboard;
     @FXML
@@ -37,8 +38,11 @@ public class AdminDashboardController implements Initializable {
     private Button btnPayments;
     @FXML
     private Button btnReports;
+    @FXML
+    private Button btnUsers;
+    @FXML
+    private Button btnSettings;
 
-    // ===== Header =====
     @FXML
     private Label lblPageTitle;
     @FXML
@@ -48,7 +52,6 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private Label lblAdminName;
 
-    // ===== Dynamic Content Area =====
     @FXML
     private StackPane contentArea;
 
@@ -58,6 +61,9 @@ public class AdminDashboardController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         lblCurrentDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy")));
         activeNavButton = btnDashboard;
+        if (SessionContext.getCurrentUser() != null) {
+            lblAdminName.setText(SessionContext.getCurrentUser().getFullName());
+        }
         loadSubPage("AdminDashboardOverview.fxml");
     }
 
@@ -75,6 +81,11 @@ public class AdminDashboardController implements Initializable {
     @FXML
     void showProgramManagement(ActionEvent event) {
         setActivePage("Therapy Programs", "Manage therapy programs", btnPrograms, "ProgramManagement.fxml");
+    }
+
+    @FXML
+    void showUserManagement(ActionEvent event) {
+        setActivePage("User Management", "Manage system users", btnUsers, "UserManagement.fxml");
     }
 
     @FXML
@@ -98,6 +109,11 @@ public class AdminDashboardController implements Initializable {
     }
 
     @FXML
+    void showSettings(ActionEvent event) {
+        setActivePage("Account Settings", "Manage and update your personal credentials", btnSettings, "ProfileUpdate.fxml");
+    }
+
+    @FXML
     void handleLogout(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
@@ -114,7 +130,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    // ===== Helper Methods =====
+
     private void setActivePage(String title, String subtitle, Button navButton, String fxmlFile) {
         lblPageTitle.setText(title);
         lblPageSubtitle.setText(subtitle);

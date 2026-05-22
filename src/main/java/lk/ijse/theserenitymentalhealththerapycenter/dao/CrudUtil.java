@@ -6,18 +6,12 @@ import org.hibernate.Transaction;
 
 import java.util.List;
 
-/**
- * Static utility class for common CRUD operations using Hibernate.
- * Replaces the old GenericDAO inheritance pattern.
- * Provides both session-aware (for BO-managed transactions) and
- * self-contained (opens/closes own session) overloads.
- */
+
 public class CrudUtil {
 
     private CrudUtil() {} // Prevent instantiation
 
-    // ==================== Session-Aware Methods ====================
-    // Used when the BO manages the session and transaction.
+
 
     public static <T> void save(T entity, Session session) {
         session.persist(entity);
@@ -45,8 +39,6 @@ public class CrudUtil {
                 .uniqueResult();
     }
 
-    // ==================== Self-Contained Methods ====================
-    // Opens and closes their own session with transaction management.
 
     public static <T> void save(T entity) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {

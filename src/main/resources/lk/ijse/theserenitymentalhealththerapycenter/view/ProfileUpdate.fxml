@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.ProfileUpdateController"
+            fitToWidth="true" style="-fx-background-color: transparent;">
+    <VBox spacing="24" style="-fx-padding: 32; -fx-alignment: top-center;">
+        
+        <!-- Header Info -->
+        <VBox spacing="6" maxWidth="800" alignment="TOP_LEFT" style="-fx-padding: 0 0 10 0;">
+            <Label text="⚙️  Account Settings" style="-fx-text-fill: #2D3436; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI';"/>
+            <Label text="Update your personal details, email, and password to keep your account secure." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/>
+        </VBox>
+
+        <!-- Form Container -->
+        <VBox spacing="20" maxWidth="800" style="-fx-background-color: #FFFFFF; -fx-padding: 32; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            
+            <Label text="👤  Personal Profile Details" style="-fx-text-fill: #2C4A52; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <Separator/>
+            
+            <!-- Row 1: Full Name & Email -->
+            <GridPane hgap="20" vgap="16">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                
+                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="FULL NAME" style="-fx-text-fill: #6A9A84; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtFullName" promptText="Enter your full name" style="-fx-padding: 10 12;"/>
+                </VBox>
+                
+                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="EMAIL ADDRESS" style="-fx-text-fill: #6A9A84; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEmail" promptText="Enter your email address" style="-fx-padding: 10 12;"/>
+                </VBox>
+
+                <!-- Row 2: Username & Role -->
+                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label text="USERNAME" style="-fx-text-fill: #6A9A84; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtUsername" promptText="Choose a username" style="-fx-padding: 10 12;"/>
+                </VBox>
+                
+                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label text="ACCOUNT ROLE (READ-ONLY)" style="-fx-text-fill: #A0A0A0; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtRole" editable="false" disable="true" style="-fx-padding: 10 12; -fx-background-color: #F5FAF7; -fx-text-fill: #7F8C8D; -fx-opacity: 0.8;"/>
+                </VBox>
+            </GridPane>
+
+            <Label text="🔒  Change Password (Optional)" style="-fx-text-fill: #2C4A52; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12 0 0 0;"/>
+            <Separator/>
+
+            <!-- Row 3: New Password & Confirm -->
+            <GridPane hgap="20" vgap="16">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                
+                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="NEW PASSWORD" style="-fx-text-fill: #6A9A84; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <PasswordField fx:id="txtNewPassword" promptText="At least 6 characters (leave empty to keep current)" style="-fx-padding: 10 12;"/>
+                </VBox>
+                
+                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="CONFIRM NEW PASSWORD" style="-fx-text-fill: #6A9A84; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <PasswordField fx:id="txtConfirmPassword" promptText="Re-type your new password" style="-fx-padding: 10 12;"/>
+                </VBox>
+            </GridPane>
+
+            <Label text="🔑  Security Verification (Required)" style="-fx-text-fill: #C47171; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12 0 0 0;"/>
+            <Separator/>
+
+            <!-- Verification section -->
+            <VBox spacing="6" maxWidth="400">
+                <Label text="CURRENT PASSWORD *" style="-fx-text-fill: #C47171; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <PasswordField fx:id="txtCurrentPassword" promptText="Enter current password to authorize changes" style="-fx-padding: 10 12; -fx-border-color: #E2B2B2; -fx-border-radius: 6; -fx-background-radius: 6;"/>
+            </VBox>
+
+            <HBox spacing="12" alignment="CENTER_RIGHT" style="-fx-padding: 16 0 0 0;">
+                <Button fx:id="btnCancel" text="🔄  Reset Form" onAction="#handleResetForm" styleClass="btn-secondary" style="-fx-padding: 10 20;"/>
+                <Button fx:id="btnSave" text="💾  Save Changes" onAction="#handleSaveChanges" styleClass="btn-primary" style="-fx-padding: 10 24; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</ScrollPane>

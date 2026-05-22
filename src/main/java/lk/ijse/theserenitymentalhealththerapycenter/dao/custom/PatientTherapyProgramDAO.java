@@ -9,6 +9,7 @@ import java.util.List;
 public interface PatientTherapyProgramDAO extends CrudDAO<PatientTherapyProgram> {
     List<PatientTherapyProgram> findByPatient(Long patientId);
     PatientTherapyProgram findByPatientAndProgram(Long patientId, Long programId);
+    PatientTherapyProgram findByPatientAndProgram(Long patientId, Long programId, Session session);
     void deductCredit(Long patientId, Long programId, Session session);
     void saveAll(List<PatientTherapyProgram> enrollments, Session session);
 }

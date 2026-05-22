@@ -4,26 +4,164 @@
 <?import javafx.scene.layout.*?>
 
 <ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.AdminPatientOverviewController"
             fitToWidth="true" style="-fx-background-color: transparent;">
     <VBox spacing="20" style="-fx-padding: 28;">
-        <VBox spacing="0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
-            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 20 16 20;">
-                <Label text="🧑‍🤝‍🧑  All Patients" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="txtSearchPatient" promptText="🔍  Search patient..." prefWidth="220" style="-fx-background-color: #F5F0EB; -fx-border-color: transparent; -fx-background-radius: 10; -fx-padding: 8 12; -fx-font-size: 12px;"/>
-            </HBox>
+        
+        <!-- CARD 1: Patient Selection -->
+        <VBox spacing="12" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <Label text="🔎  Select Patient Profile" style="-fx-text-fill: #2D3436; -fx-font-size: 16px; -fx-font-weight: bold;"/>
             <Separator/>
-            <TableView fx:id="tblPatients" prefHeight="500">
-                <columns>
-                    <TableColumn fx:id="colPatientId" text="ID" prefWidth="60"/>
-                    <TableColumn fx:id="colPatientName" text="Name" prefWidth="180"/>
-                    <TableColumn fx:id="colPatientEmail" text="Email" prefWidth="200"/>
-                    <TableColumn fx:id="colPatientPhone" text="Phone" prefWidth="140"/>
-                    <TableColumn fx:id="colPatientAddress" text="Address" prefWidth="200"/>
-                    <TableColumn fx:id="colPatientDate" text="Registered" prefWidth="120"/>
-                </columns>
-                <placeholder><Label text="No patients registered yet." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
-            </TableView>
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="SEARCH BY PATIENT ID OR NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cmbPatient" promptText="Type or select Patient..." maxWidth="Infinity" styleClass="combo-autocomplete"/>
+                </VBox>
+            </HBox>
         </VBox>
+
+        <!-- CARD 2: Patient General Details & Medical History (Hidden by default) -->
+        <VBox fx:id="vboxPatientDetails" visible="false" managed="false" spacing="16" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <Label text="👤  Patient General Profile" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <Separator/>
+            
+            <!-- Details Grid -->
+            <GridPane hgap="32" vgap="16">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="33.3"/>
+                </columnConstraints>
+                
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="PATIENT ID" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientId" style="-fx-text-fill: #2D3436; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </VBox>
+                
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="FULL NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientName" style="-fx-text-fill: #2D3436; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </VBox>
+                
+                <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label text="EMAIL ADDRESS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientEmail" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+                
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label text="CONTACT NUMBER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientPhone" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+                
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label text="RESIDENTIAL ADDRESS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientAddress" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+                
+                <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <Label text="REGISTERED DATE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientRegistered" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+            </GridPane>
+            
+            <Separator/>
+            
+            <!-- Medical History -->
+            <VBox spacing="6">
+                <Label text="MEDICAL HISTORY &amp; INITIAL NOTE (READ-ONLY)" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <TextArea fx:id="txtInterviewNote" editable="false" wrapText="true" prefRowCount="4"
+                          style="-fx-background-color: #FAF8F5; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px; -fx-padding: 8;"/>
+            </VBox>
+        </VBox>
+
+        <!-- CARD 3: Enrolled Programs Stats Overview (Hidden by default) -->
+        <VBox fx:id="vboxProgramsOverview" visible="false" managed="false" spacing="16" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <Label text="📋  Enrolled Programs &amp; Statistics" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <Separator/>
+            <!-- Container for program stat cards -->
+            <VBox fx:id="vboxProgramsContainer" spacing="16"/>
+        </VBox>
+
+        <!-- CARD 4: Session History Detail Area (Hidden by default) -->
+        <VBox fx:id="vboxSessionHistory" visible="false" managed="false" spacing="16" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
+            <Label text="🔍  Program Session History" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <Separator/>
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="CHOOSE ENROLLED PROGRAM TO VIEW SESSIONS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cmbProgramDetail" promptText="Select Program..." maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+            
+            <TableView fx:id="tblSessions" prefHeight="260" visible="false" managed="false">
+                <columns>
+                    <TableColumn fx:id="colSeqNo" text="Seq" prefWidth="50"/>
+                    <TableColumn fx:id="colDate" text="Date" prefWidth="130"/>
+                    <TableColumn fx:id="colTime" text="Time" prefWidth="100"/>
+                    <TableColumn fx:id="colTherapist" text="Therapist" prefWidth="200"/>
+                    <TableColumn fx:id="colStatus" text="Session Status" prefWidth="130"/>
+                    <TableColumn fx:id="colPaymentStatus" text="Payment Status" prefWidth="130"/>
+                </columns>
+                <placeholder>
+                    <Label text="No sessions scheduled or completed for this program." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/>
+                </placeholder>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+
+            <!-- CARD 5: Selected Session Details & Notes (Inside Scroll view, shown when session is selected) -->
+            <VBox fx:id="vboxSessionNotes" visible="false" managed="false" spacing="16" style="-fx-background-color: #FAF8F5; -fx-padding: 20; -fx-background-radius: 12; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-border-width: 1;">
+                <Label text="🗒️  Selected Session Information" style="-fx-text-fill: #2D3436; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Separator/>
+                
+                <GridPane hgap="24" vgap="12">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33.3"/>
+                        <ColumnConstraints percentWidth="33.3"/>
+                        <ColumnConstraints percentWidth="33.3"/>
+                    </columnConstraints>
+                    
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label text="SESSION ID" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblSessionId" style="-fx-text-fill: #2D3436; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label text="SEQUENCE NO" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblSessionSeq" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                    </VBox>
+                    
+                    <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label text="ASSIGNED THERAPIST" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblSessionTherapist" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                    </VBox>
+                    
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <Label text="SCHEDULED DATE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblSessionDate" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                    </VBox>
+                    
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label text="SCHEDULED TIME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblSessionTime" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                    </VBox>
+                    
+                    <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <Label text="SESSION PAYMENT" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblSessionPayment" style="-fx-font-size: 11px;"/>
+                    </VBox>
+                </GridPane>
+                
+                <Separator/>
+                
+                <VBox spacing="6">
+                    <Label text="SESSION TREATMENT &amp; PROGRESS NOTES" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextArea fx:id="txtSessionNotes" editable="false" wrapText="true" prefRowCount="3"
+                              style="-fx-background-color: #FFFFFF; -fx-border-color: #E5DFD8; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 13px; -fx-padding: 6;"/>
+                </VBox>
+            </VBox>
+        </VBox>
+        
     </VBox>
 </ScrollPane>

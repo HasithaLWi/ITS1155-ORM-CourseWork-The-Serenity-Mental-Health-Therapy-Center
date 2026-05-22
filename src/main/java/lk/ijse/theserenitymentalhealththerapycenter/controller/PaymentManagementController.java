@@ -33,20 +33,25 @@ import java.util.function.Function;
 
 public class PaymentManagementController implements Initializable {
 
-    // ─── Make Payment: Type selector ───
+
     @FXML private ComboBox<String> cmbPaymentType;
 
-    // ─── Session Payment pane ───
-    @FXML private VBox paneSessionPayment;
+
+    @FXML private VBox paneSingleSessionPayment;
     @FXML private ComboBox<TherapySessionDTO> cmbSessionId;
     @FXML private TextField txtSessionCost;
-//    @FXML private ComboBox<PatientDTO> cmbSessionPatient;
-//    @FXML private ComboBox<PatientTherapyProgramDTO> cmbSessionProgram;
-//    @FXML private ComboBox<Integer> cmbSessionCount;
-//    @FXML private TextField txtBulkCost;
     @FXML private ComboBox<PaymentMethod> cmbPaymentMethod;
 
-    // ─── Expense pane ───
+
+    @FXML private VBox paneMultipleSessionPayment;
+    @FXML private ComboBox<PatientDTO> cmbBulkPatient;
+    @FXML private ComboBox<PatientTherapyProgramDTO> cmbBulkProgram;
+    @FXML private TextField txtBulkAlreadyPaid;
+    @FXML private ComboBox<Integer> cmbBulkSessionCount;
+    @FXML private TextField txtBulkCost;
+    @FXML private ComboBox<PaymentMethod> cmbBulkPaymentMethod;
+
+
     @FXML private VBox paneExpense;
     @FXML private ComboBox<String> cmbExpenseType;
     @FXML private ComboBox<PatientDTO> cmbExpensePatient;
@@ -54,13 +59,13 @@ public class PaymentManagementController implements Initializable {
     @FXML private ComboBox<PaymentMethod> cmbExpenseMethod;
     @FXML private TextField txtExpenseDescription;
 
-    // ─── View Payments: Filters ───
+
     @FXML private ComboBox<PatientDTO> cmbFilterPatient;
     @FXML private DatePicker dpFilterFrom;
     @FXML private DatePicker dpFilterTo;
     @FXML private ComboBox<String> cmbFilterType;
 
-    // ─── Table ───
+
     @FXML private TableView<PaymentTM> tblPayments;
     @FXML private TableColumn<PaymentTM, String> colPaymentId;
     @FXML private TableColumn<PaymentTM, String> colPaymentPatient;
@@ -89,7 +94,7 @@ public class PaymentManagementController implements Initializable {
         loadData();
     }
 
-    // ═══════════════════ DATA LOADING ═══════════════════
+
 
     private void loadBaseData() {
         try {
@@ -109,41 +114,126 @@ public class PaymentManagementController implements Initializable {
         }
     }
 
-    // ═══════════════════ SETUP ═══════════════════
+
 
     private void setupPaymentTypeSelector() {
-        cmbPaymentType.setItems(FXCollections.observableArrayList("Session Payment", "Expense"));
-        cmbPaymentType.setValue("Session Payment");
+        cmbPaymentType.setItems(FXCollections.observableArrayList("Single Session Payment", "Multiple Session Payment", "Expense"));
+        cmbPaymentType.setValue("Single Session Payment");
 
         cmbPaymentType.valueProperty().addListener((obs, oldVal, newVal) -> {
-            boolean isSession = "Session Payment".equals(newVal);
-            paneSessionPayment.setVisible(isSession);
-            paneSessionPayment.setManaged(isSession);
-            paneExpense.setVisible(!isSession);
-            paneExpense.setManaged(!isSession);
+            boolean isSingle = "Single Session Payment".equals(newVal);
+            boolean isMultiple = "Multiple Session Payment".equals(newVal);
+            boolean isExpense = "Expense".equals(newVal);
+
+            paneSingleSessionPayment.setVisible(isSingle);
+            paneSingleSessionPayment.setManaged(isSingle);
+
+            paneMultipleSessionPayment.setVisible(isMultiple);
+            paneMultipleSessionPayment.setManaged(isMultiple);
+
+            paneExpense.setVisible(isExpense);
+            paneExpense.setManaged(isExpense);
         });
     }
 
     private void setupSimpleCombos() {
-        // Payment methods
+
         cmbPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
+        cmbBulkPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
         cmbExpenseMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
 
-        // Expense types
+
         cmbExpenseType.setItems(FXCollections.observableArrayList("Refund", "Administrative", "Other"));
 
-        // Filter type
+
         cmbFilterType.setItems(FXCollections.observableArrayList("ALL", "SINGLE", "UPFRONT", "EXPENSE"));
-
-
-
-
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbExpensePatient,
             new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
 
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbFilterPatient,
             new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
+
+
+        ComboBoxAutoCompleteUtil.setupAutocomplete(cmbBulkPatient,
+            new ArrayList<>(allPatientsList), PatientDTO::getStringId, PatientDTO::getStringId);
+
+        cmbBulkPatient.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                loadBulkPrograms(newVal.getId());
+            } else {
+                cmbBulkProgram.setItems(FXCollections.emptyObservableList());
+                clearBulkProgramDependentFields();
+            }
+        });
+
+        cmbBulkProgram.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                txtBulkAlreadyPaid.setText(String.valueOf(newVal.getSessionsPaid()));
+                int total = newVal.getTotalSessions();
+                int paid = newVal.getSessionsPaid();
+                int maxToPay = (total > 0) ? (total - paid) : 20;
+                List<Integer> counts = new ArrayList<>();
+                for (int i = 1; i <= maxToPay; i++) {
+                    counts.add(i);
+                }
+                cmbBulkSessionCount.setItems(FXCollections.observableArrayList(counts));
+                if (counts.isEmpty()) {
+                    cmbBulkSessionCount.setPromptText("Fully Paid");
+                } else {
+                    cmbBulkSessionCount.setPromptText("Select count");
+                }
+                updateBulkCost();
+            } else {
+                clearBulkProgramDependentFields();
+            }
+        });
+
+        cmbBulkSessionCount.valueProperty().addListener((obs, oldVal, newVal) -> {
+            updateBulkCost();
+        });
+    }
+
+    private void loadBulkPrograms(Long patientId) {
+        try {
+            List<PatientTherapyProgramDTO> programs = patientService.getPatientPrograms(patientId);
+            cmbBulkProgram.setItems(FXCollections.observableArrayList(programs));
+            cmbBulkProgram.setCellFactory(lv -> new ListCell<>() {
+                @Override
+                protected void updateItem(PatientTherapyProgramDTO item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getProgramName());
+                }
+            });
+            cmbBulkProgram.setButtonCell(new ListCell<>() {
+                @Override
+                protected void updateItem(PatientTherapyProgramDTO item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getProgramName());
+                }
+            });
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to load patient programs: " + e.getMessage());
+        }
+    }
+
+    private void updateBulkCost() {
+        PatientTherapyProgramDTO ptp = cmbBulkProgram.getValue();
+        Integer count = cmbBulkSessionCount.getValue();
+        if (ptp != null && count != null) {
+            BigDecimal fee = calculatePerSessionFee(ptp);
+            BigDecimal totalCost = fee.multiply(new BigDecimal(count));
+            txtBulkCost.setText(totalCost.toPlainString());
+        } else {
+            txtBulkCost.clear();
+        }
+    }
+
+    private void clearBulkProgramDependentFields() {
+        txtBulkAlreadyPaid.clear();
+        cmbBulkSessionCount.setValue(null);
+        cmbBulkSessionCount.setItems(FXCollections.emptyObservableList());
+        txtBulkCost.clear();
     }
 
     private void setupSessionIdCombo() {
@@ -158,7 +248,7 @@ public class PaymentManagementController implements Initializable {
         ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionId,
             new ArrayList<>(unpaidSessionsList), sessionDisplay, sessionSearch);
 
-        // Listen for selection changes to auto-fill cost
+
         cmbSessionId.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.getProgramId() != null) {
                 fillSessionCost(newVal);
@@ -199,7 +289,7 @@ public class PaymentManagementController implements Initializable {
 
 
 
-    // ═══════════════════ TABLE ═══════════════════
+
 
     private void setupTable() {
         colPaymentId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
@@ -243,7 +333,6 @@ public class PaymentManagementController implements Initializable {
         )).toList();
     }
 
-    // ═══════════════════ HANDLERS: SESSION PAYMENT ═══════════════════
 
     @FXML
     void handleProcessPayment(ActionEvent event) {
@@ -297,6 +386,61 @@ public class PaymentManagementController implements Initializable {
         if (cmbSessionId.getEditor() != null) cmbSessionId.getEditor().clear();
         txtSessionCost.clear();
         cmbPaymentMethod.setValue(null);
+    }
+
+    @FXML
+    void handleProcessBulkPayment(ActionEvent event) {
+        try {
+            PatientDTO patient = cmbBulkPatient.getValue();
+            PatientTherapyProgramDTO ptp = cmbBulkProgram.getValue();
+            Integer count = cmbBulkSessionCount.getValue();
+            PaymentMethod method = cmbBulkPaymentMethod.getValue();
+            String costText = txtBulkCost.getText();
+
+            if (patient == null) {
+                AlertUtil.showWarning("Warning", "Please select a patient.");
+                return;
+            }
+            if (ptp == null) {
+                AlertUtil.showWarning("Warning", "Please select a program.");
+                return;
+            }
+            if (count == null) {
+                AlertUtil.showWarning("Warning", "Please select sessions to pay.");
+                return;
+            }
+            if (method == null) {
+                AlertUtil.showWarning("Warning", "Please select a payment method.");
+                return;
+            }
+
+            BigDecimal amount = (costText != null && !costText.trim().isEmpty())
+                ? new BigDecimal(costText.trim()) : BigDecimal.ZERO;
+            if (amount.signum() <= 0) {
+                AlertUtil.showWarning("Warning", "Amount must be greater than zero.");
+                return;
+            }
+
+            paymentService.processMultipleSessionPayment(patient.getId(), ptp.getProgramId(), count, amount, method);
+
+            AlertUtil.showInfo("Success", "Bulk payment processed successfully.");
+            handleClearBulkPayment(event);
+            refreshAll();
+        } catch (Exception e) {
+            AlertUtil.showError("Error", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void handleClearBulkPayment(ActionEvent event) {
+        cmbBulkPatient.setValue(null);
+        if (cmbBulkPatient.getEditor() != null) cmbBulkPatient.getEditor().clear();
+        cmbBulkProgram.setValue(null);
+        txtBulkAlreadyPaid.clear();
+        cmbBulkSessionCount.setValue(null);
+        txtBulkCost.clear();
+        cmbBulkPaymentMethod.setValue(null);
     }
 
 
@@ -400,7 +544,7 @@ public class PaymentManagementController implements Initializable {
         loadData();
     }
 
-    // ═══════════════════ HELPERS ═══════════════════
+
 
     private void refreshAll() {
         loadData();

@@ -8,7 +8,6 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SchedulingException;
 import org.hibernate.Session;
@@ -29,8 +28,6 @@ public class TherapySessionBOImpl implements TherapySessionBO {
             (TherapistDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPIST);
     private final TherapyProgramDAO programDAO =
             (TherapyProgramDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.THERAPY_PROGRAM);
-    private final PaymentDAO paymentDAO =
-            (PaymentDAO) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.PAYMENT);
 
     public TherapySessionDTO createAndScheduleSession(TherapySessionDTO sessionDTO) {
         if (sessionDTO.getPatientId() == null) throw new SchedulingException("Patient is required.");
@@ -66,10 +63,8 @@ public class TherapySessionBOImpl implements TherapySessionBO {
                 validateSessionDate(ts.getSessionDate());
                 checkTherapistAvailability(ts);
 
-                Payment upfrontPayment = paymentDAO.findUpfrontByPatient(patientId, session);
                 ts.setStatus(TherapySession.SessionStatus.SCHEDULED);
                 ts.setPaymentStatus(TherapySession.PaymentStatus.PAID);
-                ts.setPayment(upfrontPayment);
                 sessionDAO.save(ts, session);
                 ptpDAO.deductCredit(patientId, programId, session);
             } else {
@@ -225,6 +220,18 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         try {
             TherapySession ts = sessionDAO.getById(sessionId, session);
             if (ts == null) throw new SchedulingException("Session not found.");
+
+            // Restore credit if paid
+            if (ts.getPaymentStatus() == TherapySession.PaymentStatus.PAID) {
+                if (ts.getPatient() != null && ts.getProgram() != null) {
+                    PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(ts.getPatient().getId(), ts.getProgram().getId(), session);
+                    if (ptp != null) {
+                        ptp.setSessionsUsed(Math.max(0, ptp.getSessionsUsed() - 1));
+                        ptpDAO.update(ptp, session);
+                    }
+                }
+            }
+
             sessionDAO.delete(ts, session);
             transaction.commit();
         } catch (Exception e) {
@@ -287,7 +294,7 @@ public class TherapySessionBOImpl implements TherapySessionBO {
                 .ifPresent(s -> { throw new SchedulingException("Therapist is already booked for this date and time."); });
     }
 
-    // ==================== Conversion ====================
+
 
     public TherapySessionDTO toDTO(TherapySession entity) {
         TherapySessionDTO dto = new TherapySessionDTO();

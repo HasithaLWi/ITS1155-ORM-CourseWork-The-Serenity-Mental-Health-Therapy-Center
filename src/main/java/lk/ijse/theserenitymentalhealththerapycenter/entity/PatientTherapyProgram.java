@@ -25,29 +25,22 @@ public class PatientTherapyProgram {
     @JoinColumn(name = "program_id", nullable = false)
     private TherapyProgram program;
 
-    /**
-     * Number of sessions paid upfront at registration time.
-     */
-    @Column(name = "upfront_sessions_paid")
-    private int upfrontSessionsPaid = 0;
 
-    /**
-     * Number of sessions already created/scheduled using upfront credit.
-     */
+    @Column(name = "sessions_paid")
+    private int sessionsPaid = 0;
+
+
     @Column(name = "sessions_used")
     private int sessionsUsed = 0;
 
-    /**
-     * Get remaining upfront credit (sessions that can still be scheduled without payment).
-     */
     public int getRemainingCredit() {
-        return upfrontSessionsPaid - sessionsUsed;
+        return sessionsPaid - sessionsUsed;
     }
 
-    public PatientTherapyProgram(Patient patient, TherapyProgram program, int upfrontSessionsPaid) {
+    public PatientTherapyProgram(Patient patient, TherapyProgram program, int sessionsPaid) {
         this.patient = patient;
         this.program = program;
-        this.upfrontSessionsPaid = upfrontSessionsPaid;
+        this.sessionsPaid = sessionsPaid;
         this.sessionsUsed = 0;
     }
 }

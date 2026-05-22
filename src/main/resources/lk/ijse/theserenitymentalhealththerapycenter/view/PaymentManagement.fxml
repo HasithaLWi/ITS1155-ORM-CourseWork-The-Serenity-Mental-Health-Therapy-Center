@@ -28,8 +28,8 @@
             </HBox>
             <Separator />
 
-            <!-- ─── SESSION PAYMENT PANE ─── -->
-            <VBox fx:id="paneSessionPayment" managed="true" spacing="12" visible="true">
+            <!-- ─── SINGLE SESSION PAYMENT PANE ─── -->
+            <VBox fx:id="paneSingleSessionPayment" managed="true" spacing="12" visible="true">
                 <!-- Row 1: Session ID autocomplete -->
                 <HBox spacing="16">
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
@@ -42,7 +42,7 @@
                     </VBox>
                 </HBox>
                 <Separator style="-fx-padding: 4 0;" />
-
+ 
                 <!-- Row 3: Payment method + buttons -->
                 <HBox alignment="CENTER_LEFT" spacing="16">
                     <VBox spacing="4">
@@ -55,16 +55,53 @@
                 </HBox>
             </VBox>
 
+            <!-- ─── MULTIPLE SESSION PAYMENT PANE ─── -->
+            <VBox fx:id="paneMultipleSessionPayment" managed="false" spacing="12" visible="false">
+                <HBox spacing="16">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="PATIENT (autocomplete)" />
+                        <ComboBox fx:id="cmbBulkPatient" editable="true" maxWidth="Infinity" minWidth="150.0" promptText="Select patient..." styleClass="combo-autocomplete" />
+                    </VBox>
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="ENROLLED PROGRAM" />
+                        <ComboBox fx:id="cmbBulkProgram" maxWidth="Infinity" minWidth="150.0" promptText="Select program..." />
+                    </VBox>
+                </HBox>
+                <HBox spacing="16">
+                    <VBox prefWidth="180" spacing="4">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="ALREADY PAID SESSIONS" />
+                        <TextField fx:id="txtBulkAlreadyPaid" editable="false" promptText="0" style="-fx-background-color: #F5F0EB;" />
+                    </VBox>
+                    <VBox prefWidth="180" spacing="4">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="SESSIONS TO PAY" />
+                        <ComboBox fx:id="cmbBulkSessionCount" maxWidth="Infinity" promptText="Select count" />
+                    </VBox>
+                    <VBox prefWidth="180" spacing="4">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="COST (LKR)" />
+                        <TextField fx:id="txtBulkCost" editable="false" promptText="0.00" style="-fx-background-color: #F5F0EB;" />
+                    </VBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="4">
+                        <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="METHOD" />
+                        <ComboBox fx:id="cmbBulkPaymentMethod" prefWidth="180" promptText="Payment method" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button onAction="#handleProcessBulkPayment" style="-fx-padding: 10 24;" styleClass="btn-primary" text="✅  Process Bulk Payment" />
+                    <Button onAction="#handleClearBulkPayment" styleClass="btn-secondary" text="🔄  Clear" />
+                </HBox>
+            </VBox>
+
             <!-- ─── EXPENSE PANE ─── -->
             <VBox fx:id="paneExpense" managed="false" spacing="12" visible="false">
                 <HBox spacing="16">
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
                         <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="EXPENSE TYPE" />
-                        <ComboBox fx:id="cmbExpenseType" maxWidth="Infinity" promptText="Select expense type" />
+                        <ComboBox fx:id="cmbExpenseType" maxWidth="Infinity" minWidth="150.0" promptText="Select expense type" />
                     </VBox>
                     <VBox spacing="4" HBox.hgrow="ALWAYS">
                         <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="PATIENT" />
-                        <ComboBox fx:id="cmbExpensePatient" editable="true" maxWidth="Infinity" promptText="Select patient" styleClass="combo-autocomplete" />
+                        <ComboBox fx:id="cmbExpensePatient" editable="true" maxWidth="Infinity" minWidth="150.0" promptText="Select patient" styleClass="combo-autocomplete" />
                     </VBox>
                 </HBox>
                 <HBox spacing="16">

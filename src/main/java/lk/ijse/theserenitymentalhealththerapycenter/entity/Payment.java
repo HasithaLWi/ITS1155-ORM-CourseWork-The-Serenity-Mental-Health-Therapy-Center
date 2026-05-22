@@ -50,9 +50,7 @@ public class Payment {
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
-    @OneToMany(mappedBy = "payment", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<TherapySession> coveredSessions = new ArrayList<>();
+
 
     public enum PaymentMethod {
         CASH, CARD, BANK_TRANSFER, INSURANCE

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TherapyProgramDAOImpl implements TherapyProgramDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
+
 
     @Override
     public void save(TherapyProgram entity) {
@@ -67,7 +67,7 @@ public class TherapyProgramDAOImpl implements TherapyProgramDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(TherapyProgram entity, Session session) {
@@ -107,7 +107,7 @@ public class TherapyProgramDAOImpl implements TherapyProgramDAO {
         return CrudUtil.count(TherapyProgram.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public List<TherapyProgram> searchByName(String name) {

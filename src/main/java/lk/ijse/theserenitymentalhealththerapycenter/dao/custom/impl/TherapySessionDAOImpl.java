@@ -13,7 +13,7 @@ import java.util.List;
 
 public class TherapySessionDAOImpl implements TherapySessionDAO {
 
-    // ==================== CrudDAO: Self-Contained ====================
+
 
     @Override
     public void save(TherapySession entity) {
@@ -35,7 +35,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
                     existing.setStatus(entity.getStatus());
                     existing.setPaymentStatus(entity.getPaymentStatus());
                     existing.setNotes(entity.getNotes());
-                    existing.setPayment(entity.getPayment());
                     existing.setSequenceNumber(entity.getSequenceNumber());
                 }
                 tx.commit();
@@ -80,7 +79,7 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
         }
     }
 
-    // ==================== CrudDAO: Session-Aware ====================
+
 
     @Override
     public void save(TherapySession entity, Session session) {
@@ -99,7 +98,6 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
             existing.setStatus(entity.getStatus());
             existing.setPaymentStatus(entity.getPaymentStatus());
             existing.setNotes(entity.getNotes());
-            existing.setPayment(entity.getPayment());
             existing.setSequenceNumber(entity.getSequenceNumber());
         }
     }
@@ -132,7 +130,7 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
         return CrudUtil.count(TherapySession.class, session);
     }
 
-    // ==================== Custom Methods ====================
+
 
     @Override
     public List<TherapySession> findByDate(LocalDate date) {

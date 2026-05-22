@@ -33,4 +33,8 @@ public class UserDTO {
         }
         return 0;
     }
+
+    public String getStringId() {
+        return this.id;
+    }
 }

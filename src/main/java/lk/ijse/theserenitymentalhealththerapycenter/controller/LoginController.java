@@ -109,7 +109,7 @@ public class LoginController {
             txtPassword.setManaged(false);
             txtPasswordVisible.setVisible(true);
             txtPasswordVisible.setManaged(true);
-            btnTogglePassword.setText("\uD83D\uDE48");
+            btnTogglePassword.setText("\uD83D\uDC41\uFE0F\u200D\uD83D\uDDE8\uFE0F");
         } else {
             txtPasswordVisible.setVisible(false);
             txtPasswordVisible.setManaged(false);
@@ -137,7 +137,7 @@ public class LoginController {
             Parent root = loader.load();
             Stage stage = (Stage) txtUsername.getScene().getWindow();
 
-            Scene scene = new Scene(root, 1280, 800);
+            Scene scene = new Scene(root, 1280, 720);
             stage.setScene(scene);
             stage.setTitle(title);
             stage.centerOnScreen();

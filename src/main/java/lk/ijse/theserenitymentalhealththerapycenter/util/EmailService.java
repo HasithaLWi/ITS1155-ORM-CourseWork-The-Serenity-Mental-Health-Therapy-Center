@@ -21,23 +21,23 @@ public class EmailService {
         executor.shutdown();
     }
 
-//    static {
-//        try (InputStream input = EmailService.class.getClassLoader().getResourceAsStream("email.properties")) {
-//            if (input == null) {
-//                System.err.println("Unable to find email.properties. Falling back to default placeholders.");
-//                properties.put("email.smtp.host", "smtp.gmail.com");
-//                properties.put("email.smtp.port", "587");
-//                properties.put("email.smtp.auth", "true");
-//                properties.put("email.smtp.starttls.enable", "true");
-//                properties.put("email.username", "your_email@gmail.com");
-//                properties.put("email.password", "your_app_password");
-//            } else {
-//                properties.load(input);
-//            }
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
-//    }
+    static {
+        try (InputStream input = EmailService.class.getClassLoader().getResourceAsStream("email.properties")) {
+            if (input == null) {
+                System.err.println("Unable to find email.properties. Falling back to default placeholders.");
+                properties.put("email.smtp.host", "smtp.gmail.com");
+                properties.put("email.smtp.port", "587");
+                properties.put("email.smtp.auth", "true");
+                properties.put("email.smtp.starttls.enable", "true");
+                properties.put("email.username", "your_email@gmail.com");
+                properties.put("email.password", "your_app_password");
+            } else {
+                properties.load(input);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 
     public static void sendEmailAsync(String to, String subject, String body) {
         executor.submit(() -> {

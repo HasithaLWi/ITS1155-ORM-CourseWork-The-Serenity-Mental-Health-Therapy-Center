@@ -2,7 +2,8 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -15,24 +16,23 @@
     <left>
         <VBox prefWidth="250" spacing="0" style="-fx-background-color: #2C4A52; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 2, 0);">
             <VBox alignment="CENTER" spacing="6" style="-fx-padding: 28 20 24 20; -fx-background-color: #243F46;">
-                <Label style="-fx-font-size: 32px;" text="🌿" />
+            <ImageView fitHeight="86.0" fitWidth="139.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/logo3.png" />
+               </image>
+            </ImageView>
                 <Label style="-fx-text-fill: #FFFFFF; -fx-font-size: 18px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI';" text="Serenity" />
                 <Label style="-fx-text-fill: #C8DDD2; -fx-font-size: 10px; -fx-wrap-text: true; -fx-text-alignment: center;" text="Mental Health Therapy Center" />
-                <Separator prefWidth="180" style="-fx-background-color: rgba(200,221,210,0.2);" />
-                <Label style="-fx-text-fill: #6B9DC2; -fx-font-size: 10px; -fx-font-weight: bold;" text="RECEPTIONIST PORTAL" />
             </VBox>
             <VBox spacing="2" style="-fx-padding: 16 12;" VBox.vgrow="ALWAYS">
                 <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#showDashboard" styleClass="nav-btn-active" text="  📊   Dashboard" />
-                <Label style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;" text="PATIENT MANAGEMENT" />
                 <Button fx:id="btnRegisterPatient" maxWidth="Infinity" onAction="#showRegisterPatient" styleClass="nav-btn" text="  ➕   Register Patient" />
                 <Button fx:id="btnPatientList" maxWidth="Infinity" onAction="#showPatientList" styleClass="nav-btn" text="  🧑‍🤝‍🧑   Patient List" />
                 <Button fx:id="btnPatientOverview" maxWidth="Infinity" onAction="#showPatientOverview" styleClass="nav-btn" text="  🔎   Patient Overview" />
-                <Label style="-fx-text-fill: #6A9A84; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 14 16 4 16;" text="SCHEDULING" />
                 <Button fx:id="btnScheduleSession" maxWidth="Infinity" onAction="#showScheduleSession" styleClass="nav-btn" text="  📅   Schedule Session" />
                 <Button fx:id="btnPayments" maxWidth="Infinity" onAction="#showPayments" styleClass="nav-btn" text="  💳   Payments" />
-                <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#showSettings" styleClass="nav-btn" text="  ⚙️   Settings" />
+            <Button fx:id="btnSettings" layoutX="22.0" layoutY="241.0" maxWidth="Infinity" onAction="#showSettings" styleClass="nav-btn" text="  ⚙   Credential Settings" />
                 <Region VBox.vgrow="ALWAYS" />
-                <Separator style="-fx-background-color: rgba(200,221,210,0.2);" />
                 <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #C47171; -fx-font-size: 13px; -fx-alignment: CENTER_LEFT; -fx-padding: 12 16; -fx-background-radius: 10; -fx-cursor: hand;" text="  🚪   Logout" />
             </VBox>
             <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 16 16 20 16; -fx-background-color: #243F46;">

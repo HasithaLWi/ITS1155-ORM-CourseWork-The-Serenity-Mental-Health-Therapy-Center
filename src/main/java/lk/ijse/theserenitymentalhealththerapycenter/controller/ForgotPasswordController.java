@@ -20,27 +20,42 @@ import java.io.IOException;
 public class ForgotPasswordController {
 
 
-    @FXML private VBox step1Pane;
-    @FXML private TextField txtUsername;
-    @FXML private TextField txtEmail;
-    @FXML private Label lblStep1Error;
+    @FXML
+    private VBox step1Pane;
+    @FXML
+    private TextField txtUsername;
+    @FXML
+    private TextField txtEmail;
+    @FXML
+    private Label lblStep1Error;
 
 
-    @FXML private VBox step2Pane;
-    @FXML private Label lblSecurityQuestion;
-    @FXML private TextField txtSecurityAnswer;
-    @FXML private Label lblStep2Error;
+    @FXML
+    private VBox step2Pane;
+    @FXML
+    private Label lblSecurityQuestion;
+    @FXML
+    private TextField txtSecurityAnswer;
+    @FXML
+    private Label lblStep2Error;
 
 
-    @FXML private VBox step3Pane;
-    @FXML private PasswordField txtNewPassword;
-    @FXML private PasswordField txtConfirmNewPassword;
-    @FXML private Label lblStep3Error;
+    @FXML
+    private VBox step3Pane;
+    @FXML
+    private PasswordField txtNewPassword;
+    @FXML
+    private PasswordField txtConfirmNewPassword;
+    @FXML
+    private Label lblStep3Error;
 
 
-    @FXML private Label step1Indicator;
-    @FXML private Label step2Indicator;
-    @FXML private Label step3Indicator;
+    @FXML
+    private Label step1Indicator;
+    @FXML
+    private Label step2Indicator;
+    @FXML
+    private Label step3Indicator;
 
     private final UserBO userService = (UserBO) BOFactory.getInstance().getBO(BOFactory.BOType.USER);
     private UserDTO verifiedUser;
@@ -53,9 +68,12 @@ public class ForgotPasswordController {
 
     private void showStep(int step) {
         currentStep = step;
-        step1Pane.setVisible(step == 1); step1Pane.setManaged(step == 1);
-        step2Pane.setVisible(step == 2); step2Pane.setManaged(step == 2);
-        step3Pane.setVisible(step == 3); step3Pane.setManaged(step == 3);
+        step1Pane.setVisible(step == 1);
+        step1Pane.setManaged(step == 1);
+        step2Pane.setVisible(step == 2);
+        step2Pane.setManaged(step == 2);
+        step3Pane.setVisible(step == 3);
+        step3Pane.setManaged(step == 3);
 
         String active = "-fx-text-fill: #4A7FA5; -fx-font-size: 28px; -fx-font-weight: bold;";
         String inactive = "-fx-text-fill: #95A5A6; -fx-font-size: 28px;";
@@ -81,10 +99,10 @@ public class ForgotPasswordController {
 
         try {
             verifiedUser = userService.verifyIdentity(username, email);
-            
+
 
             String otp = lk.ijse.theserenitymentalhealththerapycenter.util.OtpManager.generateOtp(verifiedUser.getUsername());
-            
+
 
             String subject = "Serenity Therapy - Password Reset OTP";
             String body = "Dear " + verifiedUser.getFullName() + ",\n\n"
@@ -94,9 +112,9 @@ public class ForgotPasswordController {
                     + "This code is valid for 5 minutes. If you did not request a password reset, please ignore this email.\n\n"
                     + "Best regards,\n"
                     + "Serenity Mental Health Therapy Center Team";
-            
+
             lk.ijse.theserenitymentalhealththerapycenter.util.EmailService.sendEmailAsync(email, subject, body);
-            
+
             lblStep2Error.setText("");
             txtSecurityAnswer.clear();
             showStep(2);
@@ -111,7 +129,7 @@ public class ForgotPasswordController {
             lblStep2Error.setText("Session invalid. Please go back and verify identity.");
             return;
         }
-        
+
         String enteredOtp = txtSecurityAnswer.getText().trim();
         if (enteredOtp.isEmpty()) {
             lblStep2Error.setText("Please enter the OTP.");
@@ -154,25 +172,29 @@ public class ForgotPasswordController {
     }
 
     @FXML
-    void handleBackToStep1(ActionEvent event) { showStep(1); }
+    void handleBackToStep1(ActionEvent event) {
+        showStep(1);
+    }
 
     @FXML
-    void handleBackToLogin(ActionEvent event) { navigateToLogin(); }
+    void handleBackToLogin(ActionEvent event) {
+        navigateToLogin();
+    }
 
     private void navigateToLogin() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/lk/ijse/theserenitymentalhealththerapycenter/view/Login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) txtUsername.getScene().getWindow();
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(300), txtUsername.getScene().getRoot());
-            fadeOut.setFromValue(1.0); fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(e -> {
-                Scene scene = new Scene(root, 1280, 800);
-                stage.setScene(scene); stage.setTitle("Serenity - Login"); stage.centerOnScreen();
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(300), root);
-                fadeIn.setFromValue(0.0); fadeIn.setToValue(1.0); fadeIn.play();
-            });
-            fadeOut.play();
-        } catch (IOException e) { e.printStackTrace(); }
+
+            Scene scene = new Scene(root, 1280, 720);
+            stage.setScene(scene);
+            stage.setTitle("Serenity - Login");
+            stage.centerOnScreen();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

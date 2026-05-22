@@ -256,7 +256,7 @@ public class RegistrationController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/lk/ijse/theserenitymentalhealththerapycenter/view/Login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) txtUsername.getScene().getWindow();
-            Scene scene = new Scene(root, 1280, 800);
+            Scene scene = new Scene(root, 1280, 720);
             stage.setScene(scene);
             stage.setTitle("Serenity - Login");
             stage.centerOnScreen();

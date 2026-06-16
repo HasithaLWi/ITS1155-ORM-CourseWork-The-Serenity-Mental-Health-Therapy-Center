@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.theserenitymentalhealththerapycenter.controller.TherapistScheduleController">
+
+    <top>
+        <VBox spacing="15.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Therapist Schedule Manager" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnSaveSchedule" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 120px;" text="Save Changes" />
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 5px; -fx-border-color: #d5d8dc; -fx-border-radius: 5px;">
+                <Label style="-fx-font-weight: bold;" text="Select Therapist:" />
+                <ComboBox fx:id="comboTherapist" prefWidth="250.0" promptText="-- Choose Therapist --" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button fx:id="btnPrevWeek" text="&lt; Previous Week" />
+                <Label fx:id="lblCurrentWeek" style="-fx-font-size: 14px; -fx-font-weight: bold;" text="May 11, 2026 - May 17, 2026" />
+                <Button fx:id="btnNextWeek" text="Next Week &gt;" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" />
+            </padding>
+            <content>
+                <GridPane fx:id="scheduleGrid" gridLinesVisible="true" style="-fx-background-color: white;">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="80.0" prefWidth="100.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" /> </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="40.0" prefHeight="40.0" vgrow="NEVER" /> </rowConstraints>
+                    <children>
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Time" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Monday" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Tuesday" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Wednesday" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Thursday" GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Friday" GridPane.columnIndex="5" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Saturday" GridPane.columnIndex="6" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Sunday" GridPane.columnIndex="7" GridPane.rowIndex="0" />
+                    </children>
+                </GridPane>
+            </content>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" spacing="25.0" style="-fx-background-color: white; -fx-border-color: #d5d8dc; -fx-border-width: 1 0 0 0;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="15.0" top="15.0" />
+            </padding>
+            <children>
+                <HBox alignment="CENTER" spacing="8.0">
+                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#2ecc71" height="15.0" stroke="TRANSPARENT" width="15.0" />
+                    <Label text="Available (Master Rule)" />
+                </HBox>
+                <HBox alignment="CENTER" spacing="8.0">
+                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#e74c3c" height="15.0" stroke="TRANSPARENT" width="15.0" />
+                    <Label text="Time Off (Negative Exception)" />
+                </HBox>
+                <HBox alignment="CENTER" spacing="8.0">
+                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#f1c40f" height="15.0" stroke="TRANSPARENT" width="15.0" />
+                    <Label text="Overtime (Positive Exception)" />
+                </HBox>
+                <HBox alignment="CENTER" spacing="8.0">
+                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#3498db" height="15.0" stroke="TRANSPARENT" width="15.0" />
+                    <Label text="Booked Session" />
+                </HBox>
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>

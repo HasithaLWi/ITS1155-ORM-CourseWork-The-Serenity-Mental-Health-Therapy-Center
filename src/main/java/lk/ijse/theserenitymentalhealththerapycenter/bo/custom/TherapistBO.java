@@ -13,4 +13,6 @@ public interface TherapistBO extends SuperBO {
     long getTherapistCount();
     long getActiveTherapistCount();
     TherapistDTO getTherapistById(Long id);
+    TherapistDTO getTherapistByName(String name);
+
 }

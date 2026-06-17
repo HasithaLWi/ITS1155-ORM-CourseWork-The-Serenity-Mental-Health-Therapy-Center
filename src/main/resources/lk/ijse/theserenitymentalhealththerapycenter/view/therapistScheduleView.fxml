@@ -54,13 +54,13 @@
                         <RowConstraints minHeight="40.0" prefHeight="40.0" vgrow="NEVER" /> </rowConstraints>
                     <children>
                         <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Time" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Monday" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Tuesday" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Wednesday" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Thursday" GridPane.columnIndex="4" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Friday" GridPane.columnIndex="5" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Saturday" GridPane.columnIndex="6" GridPane.rowIndex="0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Sunday" GridPane.columnIndex="7" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Monday" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Tuesday" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Wednesday" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Thursday" wrapText="true" GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Friday" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Saturday" wrapText="true" GridPane.columnIndex="6" GridPane.rowIndex="0" />
+                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-background-color: #eaeded;" text="Sunday" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="0" />
                     </children>
                 </GridPane>
             </content>

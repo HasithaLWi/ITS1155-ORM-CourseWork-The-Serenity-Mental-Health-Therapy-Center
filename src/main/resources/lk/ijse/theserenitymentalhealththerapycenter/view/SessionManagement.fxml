@@ -18,7 +18,13 @@
     <VBox spacing="20" style="-fx-padding: 28;">
         <!-- Scheduling Form -->
         <VBox spacing="12" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
-            <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="📅  Schedule New Session" />
+         <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="ALWAYS">
+            <children>
+                  <Label style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;" text="📅  Schedule New Session" />
+               <Region HBox.hgrow="ALWAYS" />
+               <Button fx:id="btnTherapistSchedule" onAction="#handleTherapistSchedule" style="-fx-background-color: #4A7FA5; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 10; -fx-cursor: hand;" text="Therapist Schedule" />
+            </children>
+         </HBox>
             <Separator />
          <HBox layoutX="35.0" layoutY="83.0" spacing="16">
             <children>

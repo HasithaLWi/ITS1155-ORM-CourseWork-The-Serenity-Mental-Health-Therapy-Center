@@ -23,6 +23,7 @@ public class DAOFactory {
             case PAYMENT -> new PaymentDAOImpl();
             case THERAPY_PROGRAM -> new TherapyProgramDAOImpl();
             case THERAPY_SESSION -> new TherapySessionDAOImpl();
+            case THERAPIST_SCHEDULE -> new TherapistScheduleDAOImpl();
             case USER -> new UserDAOImpl();
             case PATIENT_THERAPY_PROGRAM -> new PatientTherapyProgramDAOImpl();
             case QUERY -> new QueryDAOImpl();
@@ -30,6 +31,6 @@ public class DAOFactory {
     }
 
     public enum DAOType {
-        PATIENT, THERAPIST, THERAPY_SESSION, THERAPY_PROGRAM, PAYMENT, USER, PATIENT_THERAPY_PROGRAM, QUERY
+        PATIENT, THERAPIST, THERAPY_SESSION, THERAPY_PROGRAM, PAYMENT, USER, PATIENT_THERAPY_PROGRAM, THERAPIST_SCHEDULE, QUERY
     }
 }

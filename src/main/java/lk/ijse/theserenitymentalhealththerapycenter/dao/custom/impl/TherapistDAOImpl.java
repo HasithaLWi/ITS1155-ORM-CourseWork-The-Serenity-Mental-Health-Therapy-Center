@@ -169,4 +169,14 @@ public class TherapistDAOImpl implements TherapistDAO {
             return query.uniqueResult();
         }
     }
+
+    @Override
+    public Therapist findByName(String name) {
+        try (Session session = FactoryConfiguration.getInstance().getSession()) {
+            Query<Therapist> query = session.createQuery(
+                    "FROM Therapist t WHERE t.name = :name", Therapist.class);
+            query.setParameter("name", name);
+            return query.uniqueResult();
+        }
+    }
 }

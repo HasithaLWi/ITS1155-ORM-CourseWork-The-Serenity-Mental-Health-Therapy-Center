@@ -2,6 +2,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.impl.*;
 
+
 public class BOFactory {
     private static BOFactory boFactory;
     private BOFactory() {
@@ -21,11 +22,12 @@ public class BOFactory {
             case THERAPIST -> new TherapistBOImpl();
             case THERAPY_PROGRAM -> new TherapyProgramBOImpl();
             case THERAPY_SESSION -> new TherapySessionBOImpl();
+            case THERAPIST_SCHEDULE -> new TherapistScheduleBOImpl();
             case PAYMENT -> new PaymentBOImpl();
         };
     }
 
     public enum BOType {
-        PATIENT, USER, THERAPIST, THERAPY_PROGRAM, THERAPY_SESSION, PAYMENT
+        PATIENT, USER, THERAPIST, THERAPY_PROGRAM, THERAPY_SESSION, PAYMENT,THERAPIST_SCHEDULE
     }
 }

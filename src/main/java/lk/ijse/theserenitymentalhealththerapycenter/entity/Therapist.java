@@ -52,6 +52,10 @@ public class Therapist {
     @ToString.Exclude
     private List<TherapySession> sessions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "therapist", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<TherapistSchedule> therapistSchedules;
+
     public enum Status {
         ACTIVE, INACTIVE, ON_LEAVE
     }

@@ -138,6 +138,13 @@ public class TherapistBOImpl implements TherapistBO {
     }
 
     @Override
+    public TherapistDTO getTherapistByName(String name) {
+        Therapist entity = therapistDAO.findByName(name);
+        if (entity == null) throw new SerenityException("Therapist not found.");
+        return toDTO(entity);
+    }
+
+    @Override
     public List<TherapistDTO> getAllTherapists() {
         return therapistDAO.getAll().stream().map(this::toDTO).toList();
     }

@@ -6,10 +6,15 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
@@ -26,6 +31,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ComboBoxAutoCompleteUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
@@ -915,6 +921,24 @@ public class SessionManagementController implements Initializable {
                 AlertUtil.showError("Error", e.getMessage());
             }
         }
+    }
+
+    @FXML
+    private void handleTherapistSchedule(ActionEvent event) {
+        Stage scheduleStage = new Stage();
+        scheduleStage.setTitle("Therapist Schedule");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lk/ijse/theserenitymentalhealththerapycenter/view/TherapistScheduleView.fxml"));
+            Parent root = loader.load();
+            TherapistScheduleController controller = loader.getController();
+//            controller.setTherapistScheduleData(allSessionsCache, allTherapistsCache);
+            scheduleStage.setScene(new Scene(root));
+            scheduleStage.initModality(Modality.APPLICATION_MODAL);
+        } catch (IOException e) {
+            AlertUtil.showError("Error", "Failed to load therapist schedule: " + e.getMessage());
+            return;
+        }
+        scheduleStage.showAndWait();
     }
 
     @FXML

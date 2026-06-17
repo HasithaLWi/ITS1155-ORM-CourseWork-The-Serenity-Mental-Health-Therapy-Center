@@ -7,19 +7,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "therapist_schedule")
-public class TherapistSchedule {
+@Table(name = "therapist_availability")
+public class TherapistAvailability {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Enumerated(EnumType.STRING)
-    private TherapistScheduleTypes scheduleType;
     private LocalDate date;
     private String time;
 

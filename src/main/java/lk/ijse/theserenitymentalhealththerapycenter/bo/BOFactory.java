@@ -23,11 +23,12 @@ public class BOFactory {
             case THERAPY_PROGRAM -> new TherapyProgramBOImpl();
             case THERAPY_SESSION -> new TherapySessionBOImpl();
             case THERAPIST_SCHEDULE -> new TherapistScheduleBOImpl();
+            case THERAPIST_AVAILABILITY -> new TherapistAvailabilityBOImpl();
             case PAYMENT -> new PaymentBOImpl();
         };
     }
 
     public enum BOType {
-        PATIENT, USER, THERAPIST, THERAPY_PROGRAM, THERAPY_SESSION, PAYMENT,THERAPIST_SCHEDULE
+        PATIENT, USER, THERAPIST, THERAPY_PROGRAM, THERAPY_SESSION, PAYMENT,THERAPIST_SCHEDULE, THERAPIST_AVAILABILITY
     }
 }

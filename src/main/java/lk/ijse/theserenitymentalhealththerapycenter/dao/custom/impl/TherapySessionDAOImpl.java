@@ -2,6 +2,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.dao.custom.impl;
 
 import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapySessionDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -189,6 +190,19 @@ public class TherapySessionDAOImpl implements TherapySessionDAO {
                     .setParameter("therapistId", therapistId)
                     .list();
         }
+    }
+    @Override
+    public List<TherapySession> getTherapySessionsByTherapist(Therapist therapist,Session session) {
+
+            return session.createQuery(
+                            "FROM TherapySession ts " +
+                                    "WHERE ts.therapist.id = :therapistId " +
+                                    "ORDER BY ts.sessionDate, ts.sessionTime",
+                            TherapySession.class
+                    )
+                    .setParameter("therapistId", therapist.getId())
+                    .list();
+
     }
 
     @Override

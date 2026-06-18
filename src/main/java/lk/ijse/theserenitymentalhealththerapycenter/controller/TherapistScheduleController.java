@@ -13,12 +13,13 @@ import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistAvailabilityBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistScheduleBO;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
-import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistAvailabilityDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistScheduleDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistScheduleTypes;
+import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.net.URL;
 import java.time.DayOfWeek;
@@ -51,6 +52,9 @@ public class TherapistScheduleController implements Initializable {
 
     private List<TherapistScheduleDTO> therapistScheduleDTOs;
     private List<TherapistAvailabilityDTO> therapistAvailabilityDTOs;
+    private List<TherapySessionDTO> therapySessionDTOs;
+
+    private Set<SlotPane> oldSlots = new HashSet<>();
 
     // Colors matching your FXML legend
     private final String COLOR_AVAILABLE = "#2ecc71";
@@ -65,6 +69,7 @@ public class TherapistScheduleController implements Initializable {
     private TherapistBO therapistBO = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
     private TherapistScheduleBO therapistScheduleBO = (TherapistScheduleBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_SCHEDULE);
     private TherapistAvailabilityBO therapistAvailabilityBO = (TherapistAvailabilityBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_AVAILABILITY);
+    private TherapySessionBO therapySessionBO = (TherapySessionBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_SESSION);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -84,7 +89,7 @@ public class TherapistScheduleController implements Initializable {
 
         comboTherapist.setOnAction(e -> {
             loadSchedulesFromDatabase();
-            loadScheduleFromDatabase();
+            loadScheduleGrid();
             setTherapistAvailability();
 
         });
@@ -97,7 +102,19 @@ public class TherapistScheduleController implements Initializable {
         sharedContextMenu = new ContextMenu();
 
         MenuItem itemAvailable = new MenuItem("Set Available (Master Rule)");
-        itemAvailable.setOnAction(e -> applyStatusToSelection("AVAILABLE", COLOR_AVAILABLE));
+        itemAvailable.setOnAction(e ->{
+            for (SlotPane slot : selectedSlots) {
+                if (slot.getCurrentStatus().equals("SCHEDULED")) {
+                    AlertUtil.showWarning("Cannot Set Available", "One or more selected slots are currently SCHEDULED. Clear those slots first before setting them as AVAILABLE.");
+                    return;
+                }
+                if(!slot.getCurrentStatus().equals("AVAILABLE") && !slot.getCurrentStatus().equals("CLEAR")) {
+                    oldSlots.add(slot);
+                }
+            }
+            applyStatusToSelection("AVAILABLE", COLOR_AVAILABLE);
+
+        });
 
         MenuItem itemTimeOff = new MenuItem("Mark Time Off (Exception)");
         itemTimeOff.setOnAction(e -> applyStatusToSelection("TIME_OFF", COLOR_TIME_OFF));
@@ -105,13 +122,13 @@ public class TherapistScheduleController implements Initializable {
         MenuItem itemOvertime = new MenuItem("Mark Time Off (Overtime)");
         itemOvertime.setOnAction(e -> applyStatusToSelection("OVERTIME", COLOR_OVERTIME));
 
-        MenuItem itemScheduled = new MenuItem("Mark as Scheduled");
-        itemScheduled.setOnAction(e -> applyStatusToSelection("SCHEDULED", COLOR_SCHEDULE));
+//        MenuItem itemScheduled = new MenuItem("Mark as Scheduled");
+//        itemScheduled.setOnAction(e -> applyStatusToSelection("SCHEDULED", COLOR_SCHEDULE));
 
         MenuItem itemClear = new MenuItem("Clear Slot");
         itemClear.setOnAction(e -> applyStatusToSelection("CLEAR", COLOR_DEFAULT));
 
-        sharedContextMenu.getItems().addAll(itemAvailable, itemTimeOff, itemOvertime, itemScheduled, new SeparatorMenuItem(), itemClear);
+        sharedContextMenu.getItems().addAll(itemAvailable, itemTimeOff, itemOvertime, new SeparatorMenuItem(), itemClear);
     }
 
     /**
@@ -213,7 +230,7 @@ public class TherapistScheduleController implements Initializable {
                     });
         }
         updateWeekLabel();
-        loadScheduleFromDatabase(); // Refresh data for the new week
+        loadScheduleGrid(); // Refresh data for the new week
     }
 
     private void updateWeekLabel() {
@@ -232,6 +249,13 @@ public class TherapistScheduleController implements Initializable {
         comboTherapist.getItems().addAll(therapistNames);
     }
 
+    private void loadTherapistBookedSchedules(long id){
+
+        therapySessionDTOs = therapySessionBO.getTherapySessionsByTherapist(id);
+
+
+    }
+
     private void loadSchedulesFromDatabase() {
         if (comboTherapist.getValue() == null) return;
 
@@ -242,6 +266,7 @@ public class TherapistScheduleController implements Initializable {
             showAlert("Error", "Selected therapist not found in the database.");
             return;
         }
+        loadTherapistBookedSchedules(therapist.getId());
 
         therapistScheduleDTOs = therapistScheduleBO.getAllSchedulesByTherapist(therapist.getId());
         therapistAvailabilityDTOs = therapistAvailabilityBO.getAllAvailabilityByTherapist(therapist.getId());
@@ -271,6 +296,17 @@ public class TherapistScheduleController implements Initializable {
 
                 }
 
+                TherapySessionDTO matchingSession = therapySessionDTOs.stream()
+                        .filter(session -> session.getSessionDate().equals(slotDate)
+                                && isSameSlotTime(String.valueOf(session.getSessionTime()), slotPane.getTime()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (matchingSession != null) {
+                    slotPane.setCurrentStatus("SCHEDULED");
+                    slotPane.setCurrentColor(COLOR_SCHEDULE);
+                }
+
                 slotPane.setDefaultStyle();
 
             }
@@ -280,7 +316,7 @@ public class TherapistScheduleController implements Initializable {
 
     // --- HIBERNATE / DATABASE LOGIC ---
 
-    private void loadScheduleFromDatabase() {
+    private void loadScheduleGrid() {
         if (comboTherapist.getValue() == null) {
             showAlert("Error", "Select therapist first.");
             return;
@@ -288,6 +324,7 @@ public class TherapistScheduleController implements Initializable {
 
         if (therapistScheduleDTOs == null || therapistScheduleDTOs.isEmpty()) {
             clearScheduleGrid();
+            setTherapistAvailability();
             return;
         }
 
@@ -300,8 +337,8 @@ public class TherapistScheduleController implements Initializable {
                 .toList();
 
         clearScheduleGrid();
-
         setTherapistAvailability();
+
 
         if (currentWeekSchedule.isEmpty()) {
             return;
@@ -318,16 +355,12 @@ public class TherapistScheduleController implements Initializable {
                         .findFirst()
                         .orElse(null);
 
+
+
                 if (matchingDTO != null) {
-                    if (matchingDTO.getScheduleType() == TherapistScheduleTypes.AVAILABLE) {
-                        slotPane.setCurrentStatus("AVAILABLE");
-                        slotPane.setCurrentColor(COLOR_AVAILABLE);
-                    } else if (matchingDTO.getScheduleType() == TherapistScheduleTypes.EXCEPTIONS) {
+                    if (matchingDTO.getScheduleType() == TherapistScheduleTypes.EXCEPTIONS) {
                         slotPane.setCurrentStatus("TIME_OFF");
                         slotPane.setCurrentColor(COLOR_TIME_OFF);
-                    } else if (matchingDTO.getScheduleType() == TherapistScheduleTypes.SCHEDULED) {
-                        slotPane.setCurrentStatus("SCHEDULED");
-                        slotPane.setCurrentColor(COLOR_SCHEDULE);
                     } else if (matchingDTO.getScheduleType() == TherapistScheduleTypes.OVERTIMES) {
                         slotPane.setCurrentStatus("OVERTIME");
                         slotPane.setCurrentColor(COLOR_OVERTIME);
@@ -341,8 +374,6 @@ public class TherapistScheduleController implements Initializable {
 
             }
         }
-        // 3. Hibernate: SELECT * FROM schedule_exceptions WHERE doctor_id = X AND specific_date BETWEEN start AND end
-        //    -> Loop through results, override matching SlotPane to "TIME_OFF" (Red)
     }
 
     private void clearScheduleGrid() {
@@ -384,7 +415,7 @@ public class TherapistScheduleController implements Initializable {
                         && !dto.getDate().isAfter(weekEnd))
                 .toList();
 
-        System.out.println("Saving changes to Hibernate...");
+
 
         // Loop through all nodes in the GridPane
         for (Node node : scheduleGrid.getChildren()) {
@@ -393,6 +424,12 @@ public class TherapistScheduleController implements Initializable {
 
                 // Get the exact date for this specific column
                 LocalDate slotDate = currentWeekStart.plusDays(slot.getDayOfWeek().getValue() - 1);
+
+                SlotPane existPreNotAvailableSlot = oldSlots.stream()
+                        .filter(s -> s.getDayOfWeek().equals(slot.getDayOfWeek())
+                                && isSameSlotTime(String.valueOf(s.getTime()), slot.getTime()))
+                        .findFirst()
+                        .orElse(null);
 
                 if (slot.getCurrentStatus().equals("AVAILABLE")) {
                     TherapistAvailabilityDTO existingAvailability = therapistAvailabilityDTOs.stream()
@@ -420,12 +457,12 @@ public class TherapistScheduleController implements Initializable {
 
                     }
 
-                } else if (!slot.getCurrentStatus().equals("CLEAR")) {
+                } else if (!slot.getCurrentStatus().equals("CLEAR") && !slot.getCurrentStatus().equals("SCHEDULED")) {
 
                     TherapistScheduleTypes scheduleType = switch (slot.getCurrentStatus()) {
                         case "TIME_OFF" -> TherapistScheduleTypes.EXCEPTIONS;
                         case "OVERTIME" -> TherapistScheduleTypes.OVERTIMES;
-                        case "SCHEDULED" -> TherapistScheduleTypes.SCHEDULED;
+//                        case "SCHEDULED" -> TherapistScheduleTypes.SCHEDULED;
                         default -> null;
                     };
 
@@ -469,16 +506,40 @@ public class TherapistScheduleController implements Initializable {
                             .findFirst()
                             .orElse(null);
 
+                    TherapistAvailabilityDTO existingAvailability = therapistAvailabilityDTOs.stream()
+                            .filter(dto -> dto.getTime() != null
+                                    && slotDate.getDayOfWeek().equals(dto.getDayOfWeek())
+                                    && isSameSlotTime(dto.getTime(), slot.getTime()))
+                            .findFirst()
+                            .orElse(null);
+
 
                     if (existingSchedule != null && existingSchedule.getScheduleType() != TherapistScheduleTypes.AVAILABLE) {
                         therapistScheduleBO.deleteTherapistSchedule(existingSchedule.getId());
                         System.out.println("Deleting Schedule ID " + existingSchedule.getId() + " on " + slotDate + " at " + slot.getTime());
+                    } else if (existingAvailability != null) {
+                        therapistAvailabilityBO.deleteAvailabilityById(existingAvailability.getId());
+
+                        System.out.println("Deleting Master Rule ID " + existingAvailability.getId() + " on " + slotDate + " at " + slot.getTime());
+                    }
+                }
+                if (!oldSlots.isEmpty() && existPreNotAvailableSlot != null) {
+                    // if slot now AVAILABLE but previously something else, then need to remove previous slot from therapySchedule records
+                    TherapistScheduleDTO existingSchedule = currentWeekSchedule.stream()
+                            .filter(dto -> slotDate.equals(dto.getDate()) && isSameSlotTime(dto.getTime(), slot.getTime()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (existingSchedule != null) {
+                        therapistScheduleBO.deleteTherapistSchedule(existingSchedule.getId());
+                        System.out.println("Deleting Schedule ID " + existingSchedule.getId() + " on " + slotDate + " at " + slot.getTime() + " because it was changed to AVAILABLE");
                     }
                 }
             }
         }
 
-        showAlert("Success", "Schedule saved successfully!");
+        AlertUtil.showInfo("Success", "Schedule saved successfully!");
+        loadSchedulesFromDatabase();
     }
 
     private void showAlert(String title, String content) {

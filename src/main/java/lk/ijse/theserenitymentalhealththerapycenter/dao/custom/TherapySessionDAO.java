@@ -1,6 +1,7 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dao.custom;
 
 import lk.ijse.theserenitymentalhealththerapycenter.dao.CrudDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import org.hibernate.Session;
 
@@ -16,4 +17,5 @@ public interface TherapySessionDAO extends CrudDAO<TherapySession> {
     long countCompletedByPatientAndProgram(Long patientId, Long programId);
     long countByPatientAndProgram(Long patientId, Long programId);
     List<TherapySession> getScheduledSessionsSortedByDate();
+    List<TherapySession> getTherapySessionsByTherapist(Therapist therapist, Session session);
 }

@@ -45,6 +45,17 @@ public class TherapistScheduleBOImpl implements TherapistScheduleBO {
 
     @Override
     public void deleteTherapistSchedule(Long id) {
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            TherapistSchedule entity = therapistScheduleDAO.getById(id, session);
+            therapistScheduleDAO.delete(entity, session);
+            transaction.commit();
+
+        }  catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        }
 
     }
 

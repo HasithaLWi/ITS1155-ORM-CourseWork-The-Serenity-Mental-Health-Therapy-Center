@@ -70,6 +70,8 @@ public class TherapistAvailabilityDAOImpl implements TherapistAvailabilityDAO {
     @Override
     public void delete(TherapistAvailability entity, Session session) {
 
+        session.remove(entity);
+
     }
 
     @Override

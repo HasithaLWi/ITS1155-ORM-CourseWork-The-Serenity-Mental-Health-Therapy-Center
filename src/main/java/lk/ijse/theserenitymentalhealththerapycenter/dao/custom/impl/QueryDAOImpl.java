@@ -4,6 +4,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.QueryDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.ProgramSummaryDTO;
 
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import org.hibernate.Session;
 
 import java.util.List;
@@ -22,4 +24,6 @@ public class QueryDAOImpl implements QueryDAO {
             ).list();
         }
     }
+
+
 }

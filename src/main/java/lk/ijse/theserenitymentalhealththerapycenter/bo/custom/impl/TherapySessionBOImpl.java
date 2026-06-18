@@ -8,6 +8,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.SchedulingException;
 import org.hibernate.Session;
@@ -188,7 +189,27 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         return sessionDAO.getScheduledSessionsSortedByDate().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<TherapySessionDTO> getTherapySessionsByTherapist(long therapistId) {
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
 
+        try{
+            Therapist therapist = therapistDAO.getById(therapistId, session);
+            if (therapist == null) {
+                throw new SchedulingException("Therapist not found with ID: " + therapistId);
+            }
+            List<TherapySessionDTO> sessions = sessionDAO.getTherapySessionsByTherapist(therapist, session)
+                    .stream().map(this::toDTO).collect(Collectors.toList());
+
+            transaction.commit();
+            return sessions;
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        }
+
+    }
 
 
     private void validateSessionDate(LocalDate sessionDate) {

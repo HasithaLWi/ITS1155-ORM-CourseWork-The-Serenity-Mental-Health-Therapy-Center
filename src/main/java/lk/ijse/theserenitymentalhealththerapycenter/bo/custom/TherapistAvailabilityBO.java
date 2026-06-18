@@ -8,7 +8,7 @@ import java.util.List;
 public interface TherapistAvailabilityBO extends SuperBO {
     List<TherapistAvailabilityDTO> getAllAvailabilityByTherapist(Long id);
     void saveAvailability(TherapistAvailabilityDTO therapistAvailabilityDTO);
-    boolean deleteAvailabilityById(Long id);
+    void deleteAvailabilityById(Long id);
     boolean updateAvailability(TherapistAvailabilityDTO therapistAvailabilityDTO);
 
 }

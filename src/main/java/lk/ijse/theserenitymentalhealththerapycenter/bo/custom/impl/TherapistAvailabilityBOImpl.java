@@ -50,8 +50,18 @@ public class TherapistAvailabilityBOImpl implements TherapistAvailabilityBO {
     }
 
     @Override
-    public boolean deleteAvailabilityById(Long id) {
-        return false;
+    public void deleteAvailabilityById(Long id) {
+        Session session = FactoryConfiguration.getInstance().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try{
+            TherapistAvailability therapistAvailability = therapistAvailabilityDAO.getById(id, session);
+            therapistAvailabilityDAO.delete(therapistAvailability, session);
+            transaction.commit();
+
+        }  catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            throw e;
+        }
     }
 
     @Override

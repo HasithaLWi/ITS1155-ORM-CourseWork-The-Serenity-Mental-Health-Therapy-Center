@@ -2,6 +2,8 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.SuperBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
+import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 
 
 import java.time.LocalDate;
@@ -18,4 +20,5 @@ public interface TherapySessionBO extends SuperBO {
     List<TherapySessionDTO> getSessionsByPatient(Long patientId);
     long getSessionCount();
     List<TherapySessionDTO> getScheduledSessionsSortedByDate();
+    List<TherapySessionDTO> getTherapySessionsByTherapist(long therapistID);
 }

@@ -41,27 +41,27 @@ public class TherapistScheduleDAOImpl implements TherapistScheduleDAO {
     }
 
     @Override
-    public void save(TherapistScheduleDAO entity) {
+    public void save(TherapistSchedule entity) {
 
     }
 
     @Override
-    public void update(TherapistScheduleDAO entity) {
+    public void update(TherapistSchedule entity) {
 
     }
 
     @Override
-    public void delete(TherapistScheduleDAO entity) {
+    public void delete(TherapistSchedule entity) {
 
     }
 
     @Override
-    public TherapistScheduleDAO getById(Object id) {
+    public TherapistSchedule getById(Object id) {
         return null;
     }
 
     @Override
-    public List<TherapistScheduleDAO> getAll() {
+    public List<TherapistSchedule> getAll() {
         return List.of();
     }
 
@@ -71,27 +71,37 @@ public class TherapistScheduleDAOImpl implements TherapistScheduleDAO {
     }
 
     @Override
-    public void save(TherapistScheduleDAO entity, Session session) {
+    public void save(TherapistSchedule entity, Session session) {
+
+        session.persist(entity);
 
     }
 
     @Override
-    public void update(TherapistScheduleDAO entity, Session session) {
+    public void update(TherapistSchedule entity, Session session) {
+        TherapistSchedule existing = session.get(TherapistSchedule.class, entity.getId());
+        if (existing != null) {
+            existing.setDate(entity.getDate());
+            existing.setTime(entity.getTime());
+            existing.setScheduleType(entity.getScheduleType());
+            existing.setTherapist(entity.getTherapist());
+        }
+        session.merge(existing);
 
     }
 
     @Override
-    public void delete(TherapistScheduleDAO entity, Session session) {
+    public void delete(TherapistSchedule entity, Session session) {
 
     }
 
     @Override
-    public TherapistScheduleDAO getById(Object id, Session session) {
-        return null;
+    public TherapistSchedule getById(Object id, Session session) {
+        return session.get(TherapistSchedule.class, id);
     }
 
     @Override
-    public List<TherapistScheduleDAO> getAll(Session session) {
+    public List<TherapistSchedule> getAll(Session session) {
         return List.of();
     }
 

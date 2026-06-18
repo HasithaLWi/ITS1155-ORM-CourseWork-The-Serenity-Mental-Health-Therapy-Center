@@ -20,6 +20,7 @@ public class TherapistAvailabilityDAOImpl implements TherapistAvailabilityDAO {
     @Override
     public void save(TherapistAvailability entity) {
 
+
     }
 
     @Override
@@ -50,10 +51,19 @@ public class TherapistAvailabilityDAOImpl implements TherapistAvailabilityDAO {
     @Override
     public void save(TherapistAvailability entity, Session session) {
 
+        session.persist(entity);
+
     }
 
     @Override
     public void update(TherapistAvailability entity, Session session) {
+            TherapistAvailability existing = session.get(TherapistAvailability.class, entity.getId());
+            if (existing != null) {
+                existing.setDayOfWeek(entity.getDayOfWeek());
+                existing.setTime(entity.getTime());
+                existing.setTherapist(entity.getTherapist());
+            }
+            session.merge(existing);
 
     }
 
@@ -64,7 +74,8 @@ public class TherapistAvailabilityDAOImpl implements TherapistAvailabilityDAO {
 
     @Override
     public TherapistAvailability getById(Object id, Session session) {
-        return null;
+
+        return session.get(TherapistAvailability.class, id);
     }
 
     @Override

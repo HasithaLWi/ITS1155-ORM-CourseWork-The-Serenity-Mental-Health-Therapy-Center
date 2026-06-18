@@ -10,10 +10,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistAvailabilityBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistScheduleBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
+import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistAvailabilityDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistScheduleDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistScheduleTypes;
@@ -46,7 +48,9 @@ public class TherapistScheduleController implements Initializable {
     private ContextMenu sharedContextMenu;
     private Set<SlotPane> selectedSlots = new HashSet<>();
 
+
     private List<TherapistScheduleDTO> therapistScheduleDTOs;
+    private  List<TherapistAvailabilityDTO> therapistAvailabilityDTOs;
 
     // Colors matching your FXML legend
     private final String COLOR_AVAILABLE = "#2ecc71";
@@ -60,6 +64,7 @@ public class TherapistScheduleController implements Initializable {
     private final String BORDER_DEFAULT = "-fx-border-color: #eaeded; -fx-border-width: 1;";
     private TherapistBO therapistBO = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
     private TherapistScheduleBO therapistScheduleBO = (TherapistScheduleBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_SCHEDULE);
+    private TherapistAvailabilityBO therapistAvailabilityBO = (TherapistAvailabilityBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_AVAILABILITY);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -78,8 +83,10 @@ public class TherapistScheduleController implements Initializable {
         btnSaveSchedule.setOnAction(e -> saveChangesToDatabase());
 
         comboTherapist.setOnAction(e -> {
-            loadScheduleFromDatabase();
             loadSchedulesFromDatabase();
+            loadScheduleFromDatabase();
+            setTherapistAvailability();
+
         });
     }
 
@@ -221,6 +228,7 @@ public class TherapistScheduleController implements Initializable {
                 .map(dto -> dto.getName())
                 .collect(FXCollections::observableArrayList, ObservableList::add, ObservableList::addAll);
 
+
         comboTherapist.getItems().addAll(therapistNames);
     }
     private void loadSchedulesFromDatabase() {
@@ -233,7 +241,39 @@ public class TherapistScheduleController implements Initializable {
             showAlert("Error", "Selected therapist not found in the database.");
             return;
         }
+
         therapistScheduleDTOs = therapistScheduleBO.getAllSchedulesByTherapist(therapist.getId());
+        therapistAvailabilityDTOs = therapistAvailabilityBO.getAllAvailabilityByTherapist(therapist.getId());
+
+    }
+
+    private void setTherapistAvailability() {
+        if(comboTherapist.getValue() == null){
+            showAlert("Error", "Select therapist first.");
+            return;
+        }
+        for (Node node : scheduleGrid.getChildren()) {
+            if (node instanceof SlotPane) {
+                SlotPane slotPane = (SlotPane) node;
+
+                LocalDate slotDate = currentWeekStart.plusDays(slotPane.getDayOfWeek().getValue() - 1L);
+                TherapistAvailabilityDTO matchingDTO = therapistAvailabilityDTOs.stream()
+                        .filter(dto -> slotDate.getDayOfWeek().equals(dto.getDayOfWeek())
+                                && isSameSlotTime(dto.getTime(), slotPane.getTime()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (matchingDTO != null) {
+
+                        slotPane.setCurrentStatus("AVAILABLE");
+                        slotPane.setCurrentColor(COLOR_AVAILABLE);
+
+                }
+
+                slotPane.setDefaultStyle();
+
+            }
+        }
 
     }
 
@@ -250,6 +290,7 @@ public class TherapistScheduleController implements Initializable {
             return;
         }
 
+
         LocalDate weekEnd = currentWeekStart.plusDays(6);
         List<TherapistScheduleDTO> currentWeekSchedule = therapistScheduleDTOs.stream()
                 .filter(dto -> dto.getDate() != null
@@ -258,6 +299,8 @@ public class TherapistScheduleController implements Initializable {
                 .toList();
 
         clearScheduleGrid();
+
+        setTherapistAvailability();
 
         if (currentWeekSchedule.isEmpty()) {
             return;
@@ -345,11 +388,35 @@ public class TherapistScheduleController implements Initializable {
                 LocalDate slotDate = currentWeekStart.plusDays(slot.getDayOfWeek().getValue() - 1);
 
                 if (slot.getCurrentStatus().equals("AVAILABLE")) {
-                    // TODO: Hibernate -> Save to `schedule_rules` table (Master Rule)
+
+                    therapistAvailabilityBO.saveAvailability(new TherapistAvailabilityDTO(
+                            0L,
+                            slot.getDayOfWeek(),
+                            slot.getTime().toString(),
+                            therapistBO.getTherapistByName(comboTherapist.getValue()).getId()
+                    ));
                     System.out.println("Saving Master Rule: " + slot.getDayOfWeek() + " at " + slot.getTime());
-                } else if (slot.getCurrentStatus().equals("TIME_OFF")) {
-                    // TODO: Hibernate -> Save to `schedule_exceptions` table (Specific Date)
-                    System.out.println("Saving Exception: " + slotDate + " at " + slot.getTime());
+                } else if (!slot.getCurrentStatus().equals("CLEAR")) {
+                    TherapistScheduleTypes scheduleType = switch (slot.getCurrentStatus()) {
+                        case "TIME_OFF" -> TherapistScheduleTypes.EXCEPTIONS;
+                        case "OVERTIME" -> TherapistScheduleTypes.OVERTIMES;
+                        case "SCHEDULED" -> TherapistScheduleTypes.SCHEDULED;
+                        default -> null;
+                    };
+
+                    if (scheduleType != null) {
+                        therapistScheduleBO.saveTherapistSchedule(
+                                new TherapistScheduleDTO(
+                                        0L,
+                                        scheduleType,
+                                        slotDate,
+                                        slot.getTime().toString(),
+                                        therapistBO.getTherapistByName(comboTherapist.getValue()).getId()
+                                )
+                        );
+
+                        System.out.println("Saving Schedule: " + scheduleType + " on " + slotDate + " at " + slot.getTime());
+                    }
                 }
             }
         }

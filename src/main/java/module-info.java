@@ -21,6 +21,7 @@ module lk.ijse.theserenitymentalhealththerapycenter {
     requires jasperreports;
     requires java.desktop;
 
+
     opens lk.ijse.theserenitymentalhealththerapycenter to javafx.fxml;
     opens lk.ijse.theserenitymentalhealththerapycenter.controller to javafx.fxml, javafx.base;
     opens lk.ijse.theserenitymentalhealththerapycenter.entity to org.hibernate.orm.core, javafx.base, jasperreports;

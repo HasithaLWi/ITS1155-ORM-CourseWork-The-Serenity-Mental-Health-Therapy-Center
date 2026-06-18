@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -12,7 +13,7 @@ import java.time.LocalDate;
 public class TherapistAvailabilityDTO {
 
     private long id;
-    private LocalDate date;
+    private DayOfWeek dayOfWeek;
     private String time;
 
     private long therapistId;

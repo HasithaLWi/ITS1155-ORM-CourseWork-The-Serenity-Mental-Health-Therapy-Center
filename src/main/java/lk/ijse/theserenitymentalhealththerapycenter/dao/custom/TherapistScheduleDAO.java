@@ -6,7 +6,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapistSchedule;
 
 import java.util.List;
 
-public interface TherapistScheduleDAO extends CrudDAO<TherapistScheduleDAO> {
+public interface TherapistScheduleDAO extends CrudDAO<TherapistSchedule> {
     List<TherapistSchedule> getAllByTherapistId(long therapistId);
      List<TherapistSchedule> getAllByTherapistIdAndDate(long therapistId, String date);
      List<TherapistSchedule> getAllByTherapistIdAndDateRange(long therapistId, String startDate, String endDate);

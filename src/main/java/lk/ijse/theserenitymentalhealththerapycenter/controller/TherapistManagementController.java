@@ -6,10 +6,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
@@ -23,6 +29,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapistTM;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +41,8 @@ public class TherapistManagementController implements Initializable {
     @FXML private TextField txtTherapistSpecialty;
     @FXML private TextField txtTherapistPhone;
     @FXML private TextField txtTherapistEmail;
+    @FXML private TextField txtTherapistId;
+    @FXML private HBox hBoxSelectedTherapist;
     @FXML private ComboBox<TherapistStatus> cmbTherapistStatus;
     @FXML private TextField txtSearchTherapist;
     @FXML private FlowPane flowPrograms;
@@ -52,6 +61,7 @@ public class TherapistManagementController implements Initializable {
     private FilteredList<TherapistTM> filteredTherapists;
     private TherapistTM selectedTherapist;
 
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         cmbTherapistStatus.setItems(FXCollections.observableArrayList(TherapistStatus.values()));
@@ -61,10 +71,17 @@ public class TherapistManagementController implements Initializable {
         loadProgramsCheckboxList();
         loadData();
         setupSearch();
+        hBoxSelectedTherapist.setVisible(false);
+        hBoxSelectedTherapist.setManaged(false);
 
         tblTherapists.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 selectedTherapist = newVal;
+
+                hBoxSelectedTherapist.setVisible(true);
+                hBoxSelectedTherapist.setManaged(true);
+
+                txtTherapistId.setText(selectedTherapist.getId());
                 populateForm(newVal);
             }
         });
@@ -251,6 +268,24 @@ public class TherapistManagementController implements Initializable {
     }
 
     @FXML
+    private void handleTherapistSchedule(ActionEvent event) {
+        Stage scheduleStage = new Stage();
+        scheduleStage.setTitle("Therapist Schedule");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lk/ijse/theserenitymentalhealththerapycenter/view/TherapistScheduleView.fxml"));
+            Parent root = loader.load();
+            TherapistScheduleController controller = loader.getController();
+            controller.setLoadFromTherapistManagement(false, selectedTherapist != null ? selectedTherapist.getLongId() : -1);
+            scheduleStage.setScene(new Scene(root));
+            scheduleStage.initModality(Modality.APPLICATION_MODAL);
+        } catch (IOException e) {
+            AlertUtil.showError("Error", "Failed to load therapist schedule: " + e.getMessage());
+            return;
+        }
+        scheduleStage.showAndWait();
+    }
+
+    @FXML
     void handleClearTherapist(ActionEvent event) {
         txtTherapistName.clear();
         txtTherapistSpecialty.clear();
@@ -259,6 +294,10 @@ public class TherapistManagementController implements Initializable {
         cmbTherapistStatus.setValue(TherapistStatus.ACTIVE);
         selectedTherapist = null;
         tblTherapists.getSelectionModel().clearSelection();
+
+
+        hBoxSelectedTherapist.setVisible(false);
+        hBoxSelectedTherapist.setManaged(false);
 
         for (javafx.scene.Node node : flowPrograms.getChildren()) {
             if (node instanceof CheckBox cb) {

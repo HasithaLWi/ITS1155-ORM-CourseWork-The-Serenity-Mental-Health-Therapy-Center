@@ -2,6 +2,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -43,6 +44,11 @@ public class TherapistScheduleController implements Initializable {
     private Button btnNextWeek;
     @FXML
     private Button btnSaveSchedule;
+    @FXML
+    private Label lblPageTitle;
+
+    private boolean isLoadFromSessionManagement;
+    private long therapistIdFromSessionManagement;
 
     // --- State Variables ---
     private LocalDate currentWeekStart;
@@ -75,12 +81,12 @@ public class TherapistScheduleController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // 1. Initialize Date State (Start on current week's Monday)
         currentWeekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        updateWeekLabel();
 
         // 2. Setup the UI Components
         setupContextMenu();
         buildInteractiveGrid();
         loadTherapists();
+
 
         // 3. Setup Button Listeners
         btnPrevWeek.setOnAction(e -> changeWeek(-1));
@@ -89,10 +95,60 @@ public class TherapistScheduleController implements Initializable {
 
         comboTherapist.setOnAction(e -> {
             loadSchedulesFromDatabase();
-            loadScheduleGrid();
             setTherapistAvailability();
+            loadScheduleGrid();
 
         });
+    }
+
+    public void setLoadFromTherapistManagement(boolean isLoadFromSessionManagement,long therapistIdFromSessionManagement) {
+        this.isLoadFromSessionManagement = isLoadFromSessionManagement;
+        if (!isLoadFromSessionManagement && therapistIdFromSessionManagement > 0) {
+            TherapistDTO therapist = therapistBO.getTherapistById(therapistIdFromSessionManagement);
+            if (therapist != null) {
+                comboTherapist.setValue(therapist.getName());
+                comboTherapist.setMouseTransparent(true);
+                loadSchedulesFromDatabase();
+                setTherapistAvailability();
+                loadScheduleGrid();
+                changeWeek(0); // Refresh the grid to show the correct week
+
+
+
+            } else {
+                AlertUtil.showError("Error", "Therapist not found for ID: " + therapistIdFromSessionManagement);
+            }
+
+        }
+    }
+
+    public void setLoadFromSessionManagement(boolean loadFromSessionManagement, long therapistId) {
+        this.isLoadFromSessionManagement = loadFromSessionManagement;
+        this.therapistIdFromSessionManagement = therapistId;
+        lblPageTitle.setText("Therapist Schedule View");
+        btnSaveSchedule.setDisable(true);
+
+
+
+        if(therapistIdFromSessionManagement == -1) {
+            return;
+        }
+
+        if (isLoadFromSessionManagement) {
+            TherapistDTO therapist = therapistBO.getTherapistById(therapistId);
+            if (therapist != null) {
+                comboTherapist.setValue(therapist.getName());
+                loadSchedulesFromDatabase();
+                setTherapistAvailability();
+                loadScheduleGrid();
+                changeWeek(0); // Refresh the grid to show the correct week
+
+
+
+            } else {
+                AlertUtil.showError("Error", "Therapist not found for ID: " + therapistId);
+            }
+        }
     }
 
     /**
@@ -116,10 +172,10 @@ public class TherapistScheduleController implements Initializable {
 
         });
 
-        MenuItem itemTimeOff = new MenuItem("Mark Time Off (Exception)");
+        MenuItem itemTimeOff = new MenuItem("Mark Unavailable (Time Off)");
         itemTimeOff.setOnAction(e -> applyStatusToSelection("TIME_OFF", COLOR_TIME_OFF));
 
-        MenuItem itemOvertime = new MenuItem("Mark Time Off (Overtime)");
+        MenuItem itemOvertime = new MenuItem("Mark Overtime");
         itemOvertime.setOnAction(e -> applyStatusToSelection("OVERTIME", COLOR_OVERTIME));
 
 //        MenuItem itemScheduled = new MenuItem("Mark as Scheduled");
@@ -517,10 +573,6 @@ public class TherapistScheduleController implements Initializable {
                     if (existingSchedule != null && existingSchedule.getScheduleType() != TherapistScheduleTypes.AVAILABLE) {
                         therapistScheduleBO.deleteTherapistSchedule(existingSchedule.getId());
                         System.out.println("Deleting Schedule ID " + existingSchedule.getId() + " on " + slotDate + " at " + slot.getTime());
-                    } else if (existingAvailability != null) {
-                        therapistAvailabilityBO.deleteAvailabilityById(existingAvailability.getId());
-
-                        System.out.println("Deleting Master Rule ID " + existingAvailability.getId() + " on " + slotDate + " at " + slot.getTime());
                     }
                 }
                 if (!oldSlots.isEmpty() && existPreNotAvailableSlot != null) {
@@ -548,6 +600,12 @@ public class TherapistScheduleController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void handleRefreshScheduleGrid(ActionEvent event) {
+        loadSchedulesFromDatabase();
+        changeWeek(0); // Refresh the grid to show the correct week
     }
 
     /**

@@ -44,8 +44,7 @@ import java.util.stream.Collectors;
 
 public class SessionManagementController implements Initializable {
 
-    @FXML
-    private ComboBox<TherapySessionDTO> cmbSessionId;
+
     @FXML
     private TextField txtAllSessionSearch;
     @FXML
@@ -169,7 +168,7 @@ public class SessionManagementController implements Initializable {
         loadComboBoxes();
 
         setupTable();
-        setupSelectFromSessionId();
+        //setupSelectFromSessionId();
 
 
         updateActionButtonsVisibility(false, false);
@@ -402,7 +401,7 @@ public class SessionManagementController implements Initializable {
 
                     updateActionButtonsVisibility(true, needsPay);
 
-                    cmbSessionId.setMouseTransparent(true);
+//                    cmbSessionId.setMouseTransparent(true);
                     cmbSessionPatient.setMouseTransparent(true);
                     cmbSessionProgram.setMouseTransparent(true);
 
@@ -412,25 +411,25 @@ public class SessionManagementController implements Initializable {
         });
     }
 
-    private void setupSelectFromSessionId() {
-        cmbSessionId.valueProperty().addListener((obs, o, n) -> {
-            if (n != null) {
-                boolean needsPay = (n.getPaymentStatus() == SessionPaymentStatus.PENDING);
-
-                selectedSession = n;
-                populateForm(n);
-
-                updateActionButtonsVisibility(true, needsPay);
-                lblCreditInfo.setText("");
-
-                Platform.runLater(() -> {
-                    cmbSessionId.setMouseTransparent(true);
-                });
-                cmbSessionPatient.setMouseTransparent(true);
-                cmbSessionProgram.setMouseTransparent(true);
-            }
-        });
-    }
+//    private void setupSelectFromSessionId() {
+//        cmbSessionId.valueProperty().addListener((obs, o, n) -> {
+//            if (n != null) {
+//                boolean needsPay = (n.getPaymentStatus() == SessionPaymentStatus.PENDING);
+//
+//                selectedSession = n;
+//                populateForm(n);
+//
+//                updateActionButtonsVisibility(true, needsPay);
+//                lblCreditInfo.setText("");
+//
+//                Platform.runLater(() -> {
+//                    cmbSessionId.setMouseTransparent(true);
+//                });
+//                cmbSessionPatient.setMouseTransparent(true);
+//                cmbSessionProgram.setMouseTransparent(true);
+//            }
+//        });
+//    }
 
     private void loadComboBoxes() {
         try {
@@ -440,9 +439,9 @@ public class SessionManagementController implements Initializable {
                     TherapistDTO::getName, t -> t.getId() + " " + t.getName());
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionProgram, allProgramsCache,
                     TherapyProgramDTO::getName, p -> p.getId() + " " + p.getName());
-            ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionId, allSessionsCache,
-                    s -> s.getId() == 0 ? "" : s.getStringId(),
-                    s -> s.getId() == 0 ? "" : s.getStringId());
+//            ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionId, allSessionsCache,
+//                    s -> s.getId() == 0 ? "" : s.getStringId(),
+//                    s -> s.getId() == 0 ? "" : s.getStringId());
         } catch (Exception e) {
             System.err.println("Error loading combos: " + e.getMessage());
         }
@@ -629,7 +628,7 @@ public class SessionManagementController implements Initializable {
 
         isPopulating = true;
 
-        cmbSessionId.setValue(s);
+//        cmbSessionId.setValue(s);
 
         cmbSessionPatient.setValue(s.getPatientId() != null ? allPatientsCache.stream().filter(p -> p.getId() == s.getPatientId()).findFirst().orElse(null) : null);
 
@@ -931,7 +930,7 @@ public class SessionManagementController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/lk/ijse/theserenitymentalhealththerapycenter/view/TherapistScheduleView.fxml"));
             Parent root = loader.load();
             TherapistScheduleController controller = loader.getController();
-//            controller.setTherapistScheduleData(allSessionsCache, allTherapistsCache);
+            controller.setLoadFromSessionManagement(true, cmbSessionTherapist.getValue() != null ? cmbSessionTherapist.getValue().getId() : -1);
             scheduleStage.setScene(new Scene(root));
             scheduleStage.initModality(Modality.APPLICATION_MODAL);
         } catch (IOException e) {
@@ -943,7 +942,7 @@ public class SessionManagementController implements Initializable {
 
     @FXML
     void handleClearSession(ActionEvent event) {
-        cmbSessionId.setValue(null);
+//        cmbSessionId.setValue(null);
 
 
         cmbSessionPatient.setValue(null);
@@ -969,7 +968,7 @@ public class SessionManagementController implements Initializable {
         loadComboBoxes();
         loadData();
 
-        cmbSessionId.setMouseTransparent(false);
+//        cmbSessionId.setMouseTransparent(false);
         cmbSessionPatient.setMouseTransparent(false);
         cmbSessionProgram.setMouseTransparent(false);
 

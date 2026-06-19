@@ -17,16 +17,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapistBO;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
-import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
+import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapySessionTM;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistScheduleTypes;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ComboBoxAutoCompleteUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.JasperReportUtil;
@@ -38,6 +35,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -148,7 +146,8 @@ public class SessionManagementController implements Initializable {
     private final TherapistBO therapistService = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
     private final TherapyProgramBO programService = (TherapyProgramBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPY_PROGRAM);
     private final PaymentBO paymentService = (PaymentBO) BOFactory.getInstance().getBO(BOFactory.BOType.PAYMENT);
-
+    private final TherapistScheduleBO therapistScheduleBO = (TherapistScheduleBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_SCHEDULE);
+    private final TherapistAvailabilityBO therapistAvailabilityBO = (TherapistAvailabilityBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_AVAILABILITY);
     private TherapySessionDTO selectedSession;
     private int currentCredit = 0;
     private boolean isScheduleValid = true;
@@ -160,6 +159,9 @@ public class SessionManagementController implements Initializable {
     private List<PatientDTO> allPatientsCache;
     private List<TherapistDTO> allTherapistsCache;
     private List<TherapyProgramDTO> allProgramsCache;
+
+    private List<TherapistAvailabilityDTO> therapistAvailabilities;
+    private List<TherapistScheduleDTO> therapistScheduleDTOS;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -214,6 +216,7 @@ public class SessionManagementController implements Initializable {
 
                 try {
                     List<PatientTherapyProgramDTO> enrollments = patientService.getPatientPrograms(newVal.getId());
+
                     List<TherapyProgramDTO> enrolledPrograms = enrollments.stream()
                             .map(PatientTherapyProgramDTO::getProgram).collect(Collectors.toList());
 
@@ -255,7 +258,7 @@ public class SessionManagementController implements Initializable {
                             lblCreditInfo.setStyle("-fx-text-fill: #7AB88F; -fx-font-size: 11px; -fx-font-weight: bold;");
                         } else {
                             lblCreditInfo.setText("No upfront credit. Payment required.");
-                            lblCreditInfo.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px; -fx-font-weight: bold;");
+                            lblCreditInfo.setStyle("-fx-text-fill: #fdb222; -fx-font-size: 11px; -fx-font-weight: bold;");
                         }
 
                         cmbSessionStatus.setVisible(true);
@@ -290,7 +293,15 @@ public class SessionManagementController implements Initializable {
 
         dpSessionDate.valueProperty().addListener((obs, oldVal, newVal) -> validateSchedule());
         cmbSessionTime.valueProperty().addListener((obs, oldVal, newVal) -> validateSchedule());
-        cmbSessionTherapist.valueProperty().addListener((obs, oldVal, newVal) -> validateSchedule());
+        cmbSessionTherapist.valueProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal != null) {
+                        therapistScheduleDTOS = therapistScheduleBO.getAllSchedulesByTherapist(newVal.getId());
+                        therapistAvailabilities = therapistAvailabilityBO.getAllAvailabilityByTherapist(newVal.getId());
+                        validateSchedule();
+                    }
+
+                }
+        );
 
         txtAllSessionSearch.textProperty().addListener((obs, oldVal, newVal) -> filterAllSessions());
         dpFilterDate.valueProperty().addListener((obs, o, n) -> filterAllSessions());
@@ -347,6 +358,7 @@ public class SessionManagementController implements Initializable {
 
                 if (conflict.getId() == editingSessionId) return;
                 lblTimeAvailabilityMsg.setText("Patient has another session at this time.");
+                lblTimeAvailabilityMsg.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px; -fx-font-weight: bold;");
                 isScheduleValid = false;
                 return;
             }
@@ -354,11 +366,38 @@ public class SessionManagementController implements Initializable {
 
 
         if (therapistId != null) {
+
+            if (!therapistAvailabilities.isEmpty()) {
+                boolean isTherapistAvailable = false;
+                isTherapistAvailable = therapistAvailabilities.stream().anyMatch(a ->
+                        a.getDayOfWeek() == date.getDayOfWeek() && Objects.equals(a.getTime(), time)
+                );
+                if (!isTherapistAvailable) {
+                    isTherapistAvailable = therapistScheduleDTOS.stream().anyMatch(s ->
+                            s.getDate().equals(date) && Objects.equals(s.getTime(), time) &&
+                                    s.getScheduleType().equals(TherapistScheduleTypes.OVERTIMES)
+                    );
+                } else {
+                    isTherapistAvailable = !therapistScheduleDTOS.stream().anyMatch(s ->
+                            s.getDate().equals(date) && Objects.equals(s.getTime(), time) &&
+                                    s.getScheduleType().equals(TherapistScheduleTypes.EXCEPTIONS)
+                    );
+                }
+
+                if (!isTherapistAvailable && time != null) {
+                    lblTimeAvailabilityMsg.setText("Selected time slot is outside the therapist's availability.");
+                    lblTimeAvailabilityMsg.setStyle("-fx-text-fill: #C47171; -fx-font-size: 11px; -fx-font-weight: bold;");
+                    isScheduleValid = false;
+                    return;
+                }
+            }
+
             List<TherapySessionDTO> therapistDateSessions = allSessionsCache.stream()
                     .filter(s -> s.getSessionDate() != null && s.getSessionDate().equals(date))
                     .filter(s -> s.getTherapistId() != null && s.getTherapistId().equals(therapistId))
                     .filter(s -> s.getId() != editingSessionId) // exclude current session being edited
                     .toList();
+
 
             if (!therapistDateSessions.isEmpty()) {
 
@@ -382,6 +421,7 @@ public class SessionManagementController implements Initializable {
 
                     if (timeSlotTaken) {
                         lblTimeAvailabilityMsg.setText("Selected time slot is not available for the chosen therapist.");
+                        lblTimeAvailabilityMsg.setStyle("-fx-text-fill: #C47171;");
                         isScheduleValid = false;
                     }
                 }
@@ -411,30 +451,11 @@ public class SessionManagementController implements Initializable {
         });
     }
 
-//    private void setupSelectFromSessionId() {
-//        cmbSessionId.valueProperty().addListener((obs, o, n) -> {
-//            if (n != null) {
-//                boolean needsPay = (n.getPaymentStatus() == SessionPaymentStatus.PENDING);
-//
-//                selectedSession = n;
-//                populateForm(n);
-//
-//                updateActionButtonsVisibility(true, needsPay);
-//                lblCreditInfo.setText("");
-//
-//                Platform.runLater(() -> {
-//                    cmbSessionId.setMouseTransparent(true);
-//                });
-//                cmbSessionPatient.setMouseTransparent(true);
-//                cmbSessionProgram.setMouseTransparent(true);
-//            }
-//        });
-//    }
 
     private void loadComboBoxes() {
         try {
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionPatient, allPatientsCache,
-                    PatientDTO::getStringId, PatientDTO::getStringId);
+                    p -> p.getStringId() + " " + p.getName(), p -> p.getStringId() + p.getName());
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionTherapist, allTherapistsCache,
                     TherapistDTO::getName, t -> t.getId() + " " + t.getName());
             ComboBoxAutoCompleteUtil.setupAutocomplete(cmbSessionProgram, allProgramsCache,

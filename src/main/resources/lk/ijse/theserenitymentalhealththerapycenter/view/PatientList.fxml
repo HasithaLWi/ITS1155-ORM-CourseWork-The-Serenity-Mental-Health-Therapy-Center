@@ -11,11 +11,39 @@
         <VBox spacing="12" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
             <Label text="✏️  Edit Patient" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
             <Separator/>
+
+            <!-- Personal Info -->
+            <Label style="-fx-text-fill: #4A7FA5; -fx-font-size: 12px; -fx-font-weight: bold;" text="👤  PERSONAL INFORMATION" />
             <HBox spacing="16">
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
-                    <Label text="FULL NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                    <TextField fx:id="txtEditName" promptText="Patient name"/>
+                    <Label text="FIRST NAME *" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditFirstName" promptText="First name"/>
                 </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="LAST NAME *" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditLastName" promptText="Last name"/>
+                </VBox>
+            </HBox>
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="DATE OF BIRTH" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpEditDateOfBirth" promptText="Select date" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="GENDER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cmbEditGenderIdentity" promptText="Select gender" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="STATUS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cmbEditStatus" promptText="Select status" maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+
+            <Separator/>
+
+            <!-- Contact Info -->
+            <Label style="-fx-text-fill: #4A7FA5; -fx-font-size: 12px; -fx-font-weight: bold;" text="📞  CONTACT INFORMATION" />
+            <HBox spacing="16">
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label text="EMAIL" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
                     <TextField fx:id="txtEditEmail" promptText="Email"/>
@@ -25,12 +53,52 @@
                     <TextField fx:id="txtEditPhone" promptText="Phone"/>
                 </VBox>
             </HBox>
+            <VBox spacing="4">
+                <Label text="ADDRESS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <TextField fx:id="txtEditAddress" promptText="Address"/>
+            </VBox>
+
+            <Separator/>
+
+            <!-- Emergency Contact -->
+            <Label style="-fx-text-fill: #4A7FA5; -fx-font-size: 12px; -fx-font-weight: bold;" text="🚨  EMERGENCY CONTACT" />
             <HBox spacing="16">
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
-                    <Label text="ADDRESS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-                    <TextField fx:id="txtEditAddress" promptText="Address"/>
+                    <Label text="CONTACT NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditEmergencyName" promptText="Emergency contact name"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="RELATIONSHIP" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cmbEditEmergencyRelationship" promptText="Select relationship" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="PHONE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditEmergencyPhone" promptText="Emergency phone"/>
                 </VBox>
             </HBox>
+
+            <Separator/>
+
+            <!-- Insurance Details -->
+            <Label style="-fx-text-fill: #4A7FA5; -fx-font-size: 12px; -fx-font-weight: bold;" text="🏥  INSURANCE DETAILS (Optional)" />
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="PROVIDER NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditInsuranceProvider" promptText="Insurance provider"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="POLICY ID" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditInsurancePolicyId" promptText="Policy ID"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="GROUP NUMBER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtEditInsuranceGroupNumber" promptText="Group number"/>
+                </VBox>
+            </HBox>
+
+            <Separator/>
+
+            <!-- Interview Note -->
             <VBox spacing="4">
                 <Label text="INTERVIEW NOTE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;"/>
                 <TextArea fx:id="txtEditInterviewNote" promptText="Interview notes..." prefRowCount="3"
@@ -107,13 +175,18 @@
             <TableView fx:id="tblPatients" prefHeight="350">
                 <columns>
                     <TableColumn fx:id="colPatientId" text="ID" prefWidth="60"/>
-                    <TableColumn fx:id="colPatientName" text="Name" prefWidth="180"/>
-                    <TableColumn fx:id="colPatientEmail" text="Email" prefWidth="180"/>
-                    <TableColumn fx:id="colPatientPhone" text="Phone" prefWidth="130"/>
-                    <TableColumn fx:id="colPatientAddress" text="Address" prefWidth="180"/>
-                    <TableColumn fx:id="colPatientDate" text="Registered" prefWidth="110"/>
+                    <TableColumn fx:id="colPatientFirstName" text="First Name" prefWidth="130"/>
+                    <TableColumn fx:id="colPatientLastName" text="Last Name" prefWidth="130"/>
+                    <TableColumn fx:id="colPatientPhone" text="Phone" prefWidth="120"/>
+                    <TableColumn fx:id="colPatientDob" text="DOB" prefWidth="100"/>
+                    <TableColumn fx:id="colPatientGender" text="Gender" prefWidth="80"/>
+                    <TableColumn fx:id="colPatientStatus" text="Status" prefWidth="80"/>
+                    <TableColumn fx:id="colPatientDate" text="Registered" prefWidth="100"/>
                 </columns>
                 <placeholder><Label text="No patients found." style="-fx-text-fill: #95A5A6; -fx-font-size: 13px;"/></placeholder>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
             </TableView>
         </VBox>
     </VBox>

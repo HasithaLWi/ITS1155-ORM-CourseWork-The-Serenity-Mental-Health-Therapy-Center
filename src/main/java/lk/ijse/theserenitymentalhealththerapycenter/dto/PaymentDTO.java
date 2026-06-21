@@ -1,12 +1,11 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentStatus;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentType;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -15,7 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PaymentDTO {
+    @EqualsAndHashCode.Include
     private String id;
     private BigDecimal amount;
     private LocalDateTime paymentDate;

@@ -34,41 +34,15 @@ public class PatientBOImpl implements PatientBO {
 
     @Override
     public Long registerPatient(PatientDTO patient) {
-        if (!ValidationUtil.isValidName(patient.getName())) {
-            throw new RegistrationException("Valid patient name is required.");
-        }
-        if (patient.getEmail() != null && !patient.getEmail().isEmpty()
-                && !ValidationUtil.isValidEmail(patient.getEmail())) {
-            throw new RegistrationException("Invalid email format.");
-        }
-        if (patient.getPhone() != null && !patient.getPhone().isEmpty()
-                && !ValidationUtil.isValidPhone(patient.getPhone())) {
-            throw new RegistrationException("Invalid phone number format.");
-        }
-
-        if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
-            Patient existing = patientDAO.findByEmail(patient.getEmail().trim());
-            if (existing != null) {
-                throw new RegistrationException("Email '" + patient.getEmail() + "' is already registered by another patient.");
-            }
-        }
-        if (patient.getPhone() != null && !patient.getPhone().trim().isEmpty()) {
-            Patient existing = patientDAO.findByPhone(patient.getPhone().trim());
-            if (existing != null) {
-                throw new RegistrationException("Phone number '" + patient.getPhone() + "' is already registered by another patient.");
-            }
-        }
+        // --- Validations ---
+        validatePatientData(patient, null);
 
         Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient p = new Patient();
-            p.setName(patient.getName());
-            p.setEmail(patient.getEmail());
-            p.setAddress(patient.getAddress());
-            p.setPhone(patient.getPhone());
-            p.setInterviewNote(patient.getInterviewNote());
-
+            mapDtoToEntity(patient, p);
+            p.setStatus("ACTIVE"); // Always ACTIVE on registration
 
             patientDAO.save(p, session);
 
@@ -127,41 +101,15 @@ public class PatientBOImpl implements PatientBO {
 
     @Override
     public void updatePatient(PatientDTO dto) {
-        if (!ValidationUtil.isValidName(dto.getName())) {
-            throw new RegistrationException("Valid patient name is required.");
-        }
-        if (dto.getEmail() != null && !dto.getEmail().isEmpty()
-                && !ValidationUtil.isValidEmail(dto.getEmail())) {
-            throw new RegistrationException("Invalid email format.");
-        }
-        if (dto.getPhone() != null && !dto.getPhone().isEmpty()
-                && !ValidationUtil.isValidPhone(dto.getPhone())) {
-            throw new RegistrationException("Invalid phone number format.");
-        }
-
-        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
-            Patient existing = patientDAO.findByEmail(dto.getEmail().trim());
-            if (existing != null && !existing.getId().equals(dto.getId())) {
-                throw new RegistrationException("Email '" + dto.getEmail() + "' is already registered by another patient.");
-            }
-        }
-        if (dto.getPhone() != null && !dto.getPhone().trim().isEmpty()) {
-            Patient existing = patientDAO.findByPhone(dto.getPhone().trim());
-            if (existing != null && !existing.getId().equals(dto.getId())) {
-                throw new RegistrationException("Phone number '" + dto.getPhone() + "' is already registered by another patient.");
-            }
-        }
+        // --- Validations ---
+        validatePatientData(dto, dto.getId());
 
         Session session = FactoryConfiguration.getInstance().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         try {
             Patient entity = patientDAO.getById(dto.getId(), session);
             if (entity == null) throw new RegistrationException("Patient not found.");
-            entity.setName(dto.getName());
-            entity.setEmail(dto.getEmail());
-            entity.setPhone(dto.getPhone());
-            entity.setAddress(dto.getAddress());
-            entity.setInterviewNote(dto.getInterviewNote());
+            mapDtoToEntity(dto, entity);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -251,7 +199,7 @@ public class PatientBOImpl implements PatientBO {
 
             transaction.commit();
             return new PatientDeleteSummaryDTO(
-                    p.getName(),
+                    p.getFullName(),
                     programCount,
                     sessionCount,
                     paymentCount,
@@ -269,15 +217,107 @@ public class PatientBOImpl implements PatientBO {
     }
 
 
+    // ============ Private Helper Methods ============
 
+    /**
+     * Validates patient data with comprehensive rules.
+     * @param dto the patient data to validate
+     * @param existingId the ID of the patient being updated (null for new registration)
+     */
+    private void validatePatientData(PatientDTO dto, Long existingId) {
+        if (!ValidationUtil.isValidName(dto.getFirstName())) {
+            throw new RegistrationException("First name is required (min 2 chars, letters, spaces, hyphens, and dots only).");
+        }
+        if (!ValidationUtil.isValidName(dto.getLastName())) {
+            throw new RegistrationException("Last name is required (min 2 chars, letters, spaces, hyphens, and dots only).");
+        }
 
+        // Date of birth validation (optional field)
+        if (dto.getDateOfBirth() != null && !ValidationUtil.isValidDateOfBirth(dto.getDateOfBirth())) {
+            throw new RegistrationException("Date of birth must be a valid past date (patient must be at least 1 year old).");
+        }
+
+        // Email validation and uniqueness
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+            if (!ValidationUtil.isValidEmail(dto.getEmail())) {
+                throw new RegistrationException("Invalid email format.");
+            }
+            Patient existingByEmail = patientDAO.findByEmail(dto.getEmail().trim());
+            if (existingByEmail != null && (existingId == null || !existingByEmail.getId().equals(existingId))) {
+                throw new RegistrationException("Email '" + dto.getEmail() + "' is already registered by another patient.");
+            }
+        }
+
+        // Phone validation and uniqueness
+        if (dto.getPhone() != null && !dto.getPhone().isEmpty()) {
+            if (!ValidationUtil.isValidPhone(dto.getPhone())) {
+                throw new RegistrationException("Invalid phone number format.");
+            }
+            Patient existingByPhone = patientDAO.findByPhone(dto.getPhone().trim());
+            if (existingByPhone != null && (existingId == null || !existingByPhone.getId().equals(existingId))) {
+                throw new RegistrationException("Phone number '" + dto.getPhone() + "' is already registered by another patient.");
+            }
+        }
+
+        // Emergency contact: if phone is given, name must be provided
+        if (ValidationUtil.isNotEmpty(dto.getEmergencyContactPhone())) {
+            if (!ValidationUtil.isValidPhone(dto.getEmergencyContactPhone())) {
+                throw new RegistrationException("Invalid emergency contact phone number format.");
+            }
+            if (!ValidationUtil.isNotEmpty(dto.getEmergencyContactName())) {
+                throw new RegistrationException("Emergency contact name is required when phone number is provided.");
+            }
+        }
+
+        // Insurance policy ID validation (if provided)
+        if (ValidationUtil.isNotEmpty(dto.getInsurancePolicyId())) {
+            if (!ValidationUtil.isValidInsurancePolicyId(dto.getInsurancePolicyId())) {
+                throw new RegistrationException("Invalid insurance policy ID format (alphanumeric with hyphens, 3-30 characters).");
+            }
+        }
+    }
+
+    /**
+     * Maps all fields from DTO to Entity.
+     */
+    private void mapDtoToEntity(PatientDTO dto, Patient entity) {
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
+        entity.setDateOfBirth(dto.getDateOfBirth());
+        entity.setGenderIdentity(dto.getGenderIdentity());
+        entity.setEmail(dto.getEmail());
+        entity.setPhone(dto.getPhone());
+        entity.setAddress(dto.getAddress());
+        entity.setEmergencyContactName(dto.getEmergencyContactName());
+        entity.setEmergencyContactRelationship(dto.getEmergencyContactRelationship());
+        entity.setEmergencyContactPhone(dto.getEmergencyContactPhone());
+        entity.setInsuranceProvider(dto.getInsuranceProvider());
+        entity.setInsurancePolicyId(dto.getInsurancePolicyId());
+        entity.setInsuranceGroupNumber(dto.getInsuranceGroupNumber());
+        entity.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
+        entity.setInterviewNote(dto.getInterviewNote());
+    }
+
+    /**
+     * Maps all fields from Entity to DTO.
+     */
     private PatientDTO toDTO(Patient entity) {
         PatientDTO dto = new PatientDTO();
         dto.setId(entity.getId());
-        dto.setName(entity.getName());
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
+        dto.setDateOfBirth(entity.getDateOfBirth());
+        dto.setGenderIdentity(entity.getGenderIdentity());
         dto.setEmail(entity.getEmail());
         dto.setPhone(entity.getPhone());
         dto.setAddress(entity.getAddress());
+        dto.setEmergencyContactName(entity.getEmergencyContactName());
+        dto.setEmergencyContactRelationship(entity.getEmergencyContactRelationship());
+        dto.setEmergencyContactPhone(entity.getEmergencyContactPhone());
+        dto.setInsuranceProvider(entity.getInsuranceProvider());
+        dto.setInsurancePolicyId(entity.getInsurancePolicyId());
+        dto.setInsuranceGroupNumber(entity.getInsuranceGroupNumber());
+        dto.setStatus(entity.getStatus());
         dto.setRegisteredDate(entity.getRegisteredDate());
         dto.setInterviewNote(entity.getInterviewNote());
         return dto;

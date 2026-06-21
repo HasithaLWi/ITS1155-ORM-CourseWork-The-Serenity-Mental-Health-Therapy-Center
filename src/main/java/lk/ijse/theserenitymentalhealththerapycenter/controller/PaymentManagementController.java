@@ -3,7 +3,6 @@ package lk.ijse.theserenitymentalhealththerapycenter.controller;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,8 +13,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PatientBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.PaymentBO;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.*;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.PaymentTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ComboBoxAutoCompleteUtil;
@@ -66,6 +65,8 @@ public class PaymentManagementController implements Initializable {
 
     @FXML
     private VBox paneExpense;
+    @FXML
+    private VBox vBoxExpensesPatient;
     @FXML
     private ComboBox<String> cmbExpenseType;
     @FXML
@@ -124,6 +125,14 @@ public class PaymentManagementController implements Initializable {
         setupSessionIdCombo();
         setupTable();
         loadData();
+
+        cmbExpenseType.valueProperty().addListener((observableValue, oldValue, newValue) -> {
+            if (newValue != null) {
+                boolean isRefund = "Refund".equals(newValue);
+                vBoxExpensesPatient.setVisible(isRefund);
+                vBoxExpensesPatient.setManaged(isRefund);
+            }
+        });
     }
 
 

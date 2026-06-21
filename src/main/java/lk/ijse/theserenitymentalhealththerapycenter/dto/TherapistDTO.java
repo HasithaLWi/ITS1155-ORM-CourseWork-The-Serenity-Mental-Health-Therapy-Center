@@ -1,13 +1,16 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistStatus;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TherapistDTO {
+    @EqualsAndHashCode.Include
     private String id;
     private String name;
     private String specialty;

@@ -1,6 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto.tm;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.ArrayList;

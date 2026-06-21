@@ -33,11 +33,7 @@ public class PatientDAOImpl implements PatientDAO {
             try {
                 Patient existing = session.get(Patient.class, entity.getId());
                 if (existing != null) {
-                    existing.setName(entity.getName());
-                    existing.setEmail(entity.getEmail());
-                    existing.setPhone(entity.getPhone());
-                    existing.setAddress(entity.getAddress());
-                    existing.setInterviewNote(entity.getInterviewNote());
+                    copyFields(entity, existing);
                 }
                 tx.commit();
             } catch (Exception e) {
@@ -97,11 +93,7 @@ public class PatientDAOImpl implements PatientDAO {
     public void update(Patient entity, Session session) {
         Patient existing = session.get(Patient.class, entity.getId());
         if (existing != null) {
-            existing.setName(entity.getName());
-            existing.setEmail(entity.getEmail());
-            existing.setPhone(entity.getPhone());
-            existing.setAddress(entity.getAddress());
-            existing.setInterviewNote(entity.getInterviewNote());
+            copyFields(entity, existing);
         }
     }
 
@@ -133,7 +125,7 @@ public class PatientDAOImpl implements PatientDAO {
     public List<Patient> searchByName(String name) {
         try (Session session = FactoryConfiguration.getInstance().getSession()) {
             Query<Patient> query = session.createQuery(
-                    "FROM Patient p WHERE LOWER(p.name) LIKE LOWER(:name)", Patient.class);
+                    "FROM Patient p WHERE LOWER(p.firstName) LIKE LOWER(:name) OR LOWER(p.lastName) LIKE LOWER(:name)", Patient.class);
             query.setParameter("name", "%" + name + "%");
             return query.list();
         }
@@ -192,5 +184,26 @@ public class PatientDAOImpl implements PatientDAO {
                     .setParameter("status", lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession.SessionStatus.SCHEDULED)
                     .list();
         }
+    }
+
+    /**
+     * Copy all patient fields from source to target entity (used in update operations).
+     */
+    private void copyFields(Patient source, Patient target) {
+        target.setFirstName(source.getFirstName());
+        target.setLastName(source.getLastName());
+        target.setDateOfBirth(source.getDateOfBirth());
+        target.setGenderIdentity(source.getGenderIdentity());
+        target.setEmail(source.getEmail());
+        target.setPhone(source.getPhone());
+        target.setAddress(source.getAddress());
+        target.setEmergencyContactName(source.getEmergencyContactName());
+        target.setEmergencyContactRelationship(source.getEmergencyContactRelationship());
+        target.setEmergencyContactPhone(source.getEmergencyContactPhone());
+        target.setInsuranceProvider(source.getInsuranceProvider());
+        target.setInsurancePolicyId(source.getInsurancePolicyId());
+        target.setInsuranceGroupNumber(source.getInsuranceGroupNumber());
+        target.setStatus(source.getStatus());
+        target.setInterviewNote(source.getInterviewNote());
     }
 }

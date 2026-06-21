@@ -5,7 +5,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapistDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;

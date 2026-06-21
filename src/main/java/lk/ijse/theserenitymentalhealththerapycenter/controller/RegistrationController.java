@@ -1,6 +1,5 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
-import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,7 +11,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.RegistrationException;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.EmailService;

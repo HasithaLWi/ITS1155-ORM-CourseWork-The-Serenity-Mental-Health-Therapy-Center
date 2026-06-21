@@ -1,8 +1,9 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionPaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionStatus;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -10,7 +11,9 @@ import java.time.LocalTime;
 
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TherapySessionDTO {
+    @EqualsAndHashCode.Include
     private String id;
     private Integer sequenceNumber;
     private LocalDate sessionDate;

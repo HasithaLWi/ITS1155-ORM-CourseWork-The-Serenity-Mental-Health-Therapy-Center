@@ -1,6 +1,6 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.UserRole;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

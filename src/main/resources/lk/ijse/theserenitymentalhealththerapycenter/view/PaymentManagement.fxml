@@ -99,7 +99,7 @@
                         <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="EXPENSE TYPE" />
                         <ComboBox fx:id="cmbExpenseType" maxWidth="Infinity" minWidth="150.0" promptText="Select expense type" />
                     </VBox>
-                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <VBox fx:id="vBoxExpensesPatient" spacing="4" HBox.hgrow="ALWAYS">
                         <Label style="-fx-text-fill: #8BAF9E; -fx-font-size: 10px; -fx-font-weight: bold;" text="PATIENT" />
                         <ComboBox fx:id="cmbExpensePatient" editable="true" maxWidth="Infinity" minWidth="150.0" promptText="Select patient" styleClass="combo-autocomplete" />
                     </VBox>

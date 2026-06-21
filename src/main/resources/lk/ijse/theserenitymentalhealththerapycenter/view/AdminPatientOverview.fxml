@@ -20,17 +20,22 @@
             </HBox>
         </VBox>
 
-        <!-- CARD 2: Patient General Details & Medical History (Hidden by default) -->
+        <!-- CARD 2: Patient General Details (Hidden by default) -->
         <VBox fx:id="vboxPatientDetails" visible="false" managed="false" spacing="16" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-background-radius: 16; -fx-border-color: #E5DFD8; -fx-border-radius: 16; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(45,52,54,0.05), 8, 0, 0, 2);">
-            <Label text="👤  Patient General Profile" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Label text="👤  Patient General Profile" style="-fx-text-fill: #2D3436; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblPatientStatus" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 8;"/>
+            </HBox>
             <Separator/>
             
-            <!-- Details Grid -->
+            <!-- Personal Details Grid -->
             <GridPane hgap="32" vgap="16">
                 <columnConstraints>
-                    <ColumnConstraints percentWidth="33.3"/>
-                    <ColumnConstraints percentWidth="33.3"/>
-                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
                 </columnConstraints>
                 
                 <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
@@ -42,25 +47,83 @@
                     <Label text="FULL NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                     <Label fx:id="lblPatientName" style="-fx-text-fill: #2D3436; -fx-font-size: 14px; -fx-font-weight: bold;"/>
                 </VBox>
-                
+
                 <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label text="DATE OF BIRTH" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientDob" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+
+                <VBox spacing="4" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                    <Label text="GENDER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblPatientGender" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+                
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
                     <Label text="EMAIL ADDRESS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                     <Label fx:id="lblPatientEmail" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
                 </VBox>
                 
-                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <Label text="CONTACT NUMBER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                     <Label fx:id="lblPatientPhone" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
                 </VBox>
                 
-                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <Label text="RESIDENTIAL ADDRESS" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                     <Label fx:id="lblPatientAddress" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
                 </VBox>
                 
-                <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <VBox spacing="4" GridPane.columnIndex="3" GridPane.rowIndex="1">
                     <Label text="REGISTERED DATE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                     <Label fx:id="lblPatientRegistered" style="-fx-text-fill: #2D3436; -fx-font-size: 14px;"/>
+                </VBox>
+            </GridPane>
+
+            <Separator/>
+
+            <!-- Emergency Contact -->
+            <Label text="🚨  EMERGENCY CONTACT" style="-fx-text-fill: #4A7FA5; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+            <GridPane hgap="32" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="33.3"/>
+                </columnConstraints>
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="CONTACT NAME" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblEmergencyName" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="RELATIONSHIP" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblEmergencyRelationship" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label text="PHONE" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblEmergencyPhone" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                </VBox>
+            </GridPane>
+
+            <Separator/>
+
+            <!-- Insurance Details -->
+            <Label text="🏥  INSURANCE DETAILS" style="-fx-text-fill: #4A7FA5; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+            <GridPane hgap="32" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="33.3"/>
+                    <ColumnConstraints percentWidth="33.3"/>
+                </columnConstraints>
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="PROVIDER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblInsuranceProvider" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="POLICY ID" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblInsurancePolicyId" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label text="GROUP NUMBER" style="-fx-text-fill: #8BAF9E; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblInsuranceGroupNumber" style="-fx-text-fill: #2D3436; -fx-font-size: 13px;"/>
                 </VBox>
             </GridPane>
             
@@ -110,7 +173,7 @@
                 </columnResizePolicy>
             </TableView>
 
-            <!-- CARD 5: Selected Session Details & Notes (Inside Scroll view, shown when session is selected) -->
+            <!-- CARD 5: Selected Session Details & Notes -->
             <VBox fx:id="vboxSessionNotes" visible="false" managed="false" spacing="16" style="-fx-background-color: #FAF8F5; -fx-padding: 20; -fx-background-radius: 12; -fx-border-color: #E5DFD8; -fx-border-radius: 12; -fx-border-width: 1;">
                 <Label text="🗒️  Selected Session Information" style="-fx-text-fill: #2D3436; -fx-font-size: 14px; -fx-font-weight: bold;"/>
                 <Separator/>

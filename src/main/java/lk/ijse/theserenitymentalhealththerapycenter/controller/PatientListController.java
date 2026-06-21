@@ -1,7 +1,5 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -20,7 +18,9 @@ import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.GenderIdentity;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PatientStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.EnrolledProgramTM;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.PatientTM;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDeleteSummaryDTO;
@@ -37,14 +37,43 @@ import java.util.stream.Collectors;
 
 public class PatientListController implements Initializable {
 
+    // Edit form — Personal
     @FXML
-    private TextField txtEditName;
+    private TextField txtEditFirstName;
+    @FXML
+    private TextField txtEditLastName;
+    @FXML
+    private DatePicker dpEditDateOfBirth;
+    @FXML
+    private ComboBox<GenderIdentity> cmbEditGenderIdentity;
+    @FXML
+    private ComboBox<PatientStatus> cmbEditStatus;
+
+    // Edit form — Contact
     @FXML
     private TextField txtEditEmail;
     @FXML
     private TextField txtEditPhone;
     @FXML
     private TextField txtEditAddress;
+
+    // Edit form — Emergency Contact
+    @FXML
+    private TextField txtEditEmergencyName;
+    @FXML
+    private ComboBox<String> cmbEditEmergencyRelationship;
+    @FXML
+    private TextField txtEditEmergencyPhone;
+
+    // Edit form — Insurance
+    @FXML
+    private TextField txtEditInsuranceProvider;
+    @FXML
+    private TextField txtEditInsurancePolicyId;
+    @FXML
+    private TextField txtEditInsuranceGroupNumber;
+
+    // Edit form — Interview Note
     @FXML
     private TextArea txtEditInterviewNote;
     @FXML
@@ -56,13 +85,17 @@ public class PatientListController implements Initializable {
     @FXML
     private TableColumn<PatientTM, String> colPatientId;
     @FXML
-    private TableColumn<PatientTM, String> colPatientName;
+    private TableColumn<PatientTM, String> colPatientFirstName;
     @FXML
-    private TableColumn<PatientTM, String> colPatientEmail;
+    private TableColumn<PatientTM, String> colPatientLastName;
     @FXML
     private TableColumn<PatientTM, String> colPatientPhone;
     @FXML
-    private TableColumn<PatientTM, String> colPatientAddress;
+    private TableColumn<PatientTM, String> colPatientDob;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientGender;
+    @FXML
+    private TableColumn<PatientTM, String> colPatientStatus;
     @FXML
     private TableColumn<PatientTM, String> colPatientDate;
 
@@ -111,9 +144,13 @@ public class PatientListController implements Initializable {
         loadData();
         setupSearch();
 
-
+        // ComboBoxes
+        cmbEditGenderIdentity.setItems(FXCollections.observableArrayList(GenderIdentity.values()));
+        cmbEditStatus.setItems(FXCollections.observableArrayList(PatientStatus.values()));
+        cmbEditEmergencyRelationship.setItems(FXCollections.observableArrayList(
+                "Parent", "Spouse", "Sibling", "Child", "Friend", "Guardian", "Other"
+        ));
         cmbNewProgramPayMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
-
 
         setComboCellFactory(cmbNewProgram, TherapyProgramDTO::getName);
 
@@ -154,17 +191,40 @@ public class PatientListController implements Initializable {
 
     private void setupTable() {
         colPatientId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colPatientName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colPatientEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colPatientFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        colPatientLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         colPatientPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
-        colPatientAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colPatientDob.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
+        colPatientGender.setCellValueFactory(new PropertyValueFactory<>("genderIdentity"));
+        colPatientStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         colPatientDate.setCellValueFactory(new PropertyValueFactory<>("registeredDate"));
+
+        // Color-coded status column
+        colPatientStatus.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    if ("ACTIVE".equals(item)) {
+                        setStyle("-fx-text-fill: #7AB88F; -fx-font-weight: bold;");
+                    } else if ("INACTIVE".equals(item)) {
+                        setStyle("-fx-text-fill: #95A5A6; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #2D3436;");
+                    }
+                }
+            }
+        });
     }
 
     private void setupEnrolledProgramsTable() {
         colEnrProgramName.setCellValueFactory(new PropertyValueFactory<>("programName"));
         colEnrTotalSessions.setCellValueFactory(new PropertyValueFactory<>("totalSessions"));
-        colEnrUpfrontPaid.setCellValueFactory(new PropertyValueFactory<>("upfrontPaid"));
+        colEnrUpfrontPaid.setCellValueFactory(new PropertyValueFactory<>("sessionsPaid"));
         colEnrUsed.setCellValueFactory(new PropertyValueFactory<>("sessionsUsed"));
         colEnrRemaining.setCellValueFactory(new PropertyValueFactory<>("creditRemaining"));
         colEnrCompleted.setCellValueFactory(new PropertyValueFactory<>("completedSessions"));
@@ -198,10 +258,15 @@ public class PatientListController implements Initializable {
             List<PatientTM> tms = dtos.stream().map(dto -> {
                 PatientTM tm = new PatientTM();
                 tm.setId(dto.getStringId());
-                tm.setName(dto.getName());
+                tm.setFirstName(dto.getFirstName());
+                tm.setLastName(dto.getLastName());
                 tm.setEmail(dto.getEmail());
                 tm.setPhone(dto.getPhone());
                 tm.setAddress(dto.getAddress());
+                tm.setDateOfBirth(dto.getDateOfBirth() != null
+                        ? dto.getDateOfBirth().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "");
+                tm.setGenderIdentity(dto.getGenderIdentity() != null ? dto.getGenderIdentity() : "");
+                tm.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
                 tm.setRegisteredDate(dto.getRegisteredDate() != null
                         ? dto.getRegisteredDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "");
                 return tm;
@@ -219,7 +284,8 @@ public class PatientListController implements Initializable {
                 filteredPatients.setPredicate(p -> {
                     if (n == null || n.isEmpty()) return true;
                     String lower = n.toLowerCase();
-                    return (p.getName() != null && p.getName().toLowerCase().contains(lower))
+                    return (p.getFirstName() != null && p.getFirstName().toLowerCase().contains(lower))
+                            || (p.getLastName() != null && p.getLastName().toLowerCase().contains(lower))
                             || (p.getPhone() != null && p.getPhone().contains(lower))
                             || (p.getId() != null && p.getId().toLowerCase().contains(lower))
                             || (p.getEmail() != null && p.getEmail().toLowerCase().contains(lower));
@@ -298,13 +364,54 @@ public class PatientListController implements Initializable {
 
 
     private void populateForm(PatientTM p) {
-        txtEditName.setText(p.getName());
-        txtEditEmail.setText(p.getEmail());
-        txtEditPhone.setText(p.getPhone());
-        txtEditAddress.setText(p.getAddress());
+        // Fetch full DTO to get all fields
+        try {
+            long patientId = parsePatientId(p.getId());
+            PatientDTO fullDto = patientService.getPatientById(patientId);
 
-        //clear
-        txtEditInterviewNote.clear();
+            // Personal
+            txtEditFirstName.setText(fullDto.getFirstName());
+            txtEditLastName.setText(fullDto.getLastName());
+            dpEditDateOfBirth.setValue(fullDto.getDateOfBirth());
+            if (fullDto.getGenderIdentity() != null && !fullDto.getGenderIdentity().isEmpty()) {
+                try {
+                    cmbEditGenderIdentity.setValue(GenderIdentity.valueOf(fullDto.getGenderIdentity()));
+                } catch (IllegalArgumentException ignored) {
+                    cmbEditGenderIdentity.setValue(null);
+                }
+            } else {
+                cmbEditGenderIdentity.setValue(null);
+            }
+            if (fullDto.getStatus() != null && !fullDto.getStatus().isEmpty()) {
+                try {
+                    cmbEditStatus.setValue(PatientStatus.valueOf(fullDto.getStatus()));
+                } catch (IllegalArgumentException ignored) {
+                    cmbEditStatus.setValue(PatientStatus.ACTIVE);
+                }
+            } else {
+                cmbEditStatus.setValue(PatientStatus.ACTIVE);
+            }
+
+            // Contact
+            txtEditEmail.setText(fullDto.getEmail());
+            txtEditPhone.setText(fullDto.getPhone());
+            txtEditAddress.setText(fullDto.getAddress());
+
+            // Emergency
+            txtEditEmergencyName.setText(fullDto.getEmergencyContactName());
+            cmbEditEmergencyRelationship.setValue(fullDto.getEmergencyContactRelationship());
+            txtEditEmergencyPhone.setText(fullDto.getEmergencyContactPhone());
+
+            // Insurance
+            txtEditInsuranceProvider.setText(fullDto.getInsuranceProvider());
+            txtEditInsurancePolicyId.setText(fullDto.getInsurancePolicyId());
+            txtEditInsuranceGroupNumber.setText(fullDto.getInsuranceGroupNumber());
+
+            // Interview Note
+            txtEditInterviewNote.setText(fullDto.getInterviewNote());
+        } catch (Exception e) {
+            System.err.println("Error loading patient details: " + e.getMessage());
+        }
     }
 
     private void updateNewProgramCost() {
@@ -338,11 +445,32 @@ public class PatientListController implements Initializable {
             long patientId = parsePatientId(selectedPatient.getId());
             PatientDTO dto = new PatientDTO();
             dto.setId(patientId);
-            dto.setName(txtEditName.getText());
+
+            // Personal
+            dto.setFirstName(txtEditFirstName.getText());
+            dto.setLastName(txtEditLastName.getText());
+            dto.setDateOfBirth(dpEditDateOfBirth.getValue());
+            dto.setGenderIdentity(cmbEditGenderIdentity.getValue() != null ? cmbEditGenderIdentity.getValue().name() : null);
+            dto.setStatus(cmbEditStatus.getValue() != null ? cmbEditStatus.getValue().name() : "ACTIVE");
+
+            // Contact
             dto.setEmail(txtEditEmail.getText());
             dto.setPhone(txtEditPhone.getText());
             dto.setAddress(txtEditAddress.getText());
+
+            // Emergency
+            dto.setEmergencyContactName(txtEditEmergencyName.getText());
+            dto.setEmergencyContactRelationship(cmbEditEmergencyRelationship.getValue());
+            dto.setEmergencyContactPhone(txtEditEmergencyPhone.getText());
+
+            // Insurance
+            dto.setInsuranceProvider(txtEditInsuranceProvider.getText());
+            dto.setInsurancePolicyId(txtEditInsurancePolicyId.getText());
+            dto.setInsuranceGroupNumber(txtEditInsuranceGroupNumber.getText());
+
+            // Interview Note
             dto.setInterviewNote(txtEditInterviewNote.getText());
+
             patientService.updatePatient(dto);
             AlertUtil.showInfo("Success", "Patient updated.");
             handleClearEditForm(event);
@@ -364,7 +492,7 @@ public class PatientListController implements Initializable {
             long patientId = parsePatientId(p.getId());
             PatientDeleteSummaryDTO summary = patientService.getPatientDeleteSummary(patientId);
 
-            String warningMessage = "Are you sure you want to delete patient \"" + p.getName() + "\"?\n\n"
+            String warningMessage = "Are you sure you want to delete patient \"" + p.getFullName() + "\"?\n\n"
                     + "This patient has:\n"
                     + " - Enrolled Programs: " + summary.getProgramCount() + "\n"
                     + " - Sessions (Scheduled/Completed): " + summary.getSessionCount() + "\n"
@@ -449,10 +577,25 @@ public class PatientListController implements Initializable {
 
     @FXML
     void handleClearEditForm(ActionEvent event) {
-        txtEditName.clear();
+        // Personal
+        txtEditFirstName.clear();
+        txtEditLastName.clear();
+        dpEditDateOfBirth.setValue(null);
+        cmbEditGenderIdentity.setValue(null);
+        cmbEditStatus.setValue(null);
+        // Contact
         txtEditEmail.clear();
         txtEditPhone.clear();
         txtEditAddress.clear();
+        // Emergency
+        txtEditEmergencyName.clear();
+        cmbEditEmergencyRelationship.setValue(null);
+        txtEditEmergencyPhone.clear();
+        // Insurance
+        txtEditInsuranceProvider.clear();
+        txtEditInsurancePolicyId.clear();
+        txtEditInsuranceGroupNumber.clear();
+        // Other
         txtEditInterviewNote.clear();
         selectedPatient = null;
         tblPatients.getSelectionModel().clearSelection();

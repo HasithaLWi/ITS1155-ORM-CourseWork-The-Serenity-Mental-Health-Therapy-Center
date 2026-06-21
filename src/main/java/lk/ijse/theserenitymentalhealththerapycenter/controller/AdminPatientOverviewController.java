@@ -14,7 +14,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientTherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionPaymentStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 import lk.ijse.theserenitymentalhealththerapycenter.util.ComboBoxAutoCompleteUtil;
 
@@ -35,6 +36,10 @@ public class AdminPatientOverviewController implements Initializable {
     @FXML
     private Label lblPatientName;
     @FXML
+    private Label lblPatientDob;
+    @FXML
+    private Label lblPatientGender;
+    @FXML
     private Label lblPatientEmail;
     @FXML
     private Label lblPatientPhone;
@@ -42,6 +47,25 @@ public class AdminPatientOverviewController implements Initializable {
     private Label lblPatientAddress;
     @FXML
     private Label lblPatientRegistered;
+    @FXML
+    private Label lblPatientStatus;
+
+    // Emergency Contact
+    @FXML
+    private Label lblEmergencyName;
+    @FXML
+    private Label lblEmergencyRelationship;
+    @FXML
+    private Label lblEmergencyPhone;
+
+    // Insurance Details
+    @FXML
+    private Label lblInsuranceProvider;
+    @FXML
+    private Label lblInsurancePolicyId;
+    @FXML
+    private Label lblInsuranceGroupNumber;
+
     @FXML
     private TextArea txtInterviewNote;
 
@@ -167,8 +191,8 @@ public class AdminPatientOverviewController implements Initializable {
             ComboBoxAutoCompleteUtil.setupAutocomplete(
                     cmbPatient,
                     allPatients,
-                    p -> p.getStringId() + " - " + p.getName(),
-                    p -> p.getStringId() + " " + p.getName() + " " + (p.getPhone() != null ? p.getPhone() : "")
+                    p -> p.getStringId() + " - " + p.getFullName(),
+                    p -> p.getStringId() + " " + p.getFullName() + " " + (p.getPhone() != null ? p.getPhone() : "")
             );
         } catch (Exception e) {
             AlertUtil.showError("Error", "Failed to load patients: " + e.getMessage());
@@ -211,12 +235,40 @@ public class AdminPatientOverviewController implements Initializable {
         try {
             PatientDTO fullPatient = patientBO.getPatientById(patient.getId());
             lblPatientId.setText(fullPatient.getStringId());
-            lblPatientName.setText(fullPatient.getName());
+            lblPatientName.setText(fullPatient.getFullName());
+            lblPatientDob.setText(fullPatient.getDateOfBirth() != null ? fullPatient.getDateOfBirth().toString() : "N/A");
+            lblPatientGender.setText(fullPatient.getGenderIdentity() != null ? fullPatient.getGenderIdentity() : "N/A");
             lblPatientEmail.setText(fullPatient.getEmail() != null ? fullPatient.getEmail() : "N/A");
             lblPatientPhone.setText(fullPatient.getPhone() != null ? fullPatient.getPhone() : "N/A");
             lblPatientAddress.setText(fullPatient.getAddress() != null ? fullPatient.getAddress() : "N/A");
             lblPatientRegistered.setText(fullPatient.getRegisteredDate() != null
                     ? fullPatient.getRegisteredDate().toString() : "N/A");
+
+            // Status badge
+            String status = fullPatient.getStatus() != null ? fullPatient.getStatus() : "ACTIVE";
+            lblPatientStatus.setText(status);
+            if ("ACTIVE".equals(status)) {
+                lblPatientStatus.setStyle(
+                        "-fx-background-color: #E8F5E9; -fx-text-fill: #2E7D32; -fx-font-weight: bold; " +
+                        "-fx-font-size: 12px; -fx-padding: 4 12; -fx-background-radius: 8;"
+                );
+            } else {
+                lblPatientStatus.setStyle(
+                        "-fx-background-color: #ECEFF1; -fx-text-fill: #607D8B; -fx-font-weight: bold; " +
+                        "-fx-font-size: 12px; -fx-padding: 4 12; -fx-background-radius: 8;"
+                );
+            }
+
+            // Emergency Contact
+            lblEmergencyName.setText(fullPatient.getEmergencyContactName() != null ? fullPatient.getEmergencyContactName() : "N/A");
+            lblEmergencyRelationship.setText(fullPatient.getEmergencyContactRelationship() != null ? fullPatient.getEmergencyContactRelationship() : "N/A");
+            lblEmergencyPhone.setText(fullPatient.getEmergencyContactPhone() != null ? fullPatient.getEmergencyContactPhone() : "N/A");
+
+            // Insurance
+            lblInsuranceProvider.setText(fullPatient.getInsuranceProvider() != null && !fullPatient.getInsuranceProvider().isEmpty() ? fullPatient.getInsuranceProvider() : "N/A");
+            lblInsurancePolicyId.setText(fullPatient.getInsurancePolicyId() != null && !fullPatient.getInsurancePolicyId().isEmpty() ? fullPatient.getInsurancePolicyId() : "N/A");
+            lblInsuranceGroupNumber.setText(fullPatient.getInsuranceGroupNumber() != null && !fullPatient.getInsuranceGroupNumber().isEmpty() ? fullPatient.getInsuranceGroupNumber() : "N/A");
+
             txtInterviewNote.setText(fullPatient.getInterviewNote() != null ? fullPatient.getInterviewNote() : "");
 
             vboxPatientDetails.setVisible(true);
@@ -397,7 +449,7 @@ public class AdminPatientOverviewController implements Initializable {
                 ? session.getSessionTime().format(DateTimeFormatter.ofPattern("HH:mm")) : "N/A");
         lblSessionPayment.setText(session.getPaymentStatus() != null ? session.getPaymentStatus().name() : "PENDING");
 
-        if (session.getPaymentStatus() == lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus.PAID) {
+        if (session.getPaymentStatus() == SessionPaymentStatus.PAID) {
             lblSessionPayment.setStyle(
                     "-fx-background-color: #E8F5E9; " +
                             "-fx-text-fill: #2E7D32; " +
@@ -426,10 +478,25 @@ public class AdminPatientOverviewController implements Initializable {
     private void clearPatientDetails() {
         lblPatientId.setText("");
         lblPatientName.setText("");
+        lblPatientDob.setText("");
+        lblPatientGender.setText("");
         lblPatientEmail.setText("");
         lblPatientPhone.setText("");
         lblPatientAddress.setText("");
         lblPatientRegistered.setText("");
+        lblPatientStatus.setText("");
+        lblPatientStatus.setStyle("");
+
+        // Emergency
+        lblEmergencyName.setText("");
+        lblEmergencyRelationship.setText("");
+        lblEmergencyPhone.setText("");
+
+        // Insurance
+        lblInsuranceProvider.setText("");
+        lblInsurancePolicyId.setText("");
+        lblInsuranceGroupNumber.setText("");
+
         txtInterviewNote.clear();
 
         vboxPatientDetails.setVisible(false);

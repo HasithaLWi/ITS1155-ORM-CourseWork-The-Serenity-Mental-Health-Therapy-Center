@@ -9,12 +9,12 @@ import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.TherapySessionDAO
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.PatientTherapyProgramDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Payment;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.*;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PaymentException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -321,7 +321,7 @@ public class PaymentBOImpl implements PaymentBO {
         dto.setDiscount(entity.getDiscount());
         dto.setDescription(entity.getDescription());
         dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
-        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : "N/A");
+        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getFullName() : "N/A");
         dto.setPatient(toDTO(entity.getPatient()));
         return dto;
     }
@@ -329,7 +329,8 @@ public class PaymentBOImpl implements PaymentBO {
     private PatientDTO toDTO(Patient entity) {
         PatientDTO dto = new PatientDTO();
         dto.setId(entity.getId());
-        dto.setName(entity.getName());
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
         dto.setEmail(entity.getEmail());
         dto.setPhone(entity.getPhone());
         dto.setAddress(entity.getAddress());
@@ -350,7 +351,7 @@ public class PaymentBOImpl implements PaymentBO {
         dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
         dto.setTherapistId(entity.getTherapist() != null ? entity.getTherapist().getId() : null);
         dto.setProgramId(entity.getProgram() != null ? entity.getProgram().getId() : null);
-        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : null);
+        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getFullName() : null);
         dto.setTherapistName(entity.getTherapist() != null ? entity.getTherapist().getName() : null);
         dto.setProgramName(entity.getProgram() != null ? entity.getProgram().getName() : null);
         return dto;
@@ -359,7 +360,8 @@ public class PaymentBOImpl implements PaymentBO {
     public Patient toEntity(PatientDTO dto) {
         Patient entity = new Patient();
         entity.setId(dto.getId());
-        entity.setName(dto.getName());
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
         entity.setEmail(dto.getEmail());
         entity.setPhone(dto.getPhone());
         entity.setAddress(dto.getAddress());

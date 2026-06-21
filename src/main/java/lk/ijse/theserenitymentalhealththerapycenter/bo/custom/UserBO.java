@@ -2,7 +2,7 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.SuperBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.UserRole;
 
 import java.util.List;
 

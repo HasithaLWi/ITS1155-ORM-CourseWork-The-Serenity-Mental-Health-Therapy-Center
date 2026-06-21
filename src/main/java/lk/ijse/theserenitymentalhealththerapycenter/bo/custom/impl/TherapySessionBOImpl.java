@@ -5,8 +5,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.*;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionPaymentStatus;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionPaymentStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.PatientTherapyProgram;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.Therapist;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
@@ -146,15 +146,21 @@ public class TherapySessionBOImpl implements TherapySessionBO {
             TherapySession ts = sessionDAO.getById(sessionId, session);
             if (ts == null) throw new SchedulingException("Session not found.");
 
+
+
             if (ts.getPaymentStatus() == TherapySession.PaymentStatus.PAID) {
                 if (ts.getPatient() != null && ts.getProgram() != null) {
                     PatientTherapyProgram ptp = ptpDAO.findByPatientAndProgram(ts.getPatient().getId(), ts.getProgram().getId(), session);
-                    if (ptp != null) {
-                        ptp.setSessionsUsed(Math.max(0, ptp.getSessionsUsed() - 1));
+                    if (ptp != null && ptp.getSessionsUsed() > 0) {
+                        ptp.setSessionsUsed(ptp.getSessionsUsed() - 1);
                         ptpDAO.update(ptp, session);
                     }
                 }
             }
+
+            ts.setTherapist(null);
+            ts.setPatient(null);
+            sessionDAO.update(ts, session);
 
             sessionDAO.delete(ts, session);
             transaction.commit();
@@ -242,7 +248,7 @@ public class TherapySessionBOImpl implements TherapySessionBO {
         dto.setPatientId(entity.getPatient() != null ? entity.getPatient().getId() : null);
         dto.setTherapistId(entity.getTherapist() != null ? entity.getTherapist().getId() : null);
         dto.setProgramId(entity.getProgram() != null ? entity.getProgram().getId() : null);
-        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getName() : null);
+        dto.setPatientName(entity.getPatient() != null ? entity.getPatient().getFullName() : null);
         dto.setTherapistName(entity.getTherapist() != null ? entity.getTherapist().getName() : null);
         dto.setProgramName(entity.getProgram() != null ? entity.getProgram().getName() : null);
         dto.setPatientPhone(entity.getPatient() != null ? entity.getPatient().getPhone() : null);

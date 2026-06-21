@@ -15,9 +15,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapyProgramTM;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.Patient;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.math.BigDecimal;

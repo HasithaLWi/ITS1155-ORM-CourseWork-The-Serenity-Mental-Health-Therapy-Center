@@ -2,7 +2,6 @@ package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,7 +16,8 @@ import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapyProgramBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PatientDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.GenderIdentity;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentMethod;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.ProgramPaymentTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
@@ -31,22 +31,51 @@ import java.util.ResourceBundle;
 
 public class PatientRegistrationController implements Initializable {
 
+    // Personal Information
     @FXML
-    private TextField txtPatientName;
+    private TextField txtFirstName;
+    @FXML
+    private TextField txtLastName;
+    @FXML
+    private DatePicker dpDateOfBirth;
+    @FXML
+    private ComboBox<GenderIdentity> cmbGenderIdentity;
+
+    // Contact Information
     @FXML
     private TextField txtPatientEmail;
     @FXML
     private TextField txtPatientPhone;
     @FXML
     private TextField txtPatientAddress;
+
+    // Emergency Contact
+    @FXML
+    private TextField txtEmergencyName;
+    @FXML
+    private ComboBox<String> cmbEmergencyRelationship;
+    @FXML
+    private TextField txtEmergencyPhone;
+
+    // Insurance Details
+    @FXML
+    private TextField txtInsuranceProvider;
+    @FXML
+    private TextField txtInsurancePolicyId;
+    @FXML
+    private TextField txtInsuranceGroupNumber;
+
+    // Interview Note
+    @FXML
+    private TextArea txtInterviewNote;
+
+    // Program & Payment (unchanged)
     @FXML
     private ComboBox<TherapyProgramDTO> cmbPatientProgram;
     @FXML
     private Label lblRegMessage;
     @FXML
     private Button btnAddPgm;
-    @FXML
-    private TextArea txtInterviewNote;
 
     @FXML
     private TableView<ProgramPaymentTM> tblSelectedPgm;
@@ -101,6 +130,14 @@ public class PatientRegistrationController implements Initializable {
             }
         });
 
+        // Gender ComboBox
+        cmbGenderIdentity.setItems(FXCollections.observableArrayList(GenderIdentity.values()));
+
+        // Emergency Relationship ComboBox
+        cmbEmergencyRelationship.setItems(FXCollections.observableArrayList(
+                "Parent", "Spouse", "Sibling", "Child", "Friend", "Guardian", "Other"
+        ));
+
         cmbPaymentMethod.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
         txtDiscount.textProperty().addListener((obs, oldVal, newVal) -> calculateTotals());
 
@@ -120,6 +157,59 @@ public class PatientRegistrationController implements Initializable {
         });
 
         setupTable();
+        setupRealTimeValidation();
+    }
+
+    /**
+     * Sets up real-time visual validation on key fields.
+     * Green border = valid, Red border = invalid.
+     */
+    private void setupRealTimeValidation() {
+        String validStyle = "-fx-border-color: #7AB88F; -fx-border-width: 1; -fx-border-radius: 8;";
+        String invalidStyle = "-fx-border-color: #C47171; -fx-border-width: 1; -fx-border-radius: 8;";
+        String defaultStyle = "";
+
+        // First Name
+        txtFirstName.textProperty().addListener((obs, o, n) -> {
+            if (n == null || n.trim().isEmpty()) txtFirstName.setStyle(defaultStyle);
+            else if (n.trim().length() >= 2 && n.trim().matches("^[A-Za-z .'-]+$")) txtFirstName.setStyle(validStyle);
+            else txtFirstName.setStyle(invalidStyle);
+        });
+
+        // Last Name
+        txtLastName.textProperty().addListener((obs, o, n) -> {
+            if (n == null || n.trim().isEmpty()) txtLastName.setStyle(defaultStyle);
+            else if (n.trim().length() >= 2 && n.trim().matches("^[A-Za-z .'-]+$")) txtLastName.setStyle(validStyle);
+            else txtLastName.setStyle(invalidStyle);
+        });
+
+        // Email
+        txtPatientEmail.textProperty().addListener((obs, o, n) -> {
+            if (n == null || n.trim().isEmpty()) txtPatientEmail.setStyle(defaultStyle);
+            else if (n.trim().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) txtPatientEmail.setStyle(validStyle);
+            else txtPatientEmail.setStyle(invalidStyle);
+        });
+
+        // Phone
+        txtPatientPhone.textProperty().addListener((obs, o, n) -> {
+            if (n == null || n.trim().isEmpty()) txtPatientPhone.setStyle(defaultStyle);
+            else if (n.trim().matches("^(\\+94|0)?[0-9]{9,10}$")) txtPatientPhone.setStyle(validStyle);
+            else txtPatientPhone.setStyle(invalidStyle);
+        });
+
+        // Emergency Phone
+        txtEmergencyPhone.textProperty().addListener((obs, o, n) -> {
+            if (n == null || n.trim().isEmpty()) txtEmergencyPhone.setStyle(defaultStyle);
+            else if (n.trim().matches("^(\\+94|0)?[0-9]{9,10}$")) txtEmergencyPhone.setStyle(validStyle);
+            else txtEmergencyPhone.setStyle(invalidStyle);
+        });
+
+        // Insurance Policy ID
+        txtInsurancePolicyId.textProperty().addListener((obs, o, n) -> {
+            if (n == null || n.trim().isEmpty()) txtInsurancePolicyId.setStyle(defaultStyle);
+            else if (n.trim().matches("^[A-Za-z0-9\\-]{3,30}$")) txtInsurancePolicyId.setStyle(validStyle);
+            else txtInsurancePolicyId.setStyle(invalidStyle);
+        });
     }
 
     private void setupTable() {
@@ -238,11 +328,31 @@ public class PatientRegistrationController implements Initializable {
 
 
             PatientDTO p = new PatientDTO();
-            p.setName(txtPatientName.getText());
+            // Personal Information
+            p.setFirstName(txtFirstName.getText());
+            p.setLastName(txtLastName.getText());
+            p.setDateOfBirth(dpDateOfBirth.getValue());
+            p.setGenderIdentity(cmbGenderIdentity.getValue() != null ? cmbGenderIdentity.getValue().name() : null);
+
+            // Contact Information
             p.setEmail(txtPatientEmail.getText());
             p.setPhone(txtPatientPhone.getText());
             p.setAddress(txtPatientAddress.getText());
+
+            // Emergency Contact
+            p.setEmergencyContactName(txtEmergencyName.getText());
+            p.setEmergencyContactRelationship(cmbEmergencyRelationship.getValue());
+            p.setEmergencyContactPhone(txtEmergencyPhone.getText());
+
+            // Insurance Details
+            p.setInsuranceProvider(txtInsuranceProvider.getText());
+            p.setInsurancePolicyId(txtInsurancePolicyId.getText());
+            p.setInsuranceGroupNumber(txtInsuranceGroupNumber.getText());
+
+            // Interview Note
             p.setInterviewNote(txtInterviewNote.getText());
+
+            // Status defaults to ACTIVE (handled in BO)
 
             ArrayList<TherapyProgramDTO> programs = new ArrayList<>();
             Map<Long, Integer> upfrontMap = new HashMap<>();
@@ -295,16 +405,38 @@ public class PatientRegistrationController implements Initializable {
 
     @FXML
     void handleClearPatientForm(ActionEvent event) {
-        txtPatientName.clear();
+        // Personal
+        txtFirstName.clear();
+        txtLastName.clear();
+        dpDateOfBirth.setValue(null);
+        cmbGenderIdentity.setValue(null);
+        // Contact
         txtPatientEmail.clear();
         txtPatientPhone.clear();
         txtPatientAddress.clear();
+        // Emergency
+        txtEmergencyName.clear();
+        cmbEmergencyRelationship.setValue(null);
+        txtEmergencyPhone.clear();
+        // Insurance
+        txtInsuranceProvider.clear();
+        txtInsurancePolicyId.clear();
+        txtInsuranceGroupNumber.clear();
+        // Other
         txtInterviewNote.clear();
         cmbPatientProgram.setValue(null);
         cmbPaymentMethod.setValue(null);
         txtDiscount.clear();
         paymentModels.clear();
         calculateTotals();
+
+        // Reset validation styles
+        txtFirstName.setStyle("");
+        txtLastName.setStyle("");
+        txtPatientEmail.setStyle("");
+        txtPatientPhone.setStyle("");
+        txtEmergencyPhone.setStyle("");
+        txtInsurancePolicyId.setStyle("");
     }
 
     private BigDecimal calculateLineTotal(TherapyProgramDTO program, int sessions) {

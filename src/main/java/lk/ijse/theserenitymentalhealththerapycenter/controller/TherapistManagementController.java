@@ -1,6 +1,5 @@
 package lk.ijse.theserenitymentalhealththerapycenter.controller;
 
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
@@ -23,10 +22,9 @@ import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.TherapySessionBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapistDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapyProgramDTO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.SessionStatus;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.TherapistStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.SessionStatus;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.TherapistStatus;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.TherapistTM;
-import lk.ijse.theserenitymentalhealththerapycenter.entity.TherapySession;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 
 import java.io.IOException;

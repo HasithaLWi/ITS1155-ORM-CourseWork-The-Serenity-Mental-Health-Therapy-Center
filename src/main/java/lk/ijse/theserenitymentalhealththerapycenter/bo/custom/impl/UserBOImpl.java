@@ -5,7 +5,7 @@ import lk.ijse.theserenitymentalhealththerapycenter.config.FactoryConfiguration;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.DAOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.dao.custom.UserDAO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.entity.User;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.LoginException;
 import lk.ijse.theserenitymentalhealththerapycenter.exception.PasswordResetException;

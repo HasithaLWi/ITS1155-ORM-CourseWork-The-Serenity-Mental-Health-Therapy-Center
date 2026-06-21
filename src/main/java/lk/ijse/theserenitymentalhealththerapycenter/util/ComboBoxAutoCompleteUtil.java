@@ -20,8 +20,16 @@ public final class ComboBoxAutoCompleteUtil {
                                              Function<T, String> displayFunc,
                                              Function<T, String> searchFunc) {
 
+        if (comboBox.getProperties().containsKey("autocomplete_items")) {
+            @SuppressWarnings("unchecked")
+            ObservableList<T> items = (ObservableList<T>) comboBox.getProperties().get("autocomplete_items");
+            items.setAll(allItems);
+            return;
+        }
+
         comboBox.setEditable(true);
         ObservableList<T> items = FXCollections.observableArrayList(allItems);
+        comboBox.getProperties().put("autocomplete_items", items);
         FilteredList<T> filteredItems = new FilteredList<>(items, p -> true);
         comboBox.setItems(filteredItems);
 

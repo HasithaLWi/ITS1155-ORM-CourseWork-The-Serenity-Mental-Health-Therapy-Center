@@ -10,7 +10,7 @@ import javafx.scene.control.*;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.BOFactory;
 import lk.ijse.theserenitymentalhealththerapycenter.bo.custom.UserBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.UserDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.UserRole;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.UserRole;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.tm.UserTM;
 import lk.ijse.theserenitymentalhealththerapycenter.util.AlertUtil;
 

@@ -2,9 +2,8 @@ package lk.ijse.theserenitymentalhealththerapycenter.bo.custom;
 
 import lk.ijse.theserenitymentalhealththerapycenter.bo.SuperBO;
 import lk.ijse.theserenitymentalhealththerapycenter.dto.PaymentDTO;
-import lk.ijse.theserenitymentalhealththerapycenter.dto.TherapySessionDTO;
 
-import lk.ijse.theserenitymentalhealththerapycenter.dto.enums.PaymentMethod;
+import lk.ijse.theserenitymentalhealththerapycenter.enumaration.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

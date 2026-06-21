@@ -63,15 +63,14 @@ public class TherapistScheduleController implements Initializable {
     private Set<SlotPane> oldSlots = new HashSet<>();
 
     // Colors matching your FXML legend
-    private final String COLOR_AVAILABLE = "#2ecc71";
-    private final String COLOR_TIME_OFF = "#e74c3c";
-    private final String COLOR_OVERTIME = "#f1c40f";
-    private final String COLOR_SCHEDULE = "#3498db";
-
+    private final String COLOR_AVAILABLE = "#7AB88F"; // Sage Green
+    private final String COLOR_TIME_OFF = "#C47171";   // Warm Rose Red
+    private final String COLOR_OVERTIME = "#E2A968";   // Soft Gold
+    private final String COLOR_SCHEDULE = "#4A7FA5";   // Brand Blue
 
     private final String COLOR_DEFAULT = "#ffffff";
-    private final String BORDER_HIGHLIGHT = "-fx-border-color: #2980b9; -fx-border-width: 2;";
-    private final String BORDER_DEFAULT = "-fx-border-color: #eaeded; -fx-border-width: 1;";
+    private final String BORDER_HIGHLIGHT = "-fx-border-color: #4A7FA5; -fx-border-width: 2;";
+    private final String BORDER_DEFAULT = "-fx-border-color: #F0ECE6; -fx-border-width: 1;";
     private TherapistBO therapistBO = (TherapistBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST);
     private TherapistScheduleBO therapistScheduleBO = (TherapistScheduleBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_SCHEDULE);
     private TherapistAvailabilityBO therapistAvailabilityBO = (TherapistAvailabilityBO) BOFactory.getInstance().getBO(BOFactory.BOType.THERAPIST_AVAILABILITY);
@@ -198,7 +197,7 @@ public class TherapistScheduleController implements Initializable {
 
             // Add Time Label to the first column
             Label timeLabel = new Label(time.toString());
-            timeLabel.setStyle("-fx-padding: 0 10 0 10; -fx-text-fill: #7f8c8d;");
+            timeLabel.setStyle("-fx-padding: 0 10 0 10; -fx-text-fill: #636E72; -fx-font-weight: bold; -fx-font-size: 13px;");
             scheduleGrid.add(timeLabel, 0, row);
 
             // Cols: 1 to 7 (Monday to Sunday)

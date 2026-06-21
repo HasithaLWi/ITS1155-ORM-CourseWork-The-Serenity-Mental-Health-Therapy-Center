@@ -97,7 +97,7 @@ public class ReceptionistOverviewController implements Initializable {
 
 
         colUnscheduledId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colUnscheduledName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colUnscheduledName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFullName()));
         colUnscheduledPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         colUnscheduledEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colUnscheduledDate.setCellValueFactory(new PropertyValueFactory<>("registeredDate"));
@@ -153,7 +153,8 @@ public class ReceptionistOverviewController implements Initializable {
     private PatientTM toTM(PatientDTO d) {
         PatientTM tm = new PatientTM();
         tm.setId(d.getStringId());
-        tm.setName(d.getName());
+        tm.setFirstName(d.getFirstName());
+        tm.setLastName(d.getLastName());
         tm.setEmail(d.getEmail());
         tm.setPhone(d.getPhone());
         tm.setAddress(d.getAddress());

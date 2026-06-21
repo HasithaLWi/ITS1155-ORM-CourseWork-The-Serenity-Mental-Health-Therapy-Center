@@ -1,6 +1,7 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -8,7 +9,9 @@ import java.util.List;
 
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TherapyProgramDTO {
+    @EqualsAndHashCode.Include
     private String id;
     private String name;
     private String duration;

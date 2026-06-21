@@ -31,17 +31,50 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
 
-    @Column(length = 100)
+    @Column(name = "last_name", nullable = false, length = 100)
+    private String lastName;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "gender_identity", length = 30)
+    private String genderIdentity;
+
+    @Column(unique = true, length = 100)
     private String email;
 
-    @Column(length = 20)
+    @Column(unique = true, length = 20)
     private String phone;
 
     @Column(length = 300)
     private String address;
+
+    // Emergency Contact
+    @Column(name = "emergency_contact_name", length = 100)
+    private String emergencyContactName;
+
+    @Column(name = "emergency_contact_relationship", length = 50)
+    private String emergencyContactRelationship;
+
+    @Column(name = "emergency_contact_phone", length = 20)
+    private String emergencyContactPhone;
+
+    // Insurance Details (nullable)
+    @Column(name = "insurance_provider", length = 150)
+    private String insuranceProvider;
+
+    @Column(name = "insurance_policy_id", length = 50)
+    private String insurancePolicyId;
+
+    @Column(name = "insurance_group_number", length = 50)
+    private String insuranceGroupNumber;
+
+    // Patient Status
+    @Column(nullable = false, length = 20)
+    private String status = "ACTIVE";
 
     @Column(name = "registered_date")
     private LocalDate registeredDate = LocalDate.now();
@@ -60,4 +93,12 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Payment> payments = new ArrayList<>();
+
+    /**
+     * Convenience method to get full name.
+     */
+    @Transient
+    public String getFullName() {
+        return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+    }
 }

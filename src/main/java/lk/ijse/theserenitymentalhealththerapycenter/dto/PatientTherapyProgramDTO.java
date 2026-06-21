@@ -1,13 +1,16 @@
 package lk.ijse.theserenitymentalhealththerapycenter.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PatientTherapyProgramDTO {
+    @EqualsAndHashCode.Include
     private String id;
     private Long patientId;
     private Long programId;

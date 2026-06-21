@@ -13,7 +13,7 @@
     p.payment_type, 
     p.discount, 
     p.description, 
-    pat.name AS patient_name, 
+    CONCAT(pat.first_name, ' ', pat.last_name) AS patient_name, 
     pat.email AS patient_email, 
     pat.phone AS patient_phone
 FROM payments p
